@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>什么是移动网络安全？ - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>什么是移动网络安全？</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：What is Mobile Network Security?</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2024-10-29
+ · <a href="https://www.p1sec.com/blog/what-is-mobile-network-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对单一安全事件的报告，而是对移动网络安全的综合性概述。文章指出，随着移动通信技术从2G、4G演进至5G，网络复杂性和攻击频率不断增加。由于全球在个人通信、金融交易和敏感数据交换方面高度依赖移动网络，使其成为网络犯罪分子的主要攻击目标。
+- 时间线：文章提及了移动通信技术的代际演进时间线（从2G到4G，再到现在的5G），但未涉及具体的安全事件时间线。
+- 攻击原理：攻击者主要利用移动网络中信令协议（如SS7、Diameter、GTP-C）的固有漏洞。这些协议负责处理路由、漫游和会话管理，若被未授权访问，会导致严重的安全漏洞。攻击者通过利用这些信令弱点，能够拦截呼叫、消息或数据流量。
+- 攻击详情：文章列举了多种针对移动网络的攻击手段与威胁：
+  1. 拒绝服务：导致网络服务中断，引发大规模断网。
+  2. 信令协议攻击：针对SS7和Diameter协议的攻击，可实现窃听或对用户进行地理位置追踪。
+  3. 数据窃取：窃取包括个人数据和财务信息在内的敏感数据。
+  4. 欺诈交易：拦截基于短信的双因素认证（2FA）验证码，实施金融欺诈或非法获取账户访问权限。
+  5. 暴力破解与ID欺骗：作为渗透测试中模拟的常见攻击战术被提及。
+- 攻击特征：攻击主要呈现出利用底层通信协议漏洞的特征，特别是针对信令基础设施（SS7、SIGTRAN、Diameter、GTP）。此外，国际漫游和跨区域流量交换也是攻击的高发区，因为不同地区的电信运营商可能实施不同的安全策略，从而暴露出可被利用的防御薄弱点。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-26T14:49:34</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>What is Mobile Network Security?</p>
+    <div class="analysis" style="white-space:pre-wrap;">Mobile network security refers to the measures, practices, and technologies put in place to protect mobile communication systems from various cyber threats. These networks enable the transmission of voice, data, and multimedia between cellular networks, which makes them important for personal and business communications. As mobile networks evolve, from 2G to 4G , and now 5G , the complexity and frequency of attacks also increase, requiring robust security solutions.
+Why is Mobile Network Security Important?
+The global reliance on mobile networks for personal communication, financial transactions, and sensitive data exchanges makes them prime targets for cybercriminals. A security breach in a mobile network can lead to:
+Data theft : Sensitive information, including personal data and financial information, can be stolen.
+Service disruption : Attacks such as Denial of Service (DoS) can disrupt network services, causing large scale outages.
+Privacy violations : Techniques like SS7 and Diameter attacks can enable eavesdropping or even geolocation tracking of users.
+Protecting mobile networks against fraud, espionage, and disruption is essential for preserving security and trust in the telecom industry given our increasing reliance on them.
+Key Security Challenges in Mobile Networks
+Mobile network security is faced with various challenges due to the increasing complexity of protocols and services. Some of the major concerns include:
+Signaling Protocol Vulnerabilities : SS7 , Diameter , and GTP-C protocols, which manage network signaling, have several vulnerabilities that can be exploited by attackers. These protocols handle routing, roaming, and session management, and unauthorized access to them can lead to massive security breaches.
+Eavesdropping and Data Interception : Attackers can exploit signaling weaknesses to intercept calls, messages, or data traffic. Protocols like SS7 are often targeted for this type of attack, as they are used for global mobile communication.
+Fraudulent Transactions : Mobile networks are often targeted by fraudsters for intercepting SMS-based two-factor authentication codes, conducting financial fraud, or unauthorized access to user accounts.
+Roaming and International Traffic : International roaming introduces additional security challenges, as telecom operators need to securely exchange information with networks in different regions, which may have different security policies.
+The Role of Penetration Testing in Mobile Network Security
+Penetration testing (pentesting) plays a pivotal role in ensuring mobile network security. Pentesting involves ethical hackers simulating attacks on a mobile network to find weaknesses before they can be exploited by malicious actors. This proactive approach allows operators to understand how vulnerable their networks are and fix potential issues before they lead to real-world breaches.
+Pentesting is particularly crucial for evaluating signaling infrastructure vulnerabilities (including those
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

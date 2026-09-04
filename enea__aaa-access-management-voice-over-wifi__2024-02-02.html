@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAA与接入管理 – Wi-Fi通话 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>AAA与接入管理 – Wi-Fi通话</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：AAA &amp; Access Management – Voice over WiFi</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2024-02-02
+ · 作者：Iftikhar Waheed · <a href="https://www.enea.com/insights/aaa-access-management-voice-over-wifi/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Data Management Applications</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">5G</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">AAA</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Access Manager</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要探讨了AAA（认证、授权和计费）服务器和接入管理在VoWiFi（Wi-Fi通话）场景下的关键作用。VoWiFi允许电信运营商通过现有的Wi-Fi接入点提供电话服务，作为VoLTE的补充，以低成本扩展语音覆盖范围。文章指出，在5G和电路交换技术演进的背景下，VoWiFi对于维持语音通话质量和覆盖至关重要。在技术实现上，AAA服务器与HSS（归属用户服务器）协作进行认证，并通过SWa/SWm Diameter协议与ePDG（演进型分组数据网关）交互，对IP电信接入进行授权。这属于核心网网元间的安全认证与接入管理机制。文章未涉及具体的攻击事件、时间线或攻击原理。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-27T09:11:18</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>AAA &amp; Access Management – Voice over WiFi</p>
+    <div class="analysis" style="white-space:pre-wrap;">AAA &amp; Access Management – VoWiFi
+In previous articles we have talked about the critical nature of an AAA Server and why the functions remain at the core of telecom services. Enabling Voice over Wi-Fi for a telecom operator is a case in point; this is also called Wi-Fi Calling, but for the rest of this article the label VoWiFi is used. At a simple level it enables telephony services over available Wi-Fi access points. In effect, Wi-Fi Calling links telephony from a telecom operator to an internet environment, so you can mak e, answer, and maintain calls seamlessly when moving in and out of Wi-Fi and mobile networks.
+VoWifi provides for low-cost coverage expansion of voice communications for Telcos to create and maintain reliable voice connectivity using pre-existing Wi-Fi access/IP connectivity. It is complementary to voice over LTE (VoLTE) but different, in that it uses Wi-Fi access points not LTE. The business case for this is driven by:
+Necessity – disabling older circuit switched technology
+maintaining quality of experience for voice calls
+creating new service offers such as sponsored roaming.
+In a world of apps, it may seem old fashioned, but making a phone call (and expecting it connect reliably and with quality) is still what customers do. A USwitch [1] survey in the UK rated phone calls as the third most popular activity (73%) (just behind messaging (78%) &amp; email (74%)). Long call or short call it doesn’t matter – if the call quality is bad, users blame the network and there is plenty of choice if they want to switch networks. Voice quality and coverage is also a key factor on network assessment with leaders in testing like Umlaut [2] in their ‘Walk tests’ in big cities, or RootMetrics Call Performance tests. [3] Further, it can also be a misconception that coverage issues will be fixed by 5G – as 5G is a mix of radio technologies and pure 5G frequencies can be more affected in dense urban areas.
+The voice use case matters for a third reason – a strategy to provide more capacity cost effectively is needed to meet the increasing data demands of the network. An integrated Wi-Fi solution is a building block of that strategy, in urban scenarios; data follows voice and integrating access for mobile and IP networks provides seamless, cost effective, capacity expansion.
+The core case for VoWiFi is maintaining the quality of connection. In areas where circuit switched is being disconnected it is essential to link IPv4/IPv6 IMS to HSS authentication and this the role played by the Enea AAA Server . Working in collaboration with a Telcos’ entitlement services, on device application and packet gateways the access management authenticates the IP telecom access for a voice call using the SWa | SWm diameter protocol to the request received from the evolved packet gateway (ePDG). The response from the AAA contains the right authorization and additional attributes so that access is authorized. The additional attributes can be used to create different offe
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

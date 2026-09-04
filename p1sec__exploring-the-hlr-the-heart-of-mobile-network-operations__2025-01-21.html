@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探索HLR：移动网络运营的心脏 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>探索HLR：移动网络运营的心脏</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Exploring the HLR: The Heart of Mobile Network Operations</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-01-21
+ · <a href="https://www.p1sec.com/blog/exploring-the-hlr-the-heart-of-mobile-network-operations" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+本文并非针对单一安全事件的复盘，而是对移动通信核心网网元 HLR（归属位置寄存器）的整体安全态势分析。HLR 作为 2G/3G 网络的中央数据库，存储着用户的身份信息（IMSI/MSISDN）、认证密钥、服务配置及位置数据，是保障用户认证、呼叫路由和漫游支持的核心。由于其高价值的数据资产和在网络中的枢纽地位，HLR 历来是攻击者进行身份盗用、通信拦截和欺诈的重点目标。
+
+时间线：
+文章指出，随着移动通信技术的演进，4G 和 5G 网络中 HLR 已逐渐被 HSS（归属用户服务器）和 5G 核心网取代。然而，由于大量运营商仍需维护现有的 2G 和 3G 网络，遗留的 HLR 系统依然在运行并面临持续的安全威胁。这种新旧架构并存的过渡期使得遗留系统的安全防护显得尤为重要。
+
+攻击原理：
+针对 HLR 的攻击主要利用了移动通信信令协议（特别是 SS7）的固有设计缺陷以及系统配置上的疏漏。早期信令协议在设计时假设网络内部是可信的，缺乏端到端的认证和加密机制。攻击者通过嗅探或渗透进入信令网络，伪装成合法网络节点向 HLR 发送恶意信令请求，从而绕过安全防线直接与核心网数据库进行交互。
+
+攻击详情：
+1. SS7 攻击：攻击者利用 SS7 协议漏洞，向 HLR 发送恶意请求，从而拦截用户的通话和短信内容、追踪用户的实时位置信息，甚至发起电信欺诈。
+2. 未授权访问与数据窃取：利用 HLR 的配置错误或访问控制不严，攻击者可直接获取数据库中的用户敏感数据，导致大规模的身份信息泄露。
+3. 拒绝服务攻击：通过向 HLR 发送大量恶意请求或破坏其正常服务进程，导致核心网网元瘫痪，使得数百万用户无法进行认证和通信。
+4. 通信拦截：通过操纵 HLR 的呼叫和短信路由机制，攻击者可将流量重定向至恶意节点进行窃听或钓鱼攻击。
+
+攻击特征：
+针对 HLR 的攻击具有影响面广、破坏性大、隐蔽性强的特征。由于 HLR 是核心网网元，一旦被攻破，攻击者不仅能够获取海量用户的隐私数据，还能对基础通信服务（如语音、短信、漫游）进行全局性的破坏。此外，利用 SS7 等信令协议发起的攻击通常伪装成正常的网络间信令交互，传统的边界防护难以有效识别，需要依靠信令防火墙和深度行为监控才能进行防御。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:20:16</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Exploring the HLR: The Heart of Mobile Network Operations</p>
+    <div class="analysis" style="white-space:pre-wrap;">In the vast and complex ecosystem of mobile networks, the Home Location Register (HLR) plays a critical role in ensuring seamless communication. It acts as the central database that manages subscriber information, facilitating authentication, call routing, and mobility. But what exactly is the HLR, and why is it essential for telecom operators to secure it against evolving threats?
+What is the HLR?
+The Home Location Register (HLR) is a fundamental component of mobile networks, particularly in 2G and 3G systems . It is a centralized database that stores crucial subscriber information, such as:
+SIM Data : International Mobile Subscriber Identity (IMSI) and Mobile Subscriber Integrated Services Digital Network Number (MSISDN).
+Authentication Details : Keys used to verify subscriber identity during network access.
+Service Profiles : Information about the services a subscriber is entitled to, such as voice, SMS , or data.
+Location Data : The current or last known location of the subscriber within the network.
+By storing and managing this information, the HLR enables operators to deliver services efficiently, maintain connectivity, and support seamless mobility when subscribers move between network areas or roam internationally.
+The Role of HLR in Mobile Networks
+The HLR is a critical component in the functioning of telecom networks. Its responsibilities include:
+1. Subscriber Authentication
+When a mobile device attempts to connect to the network, the HLR verifies its identity using stored authentication keys, ensuring that only authorized users gain access.
+2. Call and SMS Routing
+The HLR directs incoming calls and SMS to the subscriber&#39;s current location or forwards them to voicemail when the user is unreachable.
+3. Service Provisioning
+It ensures that subscribers receive the services they are entitled to, such as data plans, call forwarding, and roaming services.
+4. Roaming Support
+During international roaming, the HLR communicates with other networks to authenticate and provide seamless service continuity for subscribers.
+HLR Security: Why It Matters
+Given its central role in managing subscriber data, the HLR is a prime target for cyberattacks. Threats to the HLR can lead to:
+Unauthorized Access : Attackers can exploit vulnerabilities to gain access to subscriber information, leading to identity theft or fraud.
+Call and SMS Interception : Malicious actors can manipulate call and message routing, enabling eavesdropping or phishing attacks.
+Subscriber Location Tracking : Exposing location data can compromise user privacy and pose security risks.
+Denial of Service (DoS) Attacks : Disrupting the HLR can render network services unavailable, affecting millions of subscribers.
+Evolving Threats to the HLR
+As mobile networks transition to 4G and 5G , the legacy HLR is being replaced by the Home Subscriber Server (HSS) in newer architectures. However, many operators still rely on HLR systems for 2G and 3G networks, making them susceptible to specific vulnera
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

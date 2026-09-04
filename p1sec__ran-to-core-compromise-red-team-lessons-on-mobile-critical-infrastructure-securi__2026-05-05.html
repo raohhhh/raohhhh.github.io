@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从RAN到核心网的攻陷：关于移动关键基础设施安全的红队经验 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>从RAN到核心网的攻陷：关于移动关键基础设施安全的红队经验</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：RAN to Core Compromise: Red Team Lessons on Mobile Critical Infrastructure Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-05-05
+ · <a href="https://www.p1sec.com/blog/ran-to-core-compromise-red-team-lessons-on-mobile-critical-infrastructure-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+本文基于P1 Security举办的一场网络研讨会，由 Philippe Langlois 分享了针对移动关键基础设施（包括5G独立组网与非独立组网环境）的红队测试经验。文章指出，尽管5G架构在理论上被认为更安全，但在真实运营商环境中，由于遗留系统、供应商默认配置、运营限制和可用性妥协，网络仍面临从无线接入网（RAN）到核心网的真实攻击路径。
+
+时间线：
+文章发布于2026年5月5日，内容是对近期红队测试实战经验的总结与反思。
+
+攻击原理：
+攻击者不遵循传统的网络域边界（如RAN、传输、OSS、核心网），而是利用物理安全弱点、网络暴露、不安全的默认配置以及系统复杂性，将这些孤立的弱点串联成一条完整的攻击链，通过横向移动逐步从边缘基站渗透至核心服务。
+
+攻击详情：
+1. 物理安全突破：攻击者从偏远无线电站薄弱的物理防护（如弱锁、弱围栏、缺乏监控）入手，获取现场设备的调试端口或网络端口访问权，甚至部署隐蔽的“投递设备”以建立持久化或数据外泄通道。
+2. 横向移动与提权：利用默认凭据、弱过滤或管理面暴露，将初始立足点向EMS、OSS、合法拦截系统及用户数据相关系统横向移动。
+3. 网络分段失效：IPsec等协议本身无缺陷，但共享信任、过宽的可达性、弱过滤以及管理路径与运营路径隔离不足，导致受保护隧道沦为攻击跳板。
+4. 云原生5G风险：Kubernetes及相关技术引入了庞大攻击面，微分段不完整、内部地址池默认可达、编排层过于开放，且边缘环境由于自定义接口和Linux暴露更难监控。
+
+攻击特征：
+1. 横向渗透：攻击者跨越不同域（RAN、传输、核心、IT/OT）寻找路由，而非局限于单一系统。
+2. 链式攻击：攻击成功往往不是因为单一灾难性漏洞，而是多个普通弱点（物理、网络、配置）的叠加与连接。
+3. 理论与实践脱节：利用架构图与生产环境实际状态的差异（如遗留依赖、专有行为、盲区）进行攻击。
+4. 合规不等于安全：攻击者利用纸面上合规但实际部署中存在缺陷的控制措施（如mTLS身份处理不当、备份内部访问权限过大、管理控制面越权可达）。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:23:20</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>RAN to Core Compromise: Red Team Lessons on Mobile Critical Infrastructure Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">5G security is often discussed as if modern architecture automatically means stronger security. In reality, that assumption does not survive contact with real operator environments. Production networks are shaped by legacy systems, vendor defaults, operational constraints, partial visibility, and security tradeoffs made in the name of availability. That is exactly why red team exercises matter. They show how compromise really happens across domains that are supposed to be separate.
+In a recent P1 Security webinar, Philippe Langlois shared lessons from red team engagements focused on mobile critical infrastructure, including 5G standalone and non standalone environments, radio access networks, OAM exposure, and propagation toward the core. The conclusion was direct. Operators still face realistic compromise paths from the field to central infrastructure, and those paths are often created not by one catastrophic flaw, but by the accumulation of physical weakness, network exposure, insecure defaults, and complexity.
+Why red teaming matters in telecom security
+Telecom security is not just a product security problem. It is an end to end infrastructure problem. APT groups do not care about ownership boundaries, team silos, or internal diagrams. They move across domains, pivot through overlooked systems, and use whatever gives them a route toward subscriber data, lawful intercept environments, management systems, and core services.
+That is what makes red teaming valuable. It does not just identify isolated weaknesses. It shows how those weaknesses chain together in the real world. It also helps operators prioritize security work by identifying the pivot points that matter most. If one control can break an entire kill chain, fixing that point first buys time and reduces overall exposure.
+5G looks cleaner in architecture diagrams than it does in production
+On paper, 5G standalone environments look structured, standardized, and modern. In production, they accumulate legacy dependencies, proprietary behavior, operational shortcuts, and poorly understood interfaces.
+That gap between theory and reality is one of the most important lessons from the webinar. Operators do not secure a clean specification. They secure a real environment made up of old and new technologies living side by side. DNS, lawful intercept, OAM, lifecycle orchestration, virtualization, transport, and management layers all shape the attack surface. Looking only at the formal 5G core model creates a false sense of security.
+This is why red team work is so useful in telecom. It reveals the architecture that actually exists, not the one people assume exists.
+The real attack surface is horizontal
+Attackers do not think in silos. They do not care whether a problem belongs to RAN, transport, OSS, core, or IT. They look for routes.
+That is why mobile network compromise is often horizontal. A foothold in one area can become a pivot into another if segmentation is weak, credentials are reused, trus
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

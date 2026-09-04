@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G新空口（NR）：开启无线连接的未来 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G新空口（NR）：开启无线连接的未来</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：5G New Radio (NR): Unlocking the Future of Wireless Connectivity</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-04-30
+ · <a href="https://www.p1sec.com/blog/5g-new-radio-nr-unlocking-the-future-of-wireless-connectivity" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要介绍了5G新空口（NR）的技术特性、部署模式（NSA/SA）及跨行业应用。在安全方面，文章指出5G NR作为高度可编程、以软件为中心的网络技术，带来了新的安全挑战，并探讨了相应的安全考量：
+- 零信任架构：强调对设备、用户和应用程序进行持续身份验证。
+- 供应链安全：强调在组件和供应商激增的情况下确保软硬件完整性。
+- 增强认证机制：提及利用5G AKA和新型加密保护来保障用户身份并防止冒充。
+- 入侵检测系统（IDS）：建议在动态的5G NR环境中使用IDS进行早期威胁检测。
+- 毫米波安全风险：指出高频段短距离和信号阻挡问题增加了对波束赋形和动态资源管理的依赖，需谨慎进行安全防护。
+由于本文为技术概述类文章，未涉及具体的网络攻击事件，因此无攻击事件背景、时间线、攻击原理、攻击详情及攻击特征。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:29:56</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>5G New Radio (NR): Unlocking the Future of Wireless Connectivity</p>
+    <div class="analysis" style="white-space:pre-wrap;">As mobile networks evolve to meet ever-growing demands for speed, connectivity, and reliability, 5G New Radio (NR) stands at the forefront of this transformation. As the new global standard for a unified, more capable 5G wireless air interface, 5G NR is revolutionizing telecom operations, enabling everything from ultra-fast mobile broadband to massive IoT deployments and mission-critical communications.
+What is 5G New Radio (NR)?
+55G New Radio (NR) is the radio access technology developed by 3GPP for the fifth generation of mobile networks. It serves as the foundation for 5G networks worldwide, enabling radically improved performance across key parameters such as speed, latency, reliability, and capacity. Unlike previous generations — 2G , 3G , 4G LTE — 5G NR is built to support a wide range of use cases, encompassing not only enhanced mobile broadband (eMBB) but also ultra-reliable low-latency communications (URLLC) and massive machine-type communications (mMTC).
+5G NR operates across diverse spectrum bands, including sub-6 GHz and the high-frequency millimeter wave (mmWave) bands. This flexibility enables operators to deliver both broad coverage and extreme capacity, tailored to specific deployment environments.
+Key Features of 5G New Radio (NR)
+Massive MIMO (Multiple Input Multiple Output): By deploying antenna arrays with dozens or even hundreds of elements, massive MIMO increases spectral efficiency, boosting throughput, reliability, and network capacity.
+Beamforming: Beamforming technologies dynamically focus radio signals toward specific users rather than broadcasting broadly, resulting in stronger, more reliable connections even in crowded environments.
+Flexible Numerology: 5G NR introduces scalable subcarrier spacing options, enabling networks to fine-tune performance parameters based on application requirements — optimizing latency, throughput, and reliability.
+Dynamic Spectrum Sharing (DSS): DSS allows operators to allocate existing 4G LTE spectrum dynamically between LTE and 5G, facilitating faster and more cost-effective rollouts.
+Network Slicing: A key enabler for differentiated services, network slicing creates multiple isolated virtual networks over a common physical infrastructure, each customized for specific use cases ( Learn more about Network Slicing ).
+Deployment Modes of 5G NR
+Non-Standalone (NSA): In NSA mode, 5G NR relies on 4G LTE for signaling and control functions while providing high-speed data paths over the new radio interface. This hybrid approach accelerates 5G deployments by leveraging existing infrastructure.
+Standalone (SA): In SA mode, 5G NR connects directly to a dedicated 5G Core ( Learn about 5G Core Security ), enabling full support for ultra-low latency applications, dynamic resource management, and advanced network slicing.
+Why is 5G New Radio Important for Telecom Operators?
+The shift toward 5G NR offers telecom operators numerous strategic and operational advantages:
+Enhanced Capacity and Speed: With t
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

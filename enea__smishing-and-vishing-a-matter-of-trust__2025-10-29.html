@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短信钓鱼与语音钓鱼：信任问题 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>短信钓鱼与语音钓鱼：信任问题</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Smishing and Vishing: A Matter of Trust</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-10-29
+ · 作者：Tomas Hedqvist · <a href="https://www.enea.com/insights/smishing-and-vishing-a-matter-of-trust/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Messaging Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Critical Networks</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">MNO</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Network Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">SMS security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">White Paper Excerpt</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：文章探讨了短信钓鱼和语音钓鱼攻击的日益泛滥及其对国家安全、关键基础设施和公众信任的深远影响。随着诈骗风险上升，公众对未知号码的信任度下降。CrowdStrike数据显示2024年下半年语音钓鱼攻击激增了442%。
+- 时间线：提及2024年下半年语音钓鱼攻击激增；2015年乌克兰电网攻击事件（作为钓鱼攻击导致基础设施瘫痪的先例，虽为邮件钓鱼）；COVID-19疫情期间冒充卫生部门的钓鱼活动。
+- 攻击原理：Smishing通过短信/MMS/RCS等发送含钓鱼网站链接的恶意信息，利用恐惧、紧迫感诱导用户操作；Vishing通过实时语音通话冒充合法机构进行社会工程学操纵。Vishing的关键技术手段之一是主叫号码欺骗，使诈骗电话看似来自可信实体。
+- 攻击详情：攻击者通过窃取凭证进行金融欺诈、身份盗窃或获取系统未授权访问。国家背景的黑客可将其用于间谍活动或混合战争；网络犯罪分子则将其作为勒索软件攻击的前置手段。此外，攻击还间接侵蚀了移动通信的信任基础，影响政府官方通信和小区广播等公共预警系统的有效性，并对移动服务带来的经济增长造成负面影响。防御方面，文章指出运营商的核心网是检测和缓解此类诈骗的关键节点，需部署消息防火墙和语音/信令防火墙进行实时URL过滤和拦截。
+- 攻击特征：Smishing可自动化大规模群发；Vishing更具针对性，通过实时语音操纵情感，成功率更高且难以缓解。Vishing攻击绕过了传统的企业或个人IP防火墙，因为其发生在实时语音通道上。此外，绝大多数诈骗电话具有伪造的主叫号码，这需要在呼叫建立阶段的信令中进行检测和拦截。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:09:21</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Smishing and Vishing: A Matter of Trust</p>
+    <div class="analysis" style="white-space:pre-wrap;">Smishing and Vishing: A Matter of Trust
+It is a fact that most people no longer answer calls from unknown numbers due to the rising risk of scams. The fear of having one’s personal and sensitive data stolen is justified, but phishing attacks through telecom channels are not only a concern for individuals and businesses; they can also have profound implications for national security, by posing as a direct threat against the operational capability of public administration and critical infrastructure, and by eroding trust in key communication services.
+Smishing and Vishing are Growing in Frequency and Impact
+Smishing is a form of social engineering attack that exploits text messages to deceive recipients into sharing personal data, typically through links directing users to phishing websites. Attackers often use urgency, fear, or curiosity in their messages to prompt immediate action. Although the term smishing is derived from “SMS phishing”, the practice also extends into MMS, RCS, and messaging apps. Common smishing scams include delivery scams and bank account scams .
+“Vishing”, or voice call phishing, involves attackers impersonating legitimate and trusted entities, such as banks or government authorities, during phone calls. Like smishing, vishing relies on the use of urgency and fear to manipulate victims. However, a key difference is that while smishing can be automated to send phishing messages to multiple recipients simultaneously, vishing is typically much more targeted and requires scammers to engage directly with their victims. The immediacy and personal nature of a phone call enable emotional manipulation on a deeper level, resulting in higher success rates.
+While email remains the channel with the largest volumes of phishing attempts, smishing and vishing are growing at alarming rates. Vishing, for example, increased by 442% in the second half of 2024 according to CrowdStrike. It is disturbing as it is generally considered the most hazardous to organizations and individuals, due to its efficacy in live voice manipulation and the difficulty in mitigating it. Smishing falls somewhere in between the two.
+Direct Impacts of Data Theft through Smishing and Vishing
+Data theft through smishing and vishing can have direct consequences for national security. Both are gateway crimes, through which threat actors acquire credentials or other valuable personal information, which they then use to commit financial fraud, identity theft, or provide unauthorized access to accounts. If individuals with access to critical infrastructure systems are targeted, the results can be devastating.
+State-backed threat actors could utilize these attacks to gain access to systems and sensitive information for espionage purposes or in hybrid warfare scenarios. The 2015 attack on Ukraine’s power grid was the first known cyberattack to take down energy infrastructure and cause real-world outages. It began with a phishing attack aimed at stealing credentials (although i
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

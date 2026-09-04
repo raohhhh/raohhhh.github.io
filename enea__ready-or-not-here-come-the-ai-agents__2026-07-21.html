@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无论是否准备好，AI智能体已来！ - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>无论是否准备好，AI智能体已来！</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Ready or Not, Here Come the AI Agents!</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2026-07-21
+ · 作者：Laura Wilber · <a href="https://www.enea.com/insights/ready-or-not-here-come-the-ai-agents/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Common</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">DPI &amp;amp; Traffic Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">AI</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cyber Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Network Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">White Paper Excerpt</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI Agent安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：文章探讨了 AI Agent（基于 LLM 的自主代理）在企业应用和个人助手（如虚构的 OpenClaw）中的快速普及，以及随之而来的严重安全风险。86% 的 IT 领导者认为 AI Agent 至关重要，但 73% 缺乏安全准备，凸显了 AI Agent 安全防护的滞后。
+时间线：
+- 2024年11月：Anthropic 推出 Model Context Protocol (MCP) 以改善 Claude 与企业系统的安全交互。
+- 2025年4月/6月：Google 推出 Agent2Agent (A2A) 协议并捐赠给 Linux 基金会。
+- 2025年11月：Visa PERC 报告暗网中提及 &#34;AI Agent&#34; 的帖子增加了 477%；Peter Steinberger 开源 OpenClaw（原名 ClawdBot/MoltBot）。
+- 2026年3月：OpenClaw 在 GitHub 上获得超 325,000 星，npm 下载量巨大，数百万 Agent 流入网络。
+攻击原理：AI Agent 具有自主决策、持久状态、与其他软件交互以及访问敏感资源的能力。由于 LLM 固有的本体论漏洞和不可预测性，加上 Agent 的自主性和高权限，使其成为风险的倍增器。攻击者利用开源供应链、恶意工具市场、无认证配置等途径进行攻击。
+攻击详情：
+1. 暗网市场与恶意 Agent：暗网中关于 AI Agent 的讨论激增，恶意 Agent 被公开交易。
+2. 供应链攻击：通过开源库（npm, PyPI等）和工具市场（如 ClawHub）传播恶意工具、扩展和技能。Bitdefender Labs 发现恶意技能比例高达 15%-20%。
+3. OpenClaw 漏洞利用：用户为了便利将所有账户凭证和 API 密钥交给 Agent，且默认 localhost 无认证配置被公开暴露在互联网上（Shodan 可见），导致系统控制权泄露。
+4. 微观与宏观影响：微观上，用户照片被删、财务损失、邮件自动转发；宏观上，数以万计的 OpenClaw 网关暴露，严重威胁企业网络安全。
+攻击特征：
+1. 摩擦力极低（易用性导致安全疏忽）：用户为了追求无缝体验，轻易交出凭证和权限，导致安全防线崩溃。
+2. 权限放大：Agent 拥有自主决策和跨系统操作能力，成为内部威胁的放大器。
+3. 供应链脆弱性：高度依赖第三方开源组件和工具市场，易受恶意代码注入和供应链攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:04:54</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Ready or Not, Here Come the AI Agents!</p>
+    <div class="analysis" style="white-space:pre-wrap;">AI Security Challenges &amp; Associated Risks – No. 4
+Ready or Not, Here Come the AI Agents!
+Primary Vulnerabilities: Force Multiplier for All Risks; Increase in Insider Threats
+Introduction
+86% of IT leaders view AI agents as “very important” or “mission-critical” to their strategy, yet…
+73% report a lack of security readiness for AI agents ( Alpha Sights survey )
+AI agents are LLM-based GenAI software applications that can go beyond familiar GenAI tasks like conversation, research and content generation. They are designed to interact with other software applications and IT resources to plan and execute tasks on behalf of a user (human or machine). They can be empowered to autonomously decide the best course(s) of action for a given task, and whether or when to collaborate with other AI agents. They are also designed to learn from their experiences. All of this requires persistence, i.e., maintaining state and knowledge across time, in contrast to LLMs’ natural statelessness. What does this mean for network security? Read on to find out!
+The following excerpt is from Enea’s white paper “ Understanding &amp; Managing AI in Network Security “. It looks at the prime risks generated by the speed of AI adoption and evolution, and where the security focus needs to be to effectively address them.
+AI Agents in Enterprise Productivity Suites
+In the enterprise realm, built-in AI agents have already become quite common in productivity suites, like Copilot in Microsoft 365, Agentforce in Salesforce, and Gemini Enterprise in Google Workspace. While these omnipresent agents can assist with almost any task a user is engaged in, for safety and security there are many constraints around their capabilities and use.
+Such agent-equipped productivity suites nonetheless make it easy for business users (with the right licenses) to experiment with creating their own agents. For example, Salesforce Agentforce Agent Builder, which provides business users with a natural language-based, low-code/no-code wizard for creating custom AI agents.
+Going a step further, enterprise productivity suites are increasingly offering marketplaces of pre-built, vetted AI agents from their parent company as well as customers and partners. AI frontier model companies like Anthropic and OpenAI are offering agent building tools for their lighthouse chat platforms, like Anthropic Claude and OpenAI ChatGPT.
+Independent Marketplaces
+And then there are numerous independent marketplaces where anyone can buy or sell custom agents, and subscription-based marketplaces from frontier model companies like OpenAI’s ChatGPT marketplace. That marketplace like many others notably offers premium personal plans that support uploading files, sharing GPTs and serving as a tester for new features – which, when used with company devices or accessing company resources, can keep CISOs up at night.
+From “ Five Forces Reshaping Payment Security in 2025 ” – A Payment Ecosystem Report published by Visa
+And those are the good ma
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

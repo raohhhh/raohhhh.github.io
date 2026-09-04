@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoNR安全：5G语音改变了什么，以及从VoLTE和IMS继承了什么 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>VoNR安全：5G语音改变了什么，以及从VoLTE和IMS继承了什么</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：VoNR security: what voice over 5G changes and what it inherits from VoLTE and IMS</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-07-21
+ · <a href="https://www.p1sec.com/blog/vonr-security-voice-over-5g-ims-eps-fallback-risks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+本文并非针对单一突发安全事件的报道，而是对5G独立组网（SA）原生语音服务（VoNR）安全架构的深度技术分析。文章指出，VoNR并未构建全新的语音安全模型，而是将现有的IMS和SIP语音模型平移至5G SA核心网。因此，VoLTE和IMS的大部分攻击面被直接继承，同时5G特有的EPS Fallback行为使得安全风险在5G与4G网络之间交织，若未妥善管理，可能只是将风险转移而非消除。
+
+- 时间线
+无具体攻击事件时间线。文章发布于2026年7月21日，属于针对5G语音网络部署阶段的安全评估与防御指南。
+
+- 攻击原理
+1. 信令与协议层攻击：由于VoNR保留了IMS和SIP核心，攻击者可利用SIP解析漏洞（如发送畸形、超大或异常消息）导致P-CSCF网元崩溃或降级；通过篡改或违规处理SIP头部（如P-Asserted-Identity、History-Info）实现主叫身份欺骗、信息泄露或呼叫操纵。
+2. EPS Fallback降级攻击：当5G网络无法完成VoNR呼叫时，网络会重定向设备至4G EPS。攻击者可通过影响无线条件等方式主动触发回退，使呼叫降级至VoLTE，从而继承Diameter信令和4G互操作风险，将容灾机制变为降级攻击杠杆。
+3. 媒体面降级攻击：在会话协商期间，攻击者可能尝试静默降级或剥离SRTP加密，导致媒体机密性丧失。
+
+- 攻击详情
+- P-CSCF作为设备接入IMS的第一个网元，直接解析受攻击者影响的SIP和SDP，是模糊测试和鲁棒性攻击的主要目标。
+- 注册和配置响应可能泄露用户是否存在、启用的功能或网络拓扑细节。
+- 互连边界面临SIP信任边界问题，与GSMA FS.21中的信令安全建议相关。
+- 语音欺诈（如国际收入分成欺诈、补充服务滥用）针对TAS服务逻辑，在VoNR和回退路径上均存在暴露面。
+
+- 攻击特征
+- 继承性：风险从VoLTE/IMS直接继承，未因底层无线技术升级到5G而消除。
+- 双路径暴露：运营商同时运行5G VoNR和4G VoLTE回退路径，攻击者倾向于选择控制较弱的那条路径进行攻击，真实风险水平由两者中较弱的一方决定。
+- 降级触发：EPS Fallback不仅是容灾机制，也可能被攻击者作为降级攻击的杠杆，主动触发以利用旧有4G网络漏洞。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:15:51</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>VoNR security: what voice over 5G changes and what it inherits from VoLTE and IMS</p>
+    <div class="analysis" style="white-space:pre-wrap;">Voice over New Radio (VoNR) is the native voice service of the 5G standalone (SA) core. It carries calls as IP Multimedia Subsystem (IMS) sessions over the 5G New Radio air interface, without dropping back to 4G to complete the call. For a security team the important point is not that VoNR is new, but that it is familiar: VoNR does not invent a fresh voice security model, it moves the existing IMS and SIP voice model onto the 5G SA core. Most of the VoLTE and IMS attack surface travels with it, and a small number of 5G specific behaviours, above all EPS fallback, decide whether an operator has actually reduced voice risk or simply relocated it.
+This article explains what VoNR is, how it differs from VoLTE architecturally, what its security model looks like under 3GPP and GSMA, where the practical exposure sits, and what operators should test and monitor as they turn on 5G voice.
+What is VoNR (voice over New Radio)?
+VoNR is voice delivered as an IMS session over 5G NR in a standalone 5G network. The radio and the packet core are 5G, but the voice service itself lives in the IMS, and call signalling uses the Session Initiation Protocol (SIP) exactly as it does for Voice over LTE (VoLTE). In a standalone network that supports VoNR, the call is set up and carried end to end over 5G, with no transition to the 4G Evolved Packet Core (EPC) to place the call.
+That last point is what separates VoNR from earlier 5G voice options. Non-standalone (NSA) 5G has no VoNR at all: the control plane still relies on the 4G core, so voice is delivered as VoLTE over the LTE anchor, or, where VoLTE is not available, the call uses circuit switched fallback (CSFB) to complete on 2G or 3G. VoNR only becomes possible once the operator has deployed a 5G standalone core with the AMF, SMF and UPF in place and an IMS that is provisioned for 5G access. Understanding whether a given network is NSA or SA is therefore the first question in any VoNR security review, because it determines which voice path is actually in use.
+How VoNR differs from VoLTE architecturally
+The IMS core is broadly the same in VoNR and VoLTE. The Proxy, Serving and Interrogating Call Session Control Functions (P-CSCF, S-CSCF, I-CSCF), the Telephony Application Server (TAS) and the subscriber data roles carried by the HSS or the 5G Unified Data Management (UDM) function all carry over. The SIP and Session Description Protocol (SDP) dialogues that establish, modify and tear down a call look familiar to anyone who has audited a VoLTE deployment.
+What changes is the connectivity layer underneath the IMS. VoLTE runs over the 4G EPC and uses dedicated bearers to carry media and signalling. VoNR runs over the 5G SA core and uses 5G quality of service (QoS) flows instead: typically 5QI 1 for conversational voice media and 5QI 5 for IMS signalling. Registration to the IMS happens over a dedicated IMS data network name (DNN) and its own protocol data unit (PDU) session, rather than an APN and default bearer. Upstrea
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

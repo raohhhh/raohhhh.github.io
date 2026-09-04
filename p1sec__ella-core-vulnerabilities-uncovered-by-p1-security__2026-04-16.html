@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P1 Security 发现的 Ella Core 漏洞 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>P1 Security 发现的 Ella Core 漏洞</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Ella Core vulnerabilities uncovered by P1 Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-04-16
+ · <a href="https://www.p1sec.com/blog/ella-core-vulnerabilities-uncovered-by-p1-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+Ella Core 是一款专为私有网络部署（如工厂、仓库、港口、校园等）设计的开源 5G 核心网。由于其常用于支持关键业务系统，控制面的稳定性和安全性至关重要。P1 Security 针对该平台进行了深度安全研究，发现了一系列影响其接入和移动性管理功能（AMF）的漏洞，这些漏洞可导致拒绝服务风险。
+
+时间线：
+- 2026 年：P1 Security 发现并披露了影响 Ella Core AMF 的一系列漏洞。
+- 2026-08-20：发布相关研究与分析文章。
+- 漏洞修复：部分漏洞在 Ella Core 1.5.1 版本中修复，其余在 1.6.0 版本中修复。
+
+攻击原理：
+攻击主要利用了 5G 核心网控制面在处理畸形协议输入时的解析器鲁棒性不足。攻击者通过向 AMF 发送畸形的 NGAP 和 NAS 信令流量，触发目标程序的 panic 条件，导致 AMF 进程崩溃。由于 AMF 负责设备注册、移动性管理等核心功能，其崩溃会直接影响网络可用性、订阅流程及整体网络稳定性，造成拒绝服务攻击。
+
+攻击详情：
+此次发现的多个 CVE 漏洞均围绕畸形信令处理展开：
+1. CVE-2026-32319：处理过短的完整性保护 NAS 负载时引发 panic。
+2. CVE-2026-32320：处理 PathSwitchRequest 时，因 NR 安全能力位串为空导致 AMF 拒绝服务。
+3. CVE-2026-33281：NGAP 消息中存在无效的 PDU Session ID。
+4. CVE-2026-33282：畸形的 NGAP LocationReport 处理异常。
+5. CVE-2026-33283：在无会话管理上下文且缺少 Request Type 的情况下，处理畸形的 UL NAS Transport 引发崩溃。
+6. 无效的 NGAP NGReset 处理同样会触发 AMF 崩溃。
+
+攻击特征：
+该系列漏洞呈现出高度一致的攻击特征，即利用电信协议解析过程中的验证缺陷：
+1. 必填字段验证缺失：处理程序假设所需信息元素必然存在且安全。
+2. 长度验证不足：在处理可变长度内容前未验证是否有足够字节。
+3. 信息元素存在性检查缺失：假设可选或相关字段在畸形流量中依然存在。
+4. 语义边界强制执行不足：在根据有效协议范围进行检查前，值已被传入 AMF 逻辑层。这些特征表明，通用的安全测试往往难以发现此类深层次的电信协议解析问题，需要专业的电信安全研究能力。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:16:28</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Ella Core vulnerabilities uncovered by P1 Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">Ella Core is an open source 5G core designed for private network deployments, including factories, warehouses, ports, campuses, and other enterprise environments where reliable mobile connectivity is essential. That makes control plane resilience a security requirement, not just a quality issue.
+In 2026, a cluster of vulnerabilities affecting Ella Core’s Access and Mobility Management Function, or AMF, showed that malformed NGAP and NAS traffic could trigger panic conditions and crash the process. These findings uncovered denial of service risks in the 5G control plane and reinforced a simple truth: parser robustness is a core part of telecom security.
+For the full technical breakdown, affected versions, CVE references, and remediation details, see P1 Security’s security advisories at cve.p1sec.com . That is the central source for the disclosures related to these findings.
+Why Ella Core matters for private 5G security
+Ella Core is built for real private 5G deployments, not just lab environments. It is designed for industrial and enterprise use cases where teams want a more accessible 5G core for operational rollouts. That makes it attractive for organizations building mobile connectivity into production environments.
+But platform simplicity does not reduce protocol risk.
+In a 5G core, the AMF is one of the most critical control plane functions. It handles essential operations such as device registration, mobility management, and signaling coordination between the radio side and the rest of the core. If malformed signaling can crash the AMF, the impact can go far beyond a single malformed packet. It can affect service availability, subscriber procedures, and overall network stability.
+That is why AMF denial of service vulnerabilities matter, especially in private 5G environments where mobile connectivity may support operationally important systems.
+What P1 Security found in Ella Core
+The vulnerabilities uncovered by P1 Security point to a broader pattern: malformed protocol input was not always handled defensively before reaching AMF logic.
+One issue involved invalid NGAP NGReset handling, where malformed reset signaling could trigger a crash instead of being rejected safely.
+Another issue, CVE-2026-32319 , involved a short integrity protected NAS payload. Under malformed conditions, Ella Core could panic when processing a payload that was too short.
+A separate issue, CVE-2026-32320 , affected PathSwitchRequest handling. Empty NR security capability bitstrings could trigger a denial of service condition in the AMF.
+Additional issues expanded the same pattern.
+CVE-2026-33281 affected invalid PDU Session IDs in NGAP messages.
+CVE-2026-33282 affected malformed NGAP LocationReport handling.
+CVE-2026-33283 affected malformed UL NAS Transport handling when a Request Type was missing under conditions where no session management context existed.
+Taken together, these vulnerabilities show a consistent control plane weakness: malformed NGAP and NAS traffic 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

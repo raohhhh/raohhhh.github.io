@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G零信任架构：从营销口号到可度量安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G零信任架构：从营销口号到可度量安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Zero Trust Architecture in 5G: from marketing slogan to measurable security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-11-20
+ · <a href="https://www.p1sec.com/blog/zero-trust-architecture-in-5g-from-marketing-slogan-to-measurable-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文并非针对特定攻击事件的分析，而是探讨5G网络中零信任架构的深度技术实施指南。文章详细阐述了5G网络云化、API化后传统边界防御失效的背景，并针对5G核心网网元及架构提出了具体的零信任安全策略。
+
+- 攻击事件背景：无特定攻击事件。文章背景在于5G网络 behaves like cloud software，容器化网络功能、API泛在化和服务化架构（SBA）使得传统的边界安全模型失效。内部API暴露、漫游对端恶意行为或配置错误都可能导致用户面到控制面的越权访问。
+
+- 时间线：无时间线。文章面向5G网络架构的当前与未来安全建设。
+
+- 攻击原理：文章虽未描述具体攻击，但指出了5G网络中潜在的攻击路径与原理，如：利用服务发现（NRF）等同于授权的漏洞进行越权API调用；利用单一共享证书或令牌被盗导致大面积网元被控；利用用户面流量无害的错觉进行数据面跳板攻击；通过漫游互联通道进行位置滥用、SMS滥用或映射扫描；以及通过CI/CD、容器编排平台等管理面作为后门入侵核心网。
+
+- 攻击详情：文章重点描述了针对5G核心网网元（NFs）及架构的防御与缓解措施：
+1. 强身份认证：为用户、gNB、网络功能（NF）、切片等提供强身份，如使用SUCI/SUPI、NF证书、SBA客户端令牌等。
+2. 最小权限原则：限制网络功能仅能访问所需服务（如仅需Nsmf服务的NF不得调用Nudm），切片间严格隔离，漫游伙伴仅能访问特定互联功能。
+3. 持续验证：在控制面SBA中强制所有NF使用双向TLS（mTLS），通过服务网格实施请求级授权和流量策略，记录每次API调用的身份和声明，并监控异常模式（如Nudm UEContext查询激增）。
+4. 假设被攻破：设计微隔离限制爆炸半径。将UDM、AUSF、ARPF等核心网元视为最高级别安全区，实施严格的访问代理；在用户面（SMF/UPF）按切片和QoS分离数据路径，防止从用户面支持网络向SBA控制面横向移动。
+5. 漫游与管理面安全：默认不信任漫游伙伴，在SBI和遗留互联边缘实施协议感知筛查和速率限制；锁定CI/CD、集群控制等管理面权限，要求镜像签名和准入控制。
+
+- 攻击特征：文章总结了常见的安全误区与潜在攻击特征，包括：将服务发现视为授权（导致越权访问）、使用单一共享证书（导致被盗后难以追踪和遏制）、忽视用户面流量（被攻击者用作跳板）、忽视漫游流量（来自其他网络的恶意探测）、部署加密网格但无策略（仅有加密而无最小权限控制）。同时提出了衡量安全成效的KPI，如SBA双向认证比例、API显式授权策略覆盖率、被盗身份撤销时间、爆炸半径大小以及对漫游位置检索和批量订阅数据查询的检测覆盖率。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:25:29</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Zero Trust Architecture in 5G: from marketing slogan to measurable security</p>
+    <div class="analysis" style="white-space:pre-wrap;">Zero Trust in one sentence
+Never assume trust based on where traffic comes from. Verify every request, apply least privilege, and monitor continuously. In 5G, this must hold for users, devices, applications, network functions, slices, and partners.
+Why Zero Trust matters more in 5G
+Fifth generation mobile networks look and behave like cloud software. You get containerized network functions, APIs everywhere, service based discovery, and frequent change. The old perimeter mindset breaks as soon as an internal API gets exposed, a roaming peer misbehaves, or a misconfiguration opens a path from user plane to control plane. Zero Trust fits the reality of dynamic infrastructure and hostile interconnect.
+Core principles mapped to 5G reality
+Strong identity for everything Users, UEs, gNBs, network functions, slices, data networks, API clients, and third party exposures need strong identity. Think of SUCI and SUPI for users, certificates for NFs, signed service account tokens for SBA clients, and explicit tenant identity for slices and private networks.
+Least privilege everywhere A network function that only needs Nsmf service access should never be able to call Nudm. A slice scoped analytics tool should not read another slice. A roaming partner should only reach the interworking functions that serve that partner. Default deny must be the normal mode, not a special case.
+Continuous verification TLS with server only auth at deployment time is not enough. Enforce mutual authentication, validate attestation or posture where possible, rotate credentials, and inspect behavior in real time. Make the trust decision per request, not per session.
+Assume breach Design so that a compromised NF, pod, or API key creates an alertable blast radius that is small and reversible.
+Where Zero Trust lands inside a 5G system
+Radio access and edge
+Treat gNBs and distributed units as identities with certificates and inventory observability. Restrict management access to just in time paths. Validate software provenance on upgrades. For MEC workloads, apply per application identities and network policy so that an edge hosted video cache cannot query core subscriber data.
+Control plane service based architecture
+All NFs in the SBA must speak mutual TLS. Use a service mesh or equivalent sidecars to enforce client identity, request level authorization, and traffic policy. Discovery through NRF should not equal permission. Build explicit allow lists for which NF type can call which service and method. Log request identity and claims for every API call. Inspect for abuse patterns such as sudden surges of Nudm UEContext queries.
+User plane
+Separate data paths per slice and per QoS class using strict policy on SMF and UPF. For sensitive slices, pin traffic through dedicated UPF instances. Prevent lateral movement from user plane support networks into SBA control. Telemetry from UPF should feed anomaly detection for tunneling abuse and protocol oddities.
+Subscriber data and identity
+UDM, 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFVI：保障虚拟化移动网络的基础安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>NFVI：保障虚拟化移动网络的基础安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：NFVI: Securing the Foundation of Virtualized Mobile Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-08-01
+ · <a href="https://www.p1sec.com/blog/nfvi-securing-the-foundation-of-virtualized-mobile-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+随着移动通信网络（特别是4G和5G核心网）的虚拟化，NFVI（网络功能虚拟化基础设施）成为电信服务的基础层。它虽然带来了敏捷性和成本效益，但也引入了更广泛的攻击面。NFVI不仅是一个IT抽象层，它直接承载着现代移动核心网的关键网元（如认证服务器、用户数据库等），一旦被攻破，将波及上层所有服务。
+
+时间线：
+文章发布于2025年8月1日，属于针对当前及未来虚拟化移动网络（4G/5G及演进网络）安全威胁的前瞻性与系统性分析。
+
+攻击原理：
+攻击者利用NFVI架构中的虚拟化层（Hypervisor/容器运行时）、编排层（OpenStack/Kubernetes）、共享硬件或缺乏东西向流量可见性等薄弱环节，突破租户或网络切片间的隔离边界。通过获取底层基础设施的控制权，进而对托管其上的虚拟化网络功能（VNF）和云原生网络功能（CNF）进行非授权访问、控制或破坏。
+
+攻击详情：
+1. 编排层滥用与信令拦截：攻击者首先利用公开暴露的编排API漏洞或配置不当，获取权限并部署恶意VNF。该恶意VNF被设计用于拦截核心网信令流量，从而收集用户敏感数据或重定向控制消息。
+2. 虚拟机逃逸：利用未打补丁的Hypervisor漏洞，攻击者从被攻陷的VNF中逃逸，访问宿主操作系统，进而篡改运行在同一基础设施上的其他核心网网元（如认证服务器、DNS解析器）。
+3. 横向移动与流量操纵：由于传统安全工具缺乏对NFVI内部东西向流量的可见性，攻击者可在VNF之间进行隐蔽的横向移动，执行流量镜像、数据包操纵和数据外泄而不被察觉。
+4. 硬件侧信道攻击：利用Spectre或Meltdown等CPU硬件漏洞，在共享同一物理CPU的多个虚拟机（多租户或网络切片）之间窃取数据。
+
+攻击特征：
+1. 底层突破与全局影响：攻击目标直指移动网络底层基础设施，具有“一处被攻破，全盘沦陷”的系统性风险特征，可直接威胁5G网络切片的隔离性和SLA。
+2. 隐蔽性强：利用内部东西向流量的盲区进行横向移动和流量镜像，传统边界安全工具难以检测。
+3. 隔离破坏：攻击核心在于破坏多租户环境或网络切片之间的虚拟化隔离边界，导致数据泄露、权限提升或服务中断。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:26:52</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>NFVI: Securing the Foundation of Virtualized Mobile Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">What is NFVI?
+Network Functions Virtualization Infrastructure (NFVI) is the foundational layer that enables the virtualization of telecom services. It encompasses all the physical and virtual resources—compute, storage, networking, and the virtualization layer—required to host and run Virtualized Network Functions (VNFs) and Cloud-Native Network Functions (CNFs) .
+Instead of relying on dedicated, proprietary appliances, modern telecom environments use NFVI to host software-based network functions on standard servers. This transformation enhances agility, reduces costs, and allows operators to scale services more dynamically. However, it also introduces a broader attack surface that requires deep security awareness.
+The Architecture of NFVI
+NFVI consists of several key components working together to provide the virtual execution environment:
+The compute layer includes physical servers running virtual machines or containers that host the actual network functions.
+The storage layer offers persistent storage volumes that are shared across VNFs or tied to specific functions.
+The networking layer connects VNFs using virtual switches, physical interfaces, and SDN overlays.
+The virtualization layer (hypervisors like KVM, or container runtimes like Docker) abstracts and manages the hardware.
+Finally, orchestration and lifecycle management tools, often based on OpenStack or Kubernetes, are responsible for deploying and managing VNFs and their supporting resources.
+Together, these layers form the platform on which modern telecom networks operate, especially within 4G and 5G core infrastructures.
+Why NFVI Matters in Telecom Security
+NFVI isn’t just an IT abstraction—it sits at the heart of mobile networks. A breach at the NFVI level can compromise every service built on top of it. If an attacker gains access to the NFVI stack, they can potentially control or observe multiple virtualized functions, disable core network services, manipulate orchestration logic, and bypass traditional network segmentation.
+This makes NFVI one of the most strategically critical layers to secure. The security of subscriber databases, lawful interception systems, authentication servers, and even 5G slices may all depend on the integrity of the underlying NFVI.
+Key Security Risks in NFVI
+One of the most prominent risks in NFVI is the vulnerability of the hypervisor or container runtime. If these layers are compromised, an attacker can perform virtual machine (VM) escape attacks, breaking isolation between tenants or accessing the host operating system. In multitenant environments—such as those supporting network slicing—this can result in data leakage, privilege escalation, or service disruption.
+The orchestration layer is another critical risk area. Misconfigured templates, poorly secured APIs, or privilege mismanagement in orchestration tools like OpenStack or Kubernetes can allow attackers to spin up unauthorized VNFs, inject malicious workloads, or tamper with running network f
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

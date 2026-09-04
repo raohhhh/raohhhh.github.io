@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动核心网中的硬件安全模块（HSM）：它们的作用及为何不容忽视 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动核心网中的硬件安全模块（HSM）：它们的作用及为何不容忽视</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Hardware Security Modules in the Mobile Core: What They Really Do And Why You Cannot Ignore Them</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-10-10
+ · <a href="https://www.p1sec.com/blog/hardware-security-modules-in-the-mobile-core-what-they-really-do-and-why-you-cannot-ignore-them" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文并非针对某一具体安全事件的复盘，而是针对移动核心网中硬件安全模块（HSM）的架构与安全防护机制进行深度分析。文章详细探讨了HSM在保护核心网控制平面安全中的关键作用，并涵盖了4G（LTE）与5G核心网网元的安全实践。
+
+- 攻击事件背景
+在移动核心网中，密码学是控制平面的核心组成部分。HSM作为信任锚点，负责保护长期用户密钥、互连与API的私钥以及运营商PKI根证书。如果HSM未得到正确配置和操作，攻击者可能会从成本高昂的入侵转向低成本的密钥窃取和静默滥用，导致漫游和认证流量在主机被攻陷时失去机密性和认证性。
+
+- 攻击原理与威胁分析
+文章阐述了HSM旨在阻止的多种威胁和攻击原理：
+1. 主机被攻陷后的明文密钥导出：攻击者一旦控制主机，可能尝试提取存储在文件系统中的明文密钥，HSM可防止此类密钥导出。
+2. 随机数质量攻击：缺乏测试的随机数源可能导致密钥可预测，HSM提供经过测试的高质量随机数。
+3. 密钥生命周期违规：依赖人工经验而非角色和审计管理密钥，易导致越权操作，HSM通过角色和审计强制执行生命周期规则。
+4. 物理探测：攻击者可能通过物理接触设备进行侧信道或直接探测，HSM具备抵抗物理探测的能力。
+5. 配置篡改：在维护窗口期间，攻击者或内部人员可能悄悄更改算法或密钥大小配置，HSM可确保算法和密钥大小符合策略。
+
+- 攻击详情与特征
+文章列举了在实际运维中常见的“捷径”及其带来的安全特征：
+1. 密钥存储不当：SEPP或Diameter的TLS密钥留在共享存储中，易被窃取。
+2. 性能瓶颈掩盖攻击：PKCS#11延迟激增未被监控，可能导致互连超时，这既是性能问题也可能掩盖攻击行为。
+3. 权限滥用：单个管理员执行用户密钥导入，缺乏双重控制，易引发内部威胁。
+4. 开发测试泄露：开发者拉取私钥到本地以通过单元测试，导致密钥泄露到不可控环境。
+5. 证书签发失控：在维护期间管道失败时，从非HSM支持的CA签发证书，导致信任链断裂。
+
+- 核心网网元与架构防护
+文章深入分析了HSM在核心网架构中的位置与防护对象：
+1. 用户身份：在LTE中涉及HSS和AuC，在5G中涉及UDM、AUSF以及用于在归属网络中解密SUCI的SIDF。用户长期密钥（如Ki, OP, OPC）及SUCI解密私钥必须存储在HSM中。
+2. 互连与服务边缘：Diameter、SBA HTTP、SIP及SEPP应用层保护的TLS私钥应存放在HSM中，确保跨信任边界接口的互认证安全。
+3. 生命周期与合规：eSIM平台主密钥、运营商PKI根证书及签发密钥、日志和计费记录签名密钥均应受HSM保护。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:18:31</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Hardware Security Modules in the Mobile Core: What They Really Do And Why You Cannot Ignore Them</p>
+    <div class="analysis" style="white-space:pre-wrap;">Why HSMs matter in telco
+In a mobile core, cryptography is part of the control plane. HSMs are the trust anchor that keeps long term subscriber secrets, private keys for interconnect and APIs, and operator PKI roots out of reach. When they are scoped and operated correctly, roaming and authentication traffic stay confidential and authenticated even when hosts fail or get compromised. When they are treated like fancy USB sticks, attackers move from costly intrusion to key theft and silent abuse.
+Where they sit in the architecture
+Think of HSMs as attached to three clusters of functions. First is subscriber identity. In LTE this means HSS and AuC. In 5G this means UDM and AUSF, and the SIDF that de conceals SUCI in the home network. Second is interconnect and service edges. TLS private keys for Diameter, SBA HTTP, SIP, and SEPP application layer protection should live in an HSM anchored keystore instead of a VM’s filesystem. Third is lifecycle and compliance. eSIM platforms rely on HSM protected master keys, and the operator PKI that issues certificates to network functions should have its roots and issuers generated and stored inside HSMs.
+What absolutely belongs inside
+Subscriber long term keys such as Ki, OP or OPC and their derivation inputs are non negotiable. Home network private keys used for SUCI de concealment belong inside too. Private keys for mutual TLS at the core interfaces must not be exportable. SEPP keys that protect inter PLMN traffic are an HSM use case by design. Add to that your PKI roots and issuing keys, the master keys for SIM and eSIM management, and any signing keys that protect logs and charging records.
+Threats they are meant to stop
+An HSM stops cleartext key export even if the host is compromised. It gives you tested randomness rather than hope. It enforces key lifecycle rules with roles and audits so you do not rely on tribal knowledge. It resists physical probing and forces encrypted, split knowledge backups. It also keeps algorithms and key sizes on policy so no one quietly flips a configuration during a maintenance window.
+How to design the HSM estate
+Treat HSMs like production clusters, not appliances you rack and forget. Create separate logical partitions for subscriber secrets, interconnect keys, and PKI. Keep test and production apart. Define roles with dual control for sensitive actions such as firmware updates, key import, and destruction. Put certificate issuance behind automation. If your core uses service meshes or gateways, integrate an HSM backed CA through an ACME compatible flow so renewals are hands off. Plan capacity. SEPP and busy TLS endpoints can generate real cryptographic load. Test latency and throughput during traffic peaks, not just at midnight.
+Cloud or on premises
+Cloud HSMs give elasticity and managed lifecycle, but you need to map jurisdiction and audit requirements before you pick a region. On premises HSMs give physical control and often smoother certification, but they demand operation
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

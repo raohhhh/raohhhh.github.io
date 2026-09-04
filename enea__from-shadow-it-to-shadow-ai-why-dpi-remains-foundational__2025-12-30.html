@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从影子IT到影子AI：为何DPI仍是基石 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>从影子IT到影子AI：为何DPI仍是基石</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：From Shadow IT to Shadow AI: Why DPI Remains Foundational</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-12-30
+ · 作者：Enea · <a href="https://www.enea.com/insights/from-shadow-it-to-shadow-ai-why-dpi-remains-foundational/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">DPI &amp;amp; Traffic Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Deep Packet Inspection</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI Agent安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：随着生成式 AI 的普及，企业员工越来越多地在未经 IT 部门批准的情况下使用各种 AI 工具（即 Shadow AI），导致企业敏感数据（如代码库、法律合同、人事审查等）面临泄露风险。这种 Shadow AI 行为比传统的 Shadow IT 带来更大的安全隐患。
+- 时间线：文章发布于 2025 年底，回顾了 2025 年全年 AI 在各行业会议中的主导地位，并指出在 AWS re:Invent 2025 等活动上，安全专家们开始重点关注 Shadow AI 的崛起。
+- 攻击原理：本文不涉及传统意义上的网络攻击原理，而是探讨 Shadow AI 带来的数据暴露风险。AI 流量越来越多地混合在加密的 HTTPS 会话、共享云端点和多路复用 API 中，从而逃避了传统的基于端口或 IP 的控制。员工在提示词中提供大量上下文，导致专有数据被上传到外部 AI 服务。
+- 攻击详情：AI 服务涉及对称数据流、多文件和内容上传、结构化提示词、嵌入和下游 API 调用，这些都具有不易察觉的安全隐患。随着 AI 采用加速，从聊天机器人扩展到自主代理、嵌入式副驾驶和机器对机器交互，AI Agent 的行为可能超出合规边界。
+- 攻击特征：Shadow AI 流量具有动态、多样和后果严重的特点。它不仅限于识别流量是“云”或“HTTPS”，还需要区分 AI 聊天界面、模型 API、代码助手和多代理平台。在 AI Agent 场景下，异常或非合规活动可能表现为代理行为的越界或非合规的数据传输。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:08:17</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>From Shadow IT to Shadow AI: Why DPI Remains Foundational</p>
+    <div class="analysis" style="white-space:pre-wrap;">From Shadow IT to Shadow AI: Why DPI Remains Foundational
+This is a guest blogpost by Roy Chua, Founder and Principal at AvidThink
+As we round out 2025, I’ve been reflecting on the dominance of AI across events and conferences. Whether Paris, London, Singapore, New York, Dallas, or Las Vegas, I’m resigned to the fact that all conferences are AI conferences now. At AWS re:Invent 2025, my last major event of the year, I ran into a bunch of CISOs and security experts who discussed the rise of Shadow AI.
+Enterprise security teams have wrestled with Shadow IT for over a decade now. The arrival of cloud computing, SaaS, and mobile apps encouraged employees to surreptitiously adopt unsanctioned (but cool and sometimes useful) applications — all they needed was a corporate credit card. Today, we can add another higher-risk behavior to Shadow IT: Shadow AI.
+In my discussions with the security execs, we collectively acknowledged that every enterprise has employees using unapproved AI tools outside the visibility and control of enterprise security teams.
+This expansion of Shadow AI use will drive a fresh look at current enterprise security architectures, particularly around observability. And to shine the light on another pernicious shadow practice, I expect we’ll again turn to a technology mainstay, deep packet inspection (DPI) — enhanced and upgraded for the AI era.
+The Emergence of Shadow AI
+Shadow AI differs from Shadow IT in both extent and consequence.
+Generative AI services are increasingly embedded across everyday workflows, from summarizing meetings and writing code to analyzing data and automating numerous other tasks that previously required human action. AI platforms furnish users with myriad ways to interact with them: chat apps, AI browsers, browser plugins, APIs, mobile applications, and embedded assistants in today’s productivity apps. Many of these communications are happening outside the purview of and regulation by IT.
+In many AI interactions (shadow or sanctioned), employees seeking the best results from their AI collaborators will provide substantial context in their prompts. The potential exposure of large swaths of proprietary corporate data — from sensitive code bases to legal contracts, even HR personnel reviews — has a greater impact than narrowly scoped SaaS applications.
+Diverse Corporate Goals for AI
+Even without achieving artificial general intelligence (AGI) or super-intelligence, today’s many flavors of AI (predictive, generative, and agentic) show great potential and value across numerous corporate tasks. Yet many corporations are being cautious in how quickly they adopt generative and agentic AI.
+At one end of the spectrum, organizations want to block AI services outright, whether well-known chatbot services, consumer AI tools, or model-as-a-service APIs. At the other end, enterprises are encouraging and enabling the use of AI tools (usually on pre-approved platforms). In both situations, enterprise IT needs observability i
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面临风险的遗留与现代协议：SS7、Diameter、GTP、IMS与5G安全威胁 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>面临风险的遗留与现代协议：SS7、Diameter、GTP、IMS与5G安全威胁</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Legacy and Modern Protocols at Risk: SS7, Diameter, GTP, IMS &amp; 5G Security Threats</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-08-04
+ · <a href="https://www.p1sec.com/blog/legacy-and-modern-protocols-at-risk-ss7-diameter-gtp-ims-5g-security-threats" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+文章探讨了移动通信网络中从传统到现代协议（SS7, Diameter, GTP, IMS, 5G SBA）所面临的广泛安全威胁。这些协议在早期设计时往往基于“网络运营商可信”的假设，缺乏内生的认证与加密机制，导致在现代网络环境下，攻击者可轻易利用这些架构缺陷进行监听、欺诈和拒绝服务攻击。
+
+时间线：
+文章发布于2025年8月4日，指出在2025年的现实环境中，尽管移动通信已演进至5G时代，但传统信令协议（如SS7、Diameter）仍在漫游互联和2G/3G回落场景中活跃；同时，随着2G/3G网络逐渐退网，IMS成为主要语音攻击向量，而5G SBA云原生架构的引入也带来了全新的API接口暴露风险。
+
+攻击原理：
+- SS7 (2G/3G)：基于全球信任模型，缺乏认证和加密，网络内任意节点可冒充其他节点。
+- Diameter (4G)：安全机制（TLS/IPsec）为可选项，常因互操作性被禁用，导致对模糊测试、重放攻击及对等实体弱认证防护不足。
+- GTP (2G/3G/4G)：缺乏内置消息认证，对TEID和对等实体验证薄弱，且在漫游交换点（GRX/IPX）常被暴露。
+- IMS/SIP：SIP头部可被操纵用于欺骗，缺乏端到端完整性保护，互联安全过度依赖信任。
+- 5G SBA：继承了云原生API攻击面，存在公共或分段不良的API、不当的OAuth2/mTLS配置，以及NF网元业务逻辑漏洞。
+
+攻击详情：
+- SS7攻击：通过HLR/VLR查询进行位置跟踪，实施呼叫和短信拦截、SIM交换、会话劫持和计费欺诈。
+- Diameter攻击：实施订阅者冒充和凭证窃取、PLMN间消息篡改，以及通过CCR/RAA消息引发CPU/连接耗尽攻击。
+- GTP攻击：通过IP欺骗冒充用户，利用GTP-C进行会话劫持和DoS，通过嗅探GTP-U流量导致数据泄露。
+- IMS攻击：进行SIP欺骗和冒充，利用弱SRTP配置窃听VoLTE，滥用RCS进行钓鱼或垃圾信息传播。
+- 5G SBA攻击：通过UDM未授权访问订阅者数据，通过AMF进行令牌滥用或提权，在5GC网络功能间进行消息伪造或DoS。
+
+攻击特征：
+1. 跨协议链式利用：攻击者不再局限于单一协议，而是组合漏洞（如通过SS7/Diameter泄露IMSI后利用GTP劫持会话，或通过GTP泄露TEID后实施SIP VoLTE欺诈），最薄弱的协议往往成为攻破整个信令栈的跳板。
+2. 遗留协议长期共存：攻击面复杂且深度互联，传统协议漏洞持续影响现代4G/5G用户。
+3. 云原生与API化风险转移：5G网络中，攻击重心向云原生API接口和核心网网元（如UDM, AUSF, PCF, NEF, AMF）的业务逻辑漏洞转移。
+4. 攻击门槛低但破坏力大：攻击者仅需较低技术门槛即可利用架构级缺陷，造成大规模隐私泄露和通信中断。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:26:52</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Legacy and Modern Protocols at Risk: SS7, Diameter, GTP, IMS &amp; 5G Security Threats</p>
+    <div class="analysis" style="white-space:pre-wrap;">Introduction: Telecom Protocols—From Backbone to Backdoor
+From the legacy days of 2G to the emerging 5G Core, mobile networks rely on signaling protocols to authenticate subscribers, establish sessions, and route traffic. But many of these protocols—SS7, Diameter, GTP, IMS, and even 5G SBA—carry inherent security weaknesses that are now widely exploited by attackers.
+Each protocol serves a vital role. Yet together, they form a layered attack surface that is both complex and deeply interconnected. This blog breaks down how each of these protocols is targeted in real-world scenarios, the root causes of their vulnerabilities, and the defenses that operators must adopt in 2025.
+1. SS7 – The 1970s Protocol That Still Enables Surveillance
+Originally designed for fixed-line networks in the 1970s, Signaling System No. 7 (SS7) was adopted for GSM networks in the 2G era. It was built on the assumption that all network operators are trustworthy—an assumption that has long since collapsed.
+🛑 Risks:
+No authentication or encryption
+Global trust model means anyone inside the signaling network can impersonate others
+🧨 Common Attacks:
+Location tracking via HLR/VLR queries
+Call and SMS interception
+SIM swap and session hijacking
+Billing fraud or service denial
+⚠️ Reality in 2025:
+SS7 is still active in roaming interconnects and 2G/3G fallback scenarios—even for subscribers on 4G or 5G. Any mobile network exposed to legacy signaling paths remains vulnerable.
+2. Diameter – Secure on Paper, Risky in Practice
+Diameter was designed as a “secure replacement” for SS7 in 4G LTE networks. It supports TLS and IPsec... but here’s the catch: security is optional .
+🛑 Risks:
+TLS/IPsec often disabled for interoperability
+Vulnerable to fuzzing , malformed packets, and replay attacks
+Poor authentication between peer entities
+🧨 Common Attacks:
+Subscriber impersonation and credential theft
+Inter-PLMN message tampering
+Exhaustion attacks (e.g., CPU/connection flooding via CCR/RAA)
+⚠️ Reality in 2025:
+Many operators deploy Diameter with weak configurations. Cross-border roaming and IMS interconnects often leave doors wide open for abuse.
+3. GTP – The Tunnel Protocol That Leaks
+GPRS Tunneling Protocol (GTP) is used for carrying user and control plane traffic across 2G, 3G, and 4G networks. It underpins roaming and session setup—yet was never built with security in mind.
+🛑 Risks:
+No built-in message authentication
+Weak validation of TEIDs and peer entities
+Often exposed at roaming exchange points (GRX/IPX)
+🧨 Common Attacks:
+IP spoofing to impersonate users
+Session hijacking and DoS via GTP-C
+Data leakage via GTP-U traffic sniffing
+⚠️ Reality in 2025:
+GTP remains a favorite for mobile fraud gangs , especially in roaming scenarios. Despite awareness, operators often fail to monitor GTP-U payloads, missing clear indicators of abuse.
+4. IMS/SIP – The VoIP Front Door for Mobile Attacks
+IP Multimedia Subsystem (IMS) enables VoLTE, VoWiFi, and rich communication services (RCS). It relies heavi
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动网络中的SCTP安全：强化SIGTRAN、Diameter与5G N2底层传输 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动网络中的SCTP安全：强化SIGTRAN、Diameter与5G N2底层传输</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：SCTP security in mobile networks: hardening the transport under SIGTRAN, Diameter and 5G N2</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-08-18
+ · <a href="https://www.p1sec.com/blog/sctp-security-mobile-networks-sigtran-diameter-5g-n2" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+SCTP（流控制传输协议）是移动网络中至关重要但常被忽视的传输层协议，承载着从传统SS7信令（SIGTRAN）到4G Diameter信令，再到5G N2接口（NGAP）的广泛控制面流量。文章指出，尽管SCTP本身设计良好，但由于网络配置漂移、安全设备对SCTP感知不足以及加密保护机制常被禁用，导致SCTP端点暴露在不该可达的位置，从而引发严重的信令中断和核心网连接丢失事件。
+
+- 时间线
+文章发布于2026年8月18日，是对当前及未来移动网络中SCTP传输安全现状的深度剖析与加固指南，涵盖了从2G/3G时代遗留的SIGTRAN到现代5G N2接口的演进过程中的安全状况。
+
+- 攻击原理
+攻击主要利用了SCTP在网络部署中的配置缺陷和协议栈实现弱点：
+1. 可达性控制失效：由于地址规划和过滤规则逐渐放宽，攻击者可轻易扫描到开放的SCTP端口（如3868用于Diameter，38412用于NGAP）。
+2. 路径可见性下的验证标签绕过：SCTP通过32位验证标签防止盲注入，但如果攻击者能在共享传输段或虚拟化架构中观察到流量，就能获取标签并伪造数据包。
+3. 完整性保护缺失：SCTP的校验和仅用于错误检测，无法抵御恶意篡改。若未启用IPsec或DTLS，攻击者可轻易进行流量修改或关联劫持。
+4. 控制扩展滥用：动态地址重配置（ASCONF）若未强制认证，可被用于重定向或破坏关联。
+
+- 攻击详情
+1. 关联拆除攻击：获取验证标签的攻击者可注入终止数据块，导致N2接口上基站与AMF（核心网网元）控制面断连，或Diameter对等节点停止响应，造成信令中断。
+2. 关联劫持与流量篡改：在缺乏加密完整性保护的情况下，中间人攻击者可劫持信令关联并修改传输内容。
+3. ASCONF滥用：利用未认证的ASCONF数据块更改活动关联的主地址，导致信令流量被重定向或服务中断。
+4. 多宿主攻击面扩大：SCTP的多宿主特性使关联的真实攻击面扩展到所有宣告的IP地址，若安全策略仅覆盖主路径，则其他地址可能成为攻击突破口。
+
+- 攻击特征
+攻击后果并非传统Web服务变慢，而是直接导致信令瘫痪、基站失去与核心网的链路、策略或计费事务失败。攻击者通常需要具备传输可达性，部分高级攻击需要路径可见性（如在虚拟化架构中或共享传输段上监听）。此外，由于许多通用防火墙将SCTP视为普通IP协议而非有状态的传输层协议，导致其过滤和检查力度远弱于TCP，进一步增加了攻击暴露面。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:14:48</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>SCTP security in mobile networks: hardening the transport under SIGTRAN, Diameter and 5G N2</p>
+    <div class="analysis" style="white-space:pre-wrap;">SCTP is the transport almost nobody audits and almost every mobile network depends on. It carries M3UA and M2PA in SIGTRAN deployments, it carries Diameter between LTE, IMS and policy nodes, and it carries NGAP on the N2 interface between the gNB and the AMF. When an SCTP endpoint is reachable from somewhere it should not be, when an association can be torn down by a third party, or when a stack above it mishandles a malformed chunk, the consequence is not a slow web page. It is a signalling outage, a base station that loses its link to the core, or a Diameter peer that stops answering.
+The direct answer for anyone auditing this layer: SCTP is a well designed transport with genuine anti-spoofing properties, and the majority of SCTP related incidents in mobile networks are not failures of the protocol design. They are failures of reachability control, of cryptographic protection that is specified but left disabled, and of implementation robustness in the protocol stacks sitting on top. This article covers what SCTP provides, where exposure actually begins, which attack classes are realistic against production networks, what 3GPP and the IETF require, and what a defensible hardening baseline looks like.
+What SCTP is and why mobile networks depend on it
+SCTP is a reliable, message oriented transport protocol standardised by the IETF, currently specified in RFC 9260, which was published in June 2022 and obsoletes the earlier RFC 4960. It sits alongside TCP and UDP at the transport layer but differs from both in ways that matter for telecom. It preserves message boundaries rather than presenting a byte stream, it supports multiple independent streams within a single association so that loss in one stream does not block delivery in another, and it supports multi-homing, meaning a single association can span several IP addresses on each endpoint.
+Those three properties are exactly why telecom standards bodies chose it. Signalling is message oriented by nature: a MAP operation, a Diameter request or an NGAP procedure is a discrete unit, not a stream of bytes. It is also loss intolerant, so head of line blocking across unrelated transactions is unacceptable, and signalling nodes are expected to survive the loss of a network path without dropping thousands of sessions.
+The result is that SCTP now sits under a remarkably broad set of interfaces. In SIGTRAN, M3UA as defined in RFC 4666 carries MTP3 user traffic over SCTP, and M2PA carries MTP2 peer to peer traffic, which is how legacy SS7 reaches IP transport at all. Diameter, specified in RFC 6733, supports both TCP and SCTP, and many operators run SCTP for the Diameter interfaces that matter most. In the radio to core control plane, S1AP is carried over SCTP as specified in 3GPP TS 36.412, and NGAP is carried over SCTP as specified in TS 38.412. The same pattern extends to the disaggregated RAN interfaces such as XnAP, F1AP and E1AP. If you want the wider signalling context, our explainer on SIGTRAN as the
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

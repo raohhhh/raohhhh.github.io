@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G 核心网中的 NWDAF 安全：保护洞察全网的网元功能 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G 核心网中的 NWDAF 安全：保护洞察全网的网元功能</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：NWDAF security in the 5G core: securing the function that sees the whole network</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-08-06
+ · <a href="https://www.p1sec.com/blog/nwdaf-security-5g-core-network-data-analytics-function" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">文章并非针对单一实时攻击事件的报道，而是对5G核心网中网络数据分析功能（NWDAF）的安全威胁模型进行深度技术分析。随着5G网络引入AI/ML进行自动化，NWDAF作为具有最广合法读取权限的核心网网元，其安全风险日益凸显。
+
+时间线：
+文章提及了3GPP不同Release版本中NWDAF的演进及其带来的安全影响：Release 17将NWDAF分解为模型训练逻辑功能（MTLF）和分析逻辑功能，引入了模型供应链安全问题；Release 18定义了NWDAF实例间的横向联邦学习；Release 19进一步研究核心网AI和机器学习增强的安全（TR 33.784）。
+
+攻击原理：
+攻击原理主要围绕NWDAF的三个安全维度展开：1. 数据机密性：NWDAF聚合了跨用户、会话、切片的关联数据，成为用户情报存储库，若访问控制不严会导致隐私泄露。2. 分析和模型完整性：通过操纵输入数据或训练数据来影响分析结果（AI模型投毒）。3. 自动化可信度：错误的分析结果导致错误的网络配置。
+
+攻击详情：
+1. 令牌伪造与越权访问：NWDAF需要订阅大量网络功能的事件，通常使用宽泛的OAuth 2.0访问令牌。攻击者若能操纵NRF或令牌签发路径，即可伪造身份获取全量数据，无需直接攻破NWDAF。
+2. 跨平面边界突破：NWDAF从OAM收集数据，打通了管理平面和信令平面，这种跨平面桥梁容易导致隔离假设失效。
+3. 模型供应链攻击：MTLF与AnLF分离后，AnLF从MTLF获取模型时，若缺乏模型来源验证和完整性校验，攻击者可替换模型，导致持久且隐蔽的错误推理。
+4. AI模型投毒攻击：分为输入操纵（生成特定流量/信令模式以欺骗当前分析，如让异常行为看起来正常）和训练数据操纵（在训练窗口期持续进行流量整形，改变模型对“正常”的基线认知，导致模型持久性输出错误结果）。
+5. 联邦学习信任危机：在多NWDAF实例或联邦学习场景下，恶意实例可能提交被操纵的模型更新，且难以被聚合步骤检测到。
+
+攻击特征：
+1. 隐蔽性强：如训练数据投毒不会产生明显的错误输出，而是让模型“内部一致但错误”，难以被传统安全手段检测。
+2. 影响面广：NWDAF的输出被PCF、SMF、AMF等核心网元消费，错误分析会直接转化为错误的网络配置和策略，且MTLF被攻破会影响所有拉取模型的AnLF。
+3. 绕过传统防护：攻击者无需直接攻破NWDAF本身，可通过伪造令牌、操纵输入源（流量/信令模式）或攻击模型供应链来实现目标。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:15:02</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>NWDAF security in the 5G core: securing the function that sees the whole network</p>
+    <div class="analysis" style="white-space:pre-wrap;">NWDAF, the Network Data Analytics Function defined in 3GPP TS 23.288, is the 5G core network function that collects data from other network functions and from OAM, derives analytics from it, and offers those analytics to consumers over the service based interface. It is also, and this is the part that rarely appears in architecture diagrams, the function with the broadest legitimate read access in the entire core. Securing it is not a variation on securing any other network function, because the thing that makes NWDAF useful, breadth of visibility across subscribers, sessions, slices and radio conditions, is the same property that makes it valuable to an attacker.
+This deep dive follows our existing series on individual 5G core functions, and NWDAF is arguably the most under-examined of them. The security model has three distinct dimensions: the confidentiality of the data NWDAF aggregates, the integrity of the analytics and models it produces, and the trustworthiness of the automation that consumes its output. Each of those has a different failure mode. Get the first wrong and you have built a subscriber intelligence repository with weaker controls than the subscriber database. Get the second wrong and you have a function that can be steered into producing wrong answers. Get the third wrong and wrong answers turn into wrong network configuration.
+What NWDAF does and why it changes the core threat model
+NWDAF turns raw operational data into named analytics that other functions can subscribe to, and the shift it introduces is that a single function now holds correlated data about subscribers and network state that was previously scattered across many. TS 23.288 defines the framework, and TS 29.520 defines the service API.
+The analytics themselves are standardised as Analytics IDs, and reading the list is the fastest way to understand the exposure. They include UE mobility, UE communication behaviour, abnormal UE behaviour, network function load, network performance, service experience, user data congestion and QoS sustainability, among others. Some are aggregate and statistical. Others are explicitly per-subscriber: UE mobility analytics describe where a given device tends to be and when, and abnormal behaviour analytics describe deviations from a learned per-device pattern. Those are, in plain terms, movement profiles and behavioural profiles for identified subscribers, produced and stored inside the core.
+Consumers of these analytics are ordinary network functions. The PCF can use analytics to adjust policy, the SMF and AMF can adjust session and mobility behaviour, and the OAM layer can use them for planning and automation. Analytics can also be exposed outside the operator through the Network Exposure Function to application functions, which turns an internal analytics capability into an externally reachable data product. That exposure path is where a data governance question becomes a security question.
+How NWDAF collects data: SBI, OAM, DCCF
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

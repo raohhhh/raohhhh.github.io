@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G 互连安全 (FS.36) - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G 互连安全 (FS.36)</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：5G Interconnect Security (FS.36)</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-03-27
+ · <a href="https://www.p1sec.com/blog/5g-interconnect-security-fs-36" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文基于GSMA FS.36指南，对5G网络互连安全威胁及防御措施进行了深度剖析，匹配“5G安全”与“信令攻击”标签。
+- 攻击事件背景：随着5G网络的演进与普及，运营商、服务提供商及第三方实体之间的网络互连需求急剧增加。这些互连点虽然实现了无缝通信，但也大幅扩大了网络攻击面，成为网络犯罪分子实施攻击的潜在网关。
+- 时间线：文章发布于2025年3月27日，针对当前及未来5G网络架构演进过程中的互连安全框架进行探讨。
+- 攻击原理：攻击者利用5G环境下连接多样化、利益相关者众多及系统复杂的特性，针对不同网络实体间传输的数据、语音和信令流发起攻击。互连点若未加妥善保护，可被用作入侵核心通信网络的跳板。
+- 攻击详情：文章列举了四大类针对5G互连的攻击向量：1. 未授权访问，攻击者试图控制互连点以获取敏感数据或通信通道控制权；2. 信令操纵，针对5G信令协议进行攻击，意图操纵网络信令以发起拒绝服务或欺骗攻击；3. 欺诈路由，利用互连点重路由流量，实施呼叫路由欺诈、数据拦截或提供未授权服务；4. 数据拦截，在跨网交换敏感数据时发起中间人攻击，拦截或篡改网络间的数据通信。
+- 攻击特征：此类攻击主要发生在网络间的边界互连区域，具有利用信令协议漏洞、篡改路由机制、针对数据传输机密性进行破坏的特征。为应对这些威胁，文章提出部署端到端加密、多因素认证访问控制、实时流量异常监控、信令防火墙与IDS（入侵检测系统）以及防欺诈机制等综合防御手段。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:30:28</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>5G Interconnect Security (FS.36)</p>
+    <div class="analysis" style="white-space:pre-wrap;">FS.36 outlines the potential 5G interconnect security threats, the vulnerabilities that exist in mobile network interconnections, and the necessary countermeasures to mitigate these risks. As 5G networks evolve and become more widespread, the need to secure interconnects between operators, service providers, and third-party entities is paramount. FS.36 aims to provide operators with a comprehensive set of guidelines to protect their interconnect infrastructure, ensuring the security and resilience of mobile communications.
+The Importance of Securing 5G Interconnects
+5G networks introduce significant technological advancements, but they also expand the attack surface for cybercriminals. Mobile interconnects, which allow for seamless communication between different mobile networks, third-party services, and end users, are critical components of the overall network architecture. If left unsecured, interconnects can serve as gateways for various types of cyberattacks, including data breaches, fraud, and denial-of-service (DoS) attacks .
+The 5G interconnect security framework detailed in FS.36 focuses on minimizing risks related to the transfer of data, voice, and signaling across different network entities. These interconnects are especially vulnerable in a 5G environment, where there are more diverse connections, an increased number of stakeholders, and complex systems involved.
+Key 5G Interconnect Security Threats
+Several attack vectors can compromise the security of 5G interconnects :
+Unauthorized Access : Malicious actors may attempt to gain unauthorized access to interconnect points, gaining control over sensitive data or communication channels.
+Signaling Manipulation : 5G signaling protocols are a potential target for attackers seeking to manipulate network signaling to launch attacks like denial-of-service (DoS) or spoofing.
+Fraudulent Routing : Attackers may exploit interconnects to reroute traffic, creating opportunities for call routing fraud , data interception, or unauthorized services.
+Data Interception : The exchange of sensitive data across interconnects poses a risk for man-in-the-middle attacks, where cybercriminals intercept or alter data communications between networks.
+Countermeasures for Securing 5G Interconnects
+To combat these risks, FS.36 suggests a series of best practices and countermeasures that mobile network operators must implement to protect their 5G interconnects.
+1. End-to-End Encryption
+To ensure that data remains confidential during transmission, FS.36 stresses the importance of end-to-end encryption across interconnects. By encrypting all data flows, operators can prevent unauthorized interception or modification of sensitive information.
+2. Access Control and Authentication
+Proper access control mechanisms must be implemented to ensure that only trusted parties can access interconnects. Additionally, FS.36 recommends the use of multi-factor authentication for all entities involved in the interconnection process to
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

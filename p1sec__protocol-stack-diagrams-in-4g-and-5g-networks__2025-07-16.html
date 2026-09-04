@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4G 与 5G 网络协议栈图 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>4G 与 5G 网络协议栈图</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Protocol Stack Diagrams in 4G and 5G Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-07-16
+ · <a href="https://www.p1sec.com/blog/protocol-stack-diagrams-in-4g-and-5g-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：随着移动网络变得更加模块化、可互操作和分层化，攻击者相应地调整了技术。在4G和5G时代，协议栈不再是干净的垂直结构，而是一个水平迷宫，信令、用户面、控制面、API和管理等多层共存，并存在隐式信任假设。攻击者正是利用这些信任假设的缝隙进行跨协议攻击，以提升权限、绕过控制或深入核心网。
+- 时间线：文章发布于2025年7月16日，主要针对当前4G/5G网络中正在发生的跨协议攻击进行剖析，并预测了未来AI驱动模糊测试、开放API和多供应商堆栈滥用等演进趋势。
+- 攻击原理：跨协议攻击路径。攻击者利用某一协议中的漏洞或配置错误，进而利用它与协议栈中未直接暴露的另一层进行交互。由于各协议通常通过编排逻辑、错误处理流程或共享基础设施组件链接，攻击者能够实现协议间的横向移动和权限提升。
+- 攻击详情：
+  1. 4G网络攻击路径：利用GTP-C操纵承载路径并向S1-U（用户面）注入未授权流量；利用配置错误的PCRF和IMS组件，使SIP消息通过Diameter触发非预期的资源分配；利用SS7触发向不安全的传统无线电（如2G）的切换，使设备容易受到被动IMSI捕获或语音拦截。
+  2. 5G网络攻击路径：通过攻陷基于服务的功能（如AMF或SMF），利用HTTP/2接口制作消息以实例化或修改GTP隧道；对SBI（服务化接口）进行API模糊测试，导致移动性管理出现非预期行为（如状态转换或会话丢弃）；利用5G仍使用Diameter进行互通（特别是漫游）的遗留风险作为隐藏后门；利用配置不当的SEPP进行跨协议注入或降级攻击。
+- 攻击特征：
+  1. 水平横向移动：跨越不同协议域（如从SIP到DNS/HTTP/2，或从Diameter到GTP-U）。
+  2. 权限提升：从只读API移动到控制层（如配置GTP会话或修改切片配置）。
+  3. 隐蔽性强：滥用薄弱的协议边界，将流量隐藏在用户面隧道或合法服务信令中，不触发传统签名。
+  4. 跨域协同：攻击者不遵循运营商的组织架构，利用协议转换处（如HTTP到GTP）无团队完全负责的安全盲区进行攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:27:32</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Protocol Stack Diagrams in 4G and 5G Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">As mobile networks become more modular, interoperable, and layered, attackers have adapted their techniques accordingly. In the 4G and 5G era, the protocol stack is no longer a clean vertical. Instead, it’s a horizontal maze where multiple layers — signaling, user plane, control plane, API, and management — coexist with implicit trust assumptions. And those assumptions are exactly where attackers operate.
+This blog post explores cross-protocol attack paths : how adversaries pivot across different protocol layers to escalate privileges, bypass controls, or reach deeper into the core. We’ll break down the stack for both 4G and 5G , and map how attackers abuse the seams between them.
+1. What Is a Cross-Protocol Attack?
+A cross-protocol attack path occurs when an attacker exploits a vulnerability or misconfiguration in one protocol — and then leverages it to interact with another layer of the stack that wasn’t directly exposed.
+In mobile networks, this might look like:
+Using GTP-C to manipulate bearer paths and inject unauthorized traffic into S1-U (user plane).
+Exploiting SIP messages in IMS to trigger payload behavior in Diameter or HTTP/2 interfaces.
+Abusing SS7 to trigger fallback procedures that expose NAS or SMF sessions in 5G cores.
+Each protocol serves a specialized purpose, but in practice, they&#39;re often linked through orchestration logic, error-handling flows, or shared infrastructure components.
+2. The 4G Protocol Stack – And Where It Breaks
+In LTE networks, the protocol stack is divided into:
+Access (eNodeB, UE): NAS, RRC, PDCP
+Core (MME, SGW, PGW): S1-AP, GTP-C/U, Diameter
+Interconnect : SS7, SIGTRAN, Diameter for roaming
+IMS : SIP, RTP, and Diameter for voice/SMS
+Example attack paths in 4G:
+From GTP-C to GTP-U : Attackers who gain access to the control plane can inject or modify bearer tunnels to reroute or sniff user data. There’s often no deep inspection of GTP-U.
+Diameter ↔ SIP crossover : Misconfigured policy control (PCRF) and IMS components allow SIP messages to trigger unintended resource allocation or service state changes via Diameter.
+SS7-induced fallback : Remote attackers trigger handovers to insecure legacy radio (e.g., 2G), forcing devices to become vulnerable to passive IMSI catching or voice interception.
+Because many 4G deployments mix legacy and IP-native elements, attackers can chain together outdated signaling with modern transport mechanisms for maximum reach.
+3. The 5G Stack – More APIs, More Layers, More Risks
+The 5G Service-Based Architecture (SBA) shifts much of the signaling and orchestration to HTTP/2 and REST-style APIs. The stack now includes:
+NG-RAN interfaces : NGAP, XnAP
+Core control : HTTP/2 between AMF, SMF, PCF, UDM, etc.
+User plane : GTP-U still in use for data forwarding
+Application exposure : NEF, SEPP, and external API access
+Common 5G cross-protocol attack patterns:
+HTTP/2 to GTP-U : By compromising a service-based function (e.g., AMF or SMF), attackers can craft messages that instantiate or modif
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

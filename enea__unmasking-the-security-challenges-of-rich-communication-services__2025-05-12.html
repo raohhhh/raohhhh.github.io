@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>揭示富通信服务（RCS）的安全挑战 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>揭示富通信服务（RCS）的安全挑战</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Unmasking the Security Challenges of Rich Communication Services</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-05-12
+ · 作者：Caitriona Grant · <a href="https://www.enea.com/insights/unmasking-the-security-challenges-of-rich-communication-services/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Messaging Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">A2P Messaging</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Mobile Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">RBM</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">RCS</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要探讨了富通信服务（RCS）和 RCS 商业消息（RBM）面临的安全挑战，并详细阐述了攻击者如何利用 AI 技术发起攻击，符合“AI攻击”标签。
+
+- 攻击事件背景：随着 RCS 消息成为主流，其为品牌和消费者带来了丰富的交互体验（如群聊、富媒体、对话功能）。然而，这些新特性也为诈骗者提供了新的攻击面。同时，RCS 的端到端加密机制虽然保护了隐私，但也限制了移动网络运营商（MNO）对恶意内容的检测能力。
+- 时间线：文章发布于 2025-05-12，描述的是当前 RCS 普及过程中正在发生且未来将持续增加的威胁趋势。
+- 攻击原理：攻击者主要利用 RCS 的新功能（富媒体、交互式对话）结合社会工程学绕过传统安全防火墙。在 AI 攻击方面，攻击者利用“攻击性 AI”（Offensive AI）从公开领域收集个人信息（如姓名、电话、邮编），借助 AI 生成高度个性化、多语言的诈骗活动，并结合富媒体功能（按钮、图片、链接）大幅提升诈骗的规模和受害者响应率。此外，为绕过端到端加密，攻击者通过移动恶意软件和 SIM 银行入侵手机终端，利用被控设备发送恶意消息。
+- 攻击详情：
+  1. 群聊诈骗：创建以合法组织命名的 RCS 群聊，添加诱饵用户降低受害者警惕性，诱导其进行虚假投资等。
+  2. 对话式垃圾信息：利用“杀猪盘”等手段，通过无害消息开启对话建立信任，并使用聊天机器人规模化发送对话消息。
+  3. 隐藏 URL：将恶意 URL 隐藏在图片中、要求用户搜索特定词汇或使用括号等字符包裹，以绕过垃圾邮件过滤器。
+  4. 富媒体隐藏恶意内容：利用图片隐藏非法商品价目表、武器广告或完整的钓鱼消息。
+  5. 灰路由欺诈：利用以合法品牌命名的群聊发送灰路由消息，损害消息变现能力。
+  6. AI 驱动的个性化诈骗：利用 AI 收集数据并生成多语言、高度个性化的诈骗内容，结合富媒体扩大攻击网。
+  7. 绕过加密的终端入侵：通过恶意软件控制用户 handset，利用合法发送者的身份发送恶意消息，使加密机制失效。
+- 攻击特征：结合富媒体与交互性进行伪装、利用端到端加密造成的检测盲区、借助 AI 实现高度个性化与规模化攻击、安全责任从 MNO 向 CPaaS 提供商和聚合商转移。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:12:30</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Unmasking the Security Challenges of Rich Communication Services</p>
+    <div class="analysis" style="white-space:pre-wrap;">Is RCS Messaging Secure?
+Unmasking the Security Challenges of Rich Communication Services
+RCS messaging is on the cusp of becoming the go-to messaging format across all smartphones with its wealth of engagement-boosting benefits . It’s an exciting time for CPaaS providers and brands , but with great opportunity comes great responsibility . Before diving head first into the content-rich world of RCS, there is one thing we must consider, and if you ’re familiar with Enea ’s expertise in messaging security , you probably know where we’re going with this.
+Security First, RCS Enrichment Second
+Rich Communication Services bring fantastic opportunities for both CPaaS providers and brands in the form of RCS Business Messaging (RBM). RBM enables brands to enhance their B2C communications and explore new realms of customer experience. But there is a caveat – security must come first. Messaging threats are still present on RCS, they just look a little different.
+Firstly, let’s take a look at the RBM delivery chain to identify who will be impacted by the security challenges that come with RCS Business Messaging:
+Who should care about RBM Security?
+1. The Sending Brand
+If customers are receiving fraudulent RBM messages under the guise of a trusted brand, they may lose faith in sending brands, causing reputational damage and potential customer churn.
+2. The CPaaS Provider or Aggregator
+If a CPaaS provider is a source of spam and scam RBM messages, they risk being disconnected from operator networks. The security responsibilities of CPaaS providers and aggregators are set to expand with RCS Business Messaging – but more on that later.
+3. The RBM provider (e.g. Google Jibe)
+With RCS Business Messaging, t he RBM provider authenticates senders to verify that they are legitimate (though this is not a failsafe security solution). Securing the channel is important for RBM providers to maintain trust and relationships with partners in the delivery chain, and ensure the long term viability of RBM as a channel.
+4. The Mobile Network Operator (MNO)
+MNOs need to keep subscriber inboxes clean from spam, fraud and abuse to preserve subscriber trust and comply with regulation.
+5. The Subscriber
+The security of RBM messaging directly impacts mobile users. If messages aren’t protected, their inboxes may be inundated with spam and unsolicited or inappropriate messages. They could suffer losses to scams. This leads to customer complaints and endangers trust in the brand, the mobile network, and RBM.
+What Attacks are Happening over RCS?
+A Shiny New Attack Surface for Scammers
+For sending brands, RCS Business Messaging offers new avenues for engaging customers with compelling content. Brands can incorporate images and videos in their messages, and derive valuable insight and action from their customers through conversational messages. Unfortunately, these use cases are also available to bad actors.
+One thing we know about scammers is that they are creative – and RCS offers new can
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

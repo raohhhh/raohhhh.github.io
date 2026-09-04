@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G 中的直连设备 (D2D) 安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G 中的直连设备 (D2D) 安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Direct to Device D2D Security in 5G</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-11-27
+ · <a href="https://www.p1sec.com/blog/direct-to-device-d2d-security-in-5g" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">后量子</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+5G时代引入了设备到设备（D2D）直接通信这一重大架构变革。D2D允许设备通过基于邻近性的发现和专用副链路直接通信，从而绕过传统基站转发流量的模式。虽然这降低了延迟并提高了频谱效率，但由于5G核心网保护、信令验证和运营商策略执行机制无法自动应用于D2D会话，导致产生了一个庞大且基本不受监控的通信路径，极易被恶意设备、被攻陷的物联网单元或非法端点滥用。
+
+时间线：
+文章发布于2026年8月20日，探讨当前5G网络中D2D通信面临的安全挑战，并展望了未来6G网络中D2D作为基础通信模式的安全演进方向。
+
+攻击原理：
+传统移动网络采用集中式信任和执行模型，由网络验证用户身份、管理密钥分发并执行策略。D2D引入了通信去中心化，削弱了这一模型。由于运营商无法检查设备间直接交换的用户面流量，入侵检测和合法拦截系统失去洞察力；同时认证可能依赖缓存凭证或设备端身份，而非基站的持续验证。这种去中心化和可见性的降低，使得恶意设备可以在不涉及核心网的情况下干扰D2D交换，绕过许多传统防御机制。
+
+攻击详情：
+文章梳理了5G D2D通信中的几个关键攻击面：
+1. 设备发现攻击：发现消息可被欺骗或篡改，以伪造身份、设备类型或距离。这会导致虚假对等点发现、距离测量被操纵、未经授权的会话发起以及流量重定向至恶意端点。
+2. 恶意设备注入：被攻陷的物联网单元或改装手机可参与D2D交换，在缺乏网络监管的情况下插入恶意节点、监视附近D2D流量或在设备协议层进行社会工程攻击。
+3. 资源滥用：攻击者可通过泛洪副链路控制信道或发送畸形消息，故意引发共享无线电资源拥塞。
+4. 无核心网参与的中间人攻击：若两台设备在没有强加密保证的情况下协商会话，攻击者可冒充其中一方进行中间人攻击，由于基站不介入，传统5G保护失效。
+5. 位置与邻近性滥用：攻击者可通过模拟邻近性，误导依赖可信本地对等点的应用程序。
+
+攻击特征：
+D2D安全攻击具有显著的去中心化和端到端特征。攻击者主要利用设备间直接通信的信任盲区、缓存凭证的时效性缺陷以及物联网设备计算能力受限（难以支持强加密）的弱点。攻击行为多发生在无线电副链路层面和设备协议层，具有隐蔽性强、难以通过网络侧核心网网元进行检测的特点。此外，文章在防御工程和6G展望中特别强调了引入轻量级后量子密码算法的必要性，以应对未来算力发展对D2D认证和密钥交换机制带来的量子威胁。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:16:56</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Direct to Device D2D Security in 5G</p>
+    <div class="analysis" style="white-space:pre-wrap;">Direct to Device communication is one of the most significant architectural shifts introduced in the 5G era. D2D bypasses the traditional model where all user traffic flows through the base station. Instead, devices can communicate directly with each other using proximity based discovery and dedicated sidelink channels.
+This model reduces latency and improves spectrum efficiency, but it also creates an entirely new set of security concerns. 5G core protections, signaling validation, and operator enforced policy enforcement mechanisms are not automatically applied to D2D sessions. The result is a large and mostly unmonitored communication path that can be abused by malicious devices, compromised IoT units, or rogue endpoints.
+This chapter examines the technical foundations of D2D communication in 5G, the associated attack surfaces, and the engineering requirements needed to ensure secure adoption in future networks.
+1. How D2D Works in 5G
+D2D in 5G is primarily enabled through the Proximity Services feature suite. It includes device discovery, resource allocation, security procedures, and direct data transmission. Sidelink channels allow devices to bypass the base station for the user plane while remaining loosely managed through radio resource control.
+D2D is extremely valuable in scenarios such as public safety communications, industrial automation, localized IoT networks, and autonomous systems. It delivers lower latency and offloads traffic from the radio access network. However, these benefits come with increased exposure to uncontrolled peer to peer behavior.
+2. The Security Model Changes with D2D
+Traditional mobile networks operate with a centralized trust and enforcement model. The network validates subscriber identities, manages key distribution, limits signaling, and enforces policy. D2D introduces a decentralization of communication that weakens this model. Several critical elements change.
+Reduced Visibility
+Operators cannot inspect user plane traffic exchanged directly between devices. Intrusion detection systems and lawful intercept systems lose insight into these flows.
+Decentralized Trust Anchors
+Authentication may rely on cached credentials or device side identities instead of continuous base station mediated validation.
+Localized Interference
+A malicious device can disrupt D2D exchanges without involving the core network, bypassing many traditional defenses.
+Expanded Peer Attack Surface
+Devices must accept proximity discovery messages and connection requests from other endpoints. This creates opportunities for spoofing, manipulation, and resource exhaustion.
+These structural changes make D2D a priority for next generation telecom security research.
+3. Key Attack Surfaces in 5G D2D Communication
+Direct to Device communication introduces several new threat vectors that operators must consider.
+3.1 Device Discovery Attacks
+Discovery messages can be spoofed or manipulated to misrepresent identity, device type, or proximity. Without s
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内塔尼亚胡发布“生命证明”视频：AI引发对真实性的怀疑 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>内塔尼亚胡发布“生命证明”视频：AI引发对真实性的怀疑</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Netanyahu Posts ‘Proof of Life’ Video: AI Sows Doubts About What’s Real</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">citizenlab</span>
+        发布日期：2026-03-25
+ · 作者：Anna Mackay · <a href="https://citizenlab.ca/netanyahu-posts-proof-of-life-video-ai-sows-doubts-about-whats-real/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：本文探讨了AI生成的虚假信息带来的双重威胁。背景涉及以色列总理内塔尼亚胡的死亡谣言在社交媒体上蔓延，迫使他不得不发布“生命证明”视频以自证存活。同时，Citizen Lab的研究揭露了以色列支持的机构曾使用AI生成视频煽动伊朗人推翻其政府。
+时间线：文章发布于2026年3月25日。文中提及在秋季，Citizen Lab研究人员发现以色列支持的影响力行动；近期内塔尼亚胡死亡谣言在社交媒体上大量传播。
+攻击原理：攻击者利用AI技术（如深度伪造Deepfake）生成逼真的虚假视频和图像进行政治造谣与虚假信息传播。其核心原理不仅在于制造假象，更在于利用AI技术的普及破坏公众对真实图像和视频的信任基础，产生“说谎者的红利”效应（即当真实事件发生时，公众也会因为怀疑其是AI生成而拒绝相信）。
+攻击详情：高级研究员Alberto Fittarelli指出，核实所有信息的真实性极其耗费精力，普通人难以承受。当内塔尼亚胡必须证明自己活着且其图像非AI生成时，表明这种风险是双向的。任何熟悉操纵技术的人都可以利用公众的普遍怀疑心理来散播不信任。
+攻击特征：具有“双重威胁”特征——既传播虚假信息，又导致对真实内容的质疑；具有地缘政治背景，被国家实体或其分包商用作跨国影响力操作的工具；攻击门槛相对降低，任何掌握AI操纵技术的人均可利用这种广泛的社会怀疑心理实施攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T21:38:36</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Netanyahu Posts ‘Proof of Life’ Video: AI Sows Doubts About What’s Real</p>
+    <div class="analysis" style="white-space:pre-wrap;">Date Published
+March 25, 2026
+Topics
+Mentions
+Alberto Fittarelli
+Senior researcher Alberto Fittarelli spoke with the New York Times about the double threat of AI-produced disinformation. “Verifying everything is incredibly exhausting, and not everyone can afford doing it,” Fittarelli says.
+In the fall, researchers at the Citizen Lab found that an Israeli-backed campaign had used AI-generated videos to encourage Iranians to overthrow their government.
+Recently, rumours of the Israeli Prime Minister’s death proliferated on social media. “Benjamin Netanyahu having to prove that he’s alive and that his image is not AI-generated shows that the risk cuts both ways,” Fittarelli says.
+The consequence is not just the spread of disinformation, but a lack of trust in images and videos that are actually real. “This is not a conceptual threat,” says Fittarelli, and anyone “knowledgeable of manipulation techniques” can take advantage of this widespread suspicion to sow distrust.
+More in: Artificial Intelligence
+LATEST
+The control and strategic manipulation of information has long played a role in the geopolitical and ideological competition between the Islamic Republic of Iran and its political adversaries, including Israel. Prior Citizen Lab research has uncovered Iranian disinformation efforts, however, in this investigation we focus on the “other side” of the geopolitical competition. We analyzed an influence operation we assess as most likely undertaken by an entity of the Israeli government or a private subcontractor working closely with it.
+AI Surveillance Is Being Supercharged–And It Will Chill Social Progress
+Canada Finally Has a National AI Strategy. Experts Hate It.
+Cynthia Khoo at the ACM Conference on Fairness, Accountability, and Transparency 2026</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

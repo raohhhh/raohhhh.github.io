@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>归属用户服务器（HSS）：现代电信网络的基石 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>归属用户服务器（HSS）：现代电信网络的基石</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Home Subscriber Server (HSS): The Backbone of Modern Telecom Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-01-23
+ · <a href="https://www.p1sec.com/blog/home-subscriber-server-hss" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+本文并非针对某一具体攻击事件的报道，而是对现代电信网络中核心网元归属用户服务器（HSS）的安全威胁与防护策略的深度分析。随着移动网络从2G/3G向4G/5G演进，HSS取代了传统的HLR，成为存储用户身份、认证数据、服务配置等敏感信息的核心数据库，因此成为网络攻击的首要目标。
+
+- 攻击原理
+攻击者主要利用HSS在网络中的核心地位及其对外通信协议的脆弱性进行攻击。HSS使用Diameter协议与其他网络组件通信，虽然比传统SS7协议更安全，但仍存在可被利用的漏洞。攻击者可通过协议漏洞、运营商互联风险或内部人员滥用权限获取未授权访问，进而实施窃取、破坏或欺诈行为。
+
+- 攻击详情
+1. 用户数据窃取：未授权访问HSS可导致IMSI、MSISDN、位置历史和加密密钥等敏感数据泄露，引发严重的隐私和身份盗窃。
+2. 拒绝服务攻击：破坏HSS正常运行会致使网络操作瘫痪，使数百万用户无法获取服务。
+3. 服务欺诈：攻击者篡改HSS中的服务配置文件，未授权访问高级服务或逃避计费系统。
+4. 漫游利用：利用国际漫游认证弱点冒充合法用户，在访问网络中实施欺诈。
+5. 信令攻击：利用Diameter协议漏洞拦截数据或发起信令风暴，影响网络稳定性。
+
+- 攻击特征
+针对HSS的攻击具有影响范围广（可波及数百万用户）、破坏性强（可导致全网瘫痪或大规模数据泄露）的特点。攻击手段多涉及核心网信令协议层面的漏洞利用（如Diameter协议漏洞），且随着5G网络中HSS向统一数据管理（UDM）演进，其管理的设备和应用日益复杂，进一步放大了攻击面。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:20:04</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Home Subscriber Server (HSS): The Backbone of Modern Telecom Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">As mobile networks evolve to meet the demands of 4G , LTE, and 5G , the Home Subscriber Server (HSS) has emerged as a cornerstone of modern telecom infrastructure. Designed to replace the legacy Home Location Register (HLR) in 2G and 3G systems, the HSS provides enhanced functionality and scalability to support the growing complexity of today&#39;s networks.
+In this article, we’ll delve into the role of the HSS, its significance in 4G and 5G networks, and the security challenges telecom operators face in safeguarding this critical component.
+What is the Home Subscriber Server (HSS)?
+The HSS is a centralized database in 4G, LTE, and 5G networks, storing critical subscriber information and facilitating essential network operations. Building on the functionality of the HLR , the HSS offers additional features tailored to the needs of next-generation networks.
+Key information managed by the HSS includes:
+Subscriber Identity : Data like the International Mobile Subscriber Identity (IMSI) and Mobile Subscriber Integrated Services Digital Network Number (MSISDN).
+Authentication Data : Encryption keys and algorithms to authenticate subscribers.
+Service Profiles : Information about subscribed services, such as voice, data, and roaming capabilities.
+Policy Information : Rules for Quality of Service (QoS), data usage, and application access.
+Subscriber Location : The current or last known location of the device within the network.
+The Role of HSS in 4G and 5G Networks
+The HSS is a critical enabler of seamless connectivity and advanced services in modern networks. Its responsibilities include:
+1. Subscriber Authentication and Authorization
+The HSS ensures that only authorized users gain access to the network by verifying their credentials and generating encryption keys for secure communication.
+2. Mobility Management
+By tracking subscriber locations, the HSS facilitates handovers between cells or networks, ensuring uninterrupted service during movement.
+3. Policy and Charging Control
+The HSS integrates with the Policy and Charging Rules Function (PCRF) to enforce service-specific rules, manage bandwidth, and enable billing for premium services.
+4. Roaming Support
+During international roaming, the HSS collaborates with visited networks to authenticate subscribers and provide consistent service.
+5. Service Provisioning for VoLTE and IMS
+In Voice over LTE (VoLTE) and IP Multimedia Subsystem (IMS) services, the HSS plays a central role in managing session data and ensuring reliable voice and video communications.
+HSS Security: A Critical Imperative
+As a repository of sensitive subscriber data and a gateway for network access, the HSS is a prime target for cyberattacks. Security vulnerabilities in the HSS can have far-reaching consequences, including:
+1. Subscriber Data Theft
+Unauthorized access to the HSS can expose personal data, such as phone numbers, location history, and encryption keys, leading to privacy breaches and identity theft.
+2. Denial of Service (DoS) 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

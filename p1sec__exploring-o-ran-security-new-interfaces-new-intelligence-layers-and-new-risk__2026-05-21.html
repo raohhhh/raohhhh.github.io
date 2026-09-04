@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探索O-RAN安全：新接口、新智能层与新风险 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>探索O-RAN安全：新接口、新智能层与新风险</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Exploring O-RAN Security: New Interfaces, New Intelligence Layers, and New Risk</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-05-21
+ · <a href="https://www.p1sec.com/blog/exploring-o-ran-security-new-interfaces-new-intelligence-layers-and-new-risk" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+O-RAN（开放无线接入网）作为5G及未来移动通信网络现代化的重要演进方向，其核心在于通过开放接口、解耦硬件与软件、引入智能化层以及多供应商环境来打破传统RAN的封闭性。然而，这种开放性和解耦特性在带来操作灵活性的同时，也彻底改变了移动基础设施的安全模型。文章基于P1 Security的网络研讨会，探讨了运营商从封闭的专有RAN模型向开放的、软件驱动的O-RAN架构转型时所带来的安全风险。
+
+攻击原理：
+O-RAN的安全风险主要源于架构开放性带来的攻击面扩大和信任依赖增加。传统RAN依赖供应商专有实现和“安全模糊”来保护内部边界，而O-RAN将其显式化为开放接口和软件定义控制路径。攻击者不再需要逆向工程专有协议，而是可以利用标准化的开放接口（如O-FH、E2、O1、A1、R1）更容易地理解和触达网络内部。此外，多供应商环境和开源软件的广泛使用引入了软件供应链风险，而智能化层的引入则带来了新的信任模型挑战和AI/ML工作流相关的攻击面。
+
+攻击详情：
+1. Open Fronthaul (O-FH) 接口攻击：O-FH连接O-RU和O-DU，包含四个平面。控制面可被利用发送无效控制消息，引发拒绝服务；用户面传输IQ样本，存在数据被监控或修改的风险；同步面若遭破坏，会导致时序退化，直接中断无线服务；管理面最为敏感，攻击者可滥用配置和管理功能，直接影响RAN行为，且由于物理部署靠近基站，物理攻击风险也相应增加。
+2. E2 接口攻击：E2连接E2节点与Near-RT RIC，承载实时优化控制信令。攻击者若突破防护，可窃取小区、用户、会话等敏感控制状态信息，甚至恶意重配RAN，改变网络行为。由于Near-RT RIC和xApps来自不同供应商，软件质量和信任度参差不齐，进一步放大了风险。
+3. 管理与策略接口攻击 (O1, A1, R1)：O1接口暴露配置和运维数据，可被用于复杂重配攻击；A1接口承载策略交换和AI/ML工作流，攻击者可通过篡改策略或数据影响系统实时行为；R1接口赋予rApps巨大权限，一旦rApp存在漏洞或被恶意植入，其影响范围（爆炸半径）极大。
+4. 智能层与AI攻击：Near-RT RIC、Non-RT RIC及xApps/rApps构成了新的软件定义信任模型。攻击者可利用隔离薄弱、权限过大或代码质量低劣的插件进行“智能投毒”，通过影响AI/ML的输入或策略来操纵网络决策。同时，智能层处理大量UE和小区级敏感数据，访问控制不严将导致隐私泄露。
+5. 供应链攻击：O-RAN推动模块化和开源软件，使得已知漏洞依赖、恶意合法包、未维护代码等传统云安全威胁成为电信基础设施风险。
+
+攻击特征：
+- 攻击面扩大：从封闭的专有接口转向标准化的开放接口，攻击者更易理解和触达网络内部。
+- 信任边界模糊：多供应商、多插件的架构导致信任依赖复杂化，单一弱组件可能影响全局系统。
+- 软硬件结合：攻击不仅限于云原生软件，还涉及靠近物理基站边缘的部署位置。
+- 智能化投毒：针对AI/ML工作流和策略接口的攻击成为新趋势，通过操纵输入数据或策略影响网络实时行为。
+- 供应链风险凸显：软件供应链风险从IT领域蔓延至电信基础设施，SBOM和软件溯源成为关键需求。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:23:32</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Exploring O-RAN Security: New Interfaces, New Intelligence Layers, and New Risk</p>
+    <div class="analysis" style="white-space:pre-wrap;">O-RAN is usually presented as a telecom modernization story. It promises more openness, better interoperability, less hardware lock in, and a more flexible way to build the RAN. All of that is true. But O-RAN also changes the security model of mobile infrastructure in ways that deserve much more attention.
+In a recent P1 Security webinar, Kye Grundy explored O-RAN from a security perspective and focused on what really changes when operators move from a more closed, proprietary RAN model to a more open, disaggregated, multi vendor architecture. The main takeaway was straightforward: O-RAN does not just create operational flexibility. It also expands the attack surface, increases trust dependencies, and introduces new control paths that must be protected carefully.
+What O-RAN changes compared with traditional RAN
+The biggest mistake defenders can make is to think of O-RAN as only a procurement or architecture story. It is also a security story.
+O-RAN changes several things at once. It introduces new interfaces. It increases the role of disaggregation. It adds intelligence layers that can observe the RAN and influence it dynamically. It increases multi vendor presence. It encourages more use of open source software. And it pushes the environment further toward cloud based deployment models.
+Each of those changes can be useful. Each also comes with a security cost.
+A more modular environment means more interfaces to secure. More vendors mean more trust relationships. More software defined control means more places where a weak component can affect the whole system. In a proprietary environment, some of these boundaries either did not exist in the same way or remained hidden behind vendor specific implementations. In O-RAN, they become explicit.
+Open interfaces improve interoperability, but they also widen the threat surface
+One of O-RAN’s biggest strengths is the same thing that makes it more complex to defend: open interfaces.
+O-RAN introduces and formalizes several interfaces that support interoperability and control across the RAN stack. That is operationally useful, but it also means the environment becomes more understandable, more reachable, and more attractive to attackers. Security can no longer depend on obscurity or on the difficulty of understanding vendor specific internals. The interfaces are now part of the design.
+That is not a reason to reject O-RAN. It is a reason to secure it like a real software driven system.
+O-FH security matters because it sits close to physical deployment reality
+The Open Fronthaul interface is a strong example of why O-RAN security cannot be treated as a purely abstract software topic.
+O-FH connects the O-RU and O-DU and includes different planes with different responsibilities: control, user, sync, and management. Each one creates its own security concerns.
+The control plane matters because it carries control information that shapes how user data is processed. In a more open and packet based design, that envi
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

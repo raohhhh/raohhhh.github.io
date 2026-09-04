@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMF 安全加固：如何保护 5G 控制面的第一道防线 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>AMF 安全加固：如何保护 5G 控制面的第一道防线</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：AMF Security Hardening: How to Protect the 5G Control Plane’s Front Door</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-04-01
+ · <a href="https://www.p1sec.com/blog/amf-security-hardening-how-to-protect-the-5g-control-planes-front-door" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+文章探讨了5G核心网中AMF（接入和移动性管理功能）的安全加固问题。AMF作为5G控制面的“前门”，负责注册、连接、移动性等关键控制面任务，是网络中高价值的信任和可用性目标，极易成为攻击者的首要目标。
+- 时间线
+文章发布于2026年4月1日，属于针对5G核心网安全的前瞻性或近期研究分析。
+- 攻击原理
+攻击者利用AMF处理复杂控制面程序的特点，通过发送技术上有效但具有恶意的信令流量，消耗AMF资源，导致控制面不稳定或降级。攻击的核心在于利用复杂性隐藏恶意意图，通过制造压力、混乱或不安全的状态转换来破坏服务质量和正常工作流，而非简单的系统崩溃。
+- 攻击详情
+1. 控制面耗尽与信令滥用：攻击者发送大量信令、状态转换或异常请求，迫使AMF降级或无法有效服务合法活动。这种攻击隐藏在看似合理的信令行为中，难以察觉。
+2. 畸形信令攻击：发送意外、不一致或边缘情况的信令输入，导致AMF消耗过多资源、产生不必要的下游交互、进入难以清理的状态，或触发重试和错误处理路径，从而放大负载。
+3. 信任边界滥用：利用AMF与AUSF、UDM、SMF和RAN之间过于宽松的内部信任关系，通过合法路径发送危险流量。
+- 攻击特征
+1. 隐蔽性：攻击流量通常保持接近合理的信令行为，不像传统的洪泛攻击那样嘈杂，难以被常规监控发现。
+2. 状态机破坏：不仅仅是解析器问题，更是通过触发异常状态转换和错误处理逻辑来消耗资源。
+3. 连锁反应：AMF的不稳定会迅速向外蔓延，导致注册、移动性、可达性和会话建立等问题，影响整个网络的控制面稳定性。
+4. 运营盲点：常规监控（如消息量、延迟）无法有效识别此类攻击，需要过程级的可观测性来发现异常信令模式和注册流失。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:23:43</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>AMF Security Hardening: How to Protect the 5G Control Plane’s Front Door</p>
+    <div class="analysis" style="white-space:pre-wrap;">The AMF is one of the most security critical functions in the 5G Core.
+That is not marketing language. That is architecture reality.
+The Access and Mobility Management Function sits at the point where registration, reachability, mobility, connection management, and control plane decision making converge. If the AMF is weak, overloaded, misconfigured, or too broadly trusted, the result is not a minor technical inconvenience. The result is control plane instability in one of the most important parts of the network.
+That is why AMF security deserves its own discussion.
+A lot of 5G security content still treats the AMF as just another core function in a long list of acronyms. That misses the point. The AMF is the front door for a large part of 5G control plane behavior. It handles signaling intensive workflows, interacts with several other key functions, and sits in a position where both availability and trust matter at the same time. That makes it a prime target for abuse, exhaustion, malformed signaling, trust mistakes, and operational blind spots.
+If you want to understand 5G Core security properly, you cannot treat the AMF as background infrastructure. It is one of the places where architecture turns directly into attack surface.
+What is the AMF in 5G?
+The AMF, or Access and Mobility Management Function, is the 5G Core function responsible for core control plane tasks related to registration management, connection management, reachability management, mobility management, and access authentication coordination.
+In simpler terms, the AMF is a central decision point for how user equipment enters, moves through, and remains reachable within the network.
+That alone makes it important.
+But the AMF is not just important because of what it does. It is important because of where it sits. It acts as a key coordination point between the radio side and the core side. It is deeply involved in signaling workflows. It interacts with other major functions such as AUSF, UDM, SMF, and policy related components. It handles message flows that shape whether users can register, stay connected, move between cells, and establish sessions successfully.
+So when people talk about the AMF as a control plane function, that description is correct but incomplete. It is more accurate to think of the AMF as one of the 5G Core’s highest value trust and availability surfaces.
+And high value surfaces attract pressure.
+Why the AMF is one of the most security critical 5G functions
+Not every core function is equally exposed to the same kind of risk.
+The AMF stands out because it combines three things that security teams should always pay attention to.
+First, it is heavily involved in control plane signaling. That means message volume, state handling, request validation, and abnormal behavior all matter.
+Second, it sits close to the front edge of 5G Core control logic. That means it is more likely to feel the effects of malformed, excessive, unexpected, or adversarial signaling.
+Third,
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

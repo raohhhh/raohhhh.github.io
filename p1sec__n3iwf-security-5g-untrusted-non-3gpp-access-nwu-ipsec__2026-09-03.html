@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G中的N3IWF安全：非信任Wi-Fi接入如何到达核心网及其崩溃点 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G中的N3IWF安全：非信任Wi-Fi接入如何到达核心网及其崩溃点</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：N3IWF security in 5G: how untrusted Wi-Fi access reaches the core and where it breaks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-09-03
+ · <a href="https://www.p1sec.com/blog/n3iwf-security-5g-untrusted-non-3gpp-access-nwu-ipsec" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+本文是一篇关于5G网络安全的技术研究文章。主要探讨了当移动设备通过非信任Wi-Fi网络（如家庭宽带、公共热点）接入5G核心网时，作为网关的N3IWF（Non-3GPP InterWorking Function）所面临的安全挑战。N3IWF是极少数直接暴露在公共互联网上的5G网络功能之一，其作用类似于4G中的ePDG，但安全机制有显著差异。文章指出，由于N3IWF暴露在公网且负责处理和转发NAS信令，其攻击面常被低估或忽视。
+
+攻击原理：
+攻击的核心原理在于利用N3IWF作为公网与5G核心网控制面之间“桥梁”的特性，针对认证前阶段的协议处理逻辑和信令解析漏洞发起攻击。由于设备在通过5G核心网（AMF/AUSF）认证之前，需要与N3IWF进行IKEv2/IPsec和EAP-5G的交互，这部分代码对任何互联网攻击者都是可达的。同时，N3IWF将5G NAS信令中继给AMF，使得原本受无线接入网保护的NAS解析器直接暴露在公网威胁之下。
+
+攻击详情：
+文章将N3IWF的攻击面拆解为三个主要部分：
+1. IKEv2响应器攻击面：攻击者可利用标准IKE端口向N3IWF发起请求。在认证前阶段，提案协商、分片重组（RFC 7383）、证书处理和反洪泛cookie机制（RFC 7296）等逻辑均可被攻击者触达。若配置不当（如未启用cookie或限速不当），极易受到拒绝服务攻击。
+2. NAS中继路径攻击面：N3IWF通过EAP-5G封装并转发5G NAS消息（如注册请求）。NAS解析器原本设计于受信任的基站环境，现被置于公网网关之后，威胁模型发生改变。攻击者可构造畸形的NAS信令进行模糊测试或利用解析器健壮性漏洞，且由于N3IWF不持有NAS密钥，仅做透明转发，恶意流量会直接压向AMF。
+3. 核心网面侧攻击面：N3IWF一端面向互联网，另一端通过N2（控制面）和N3（用户面）接口连接AMF和UPF。这种跨边界的特性使其天然成为横向移动的跳板。若N3IWF被攻破或缺乏严格的网络隔离，攻击者可借此向核心网内部渗透。
+
+攻击特征：
+- 边界突破：利用5G核心网中唯一面向公网的网关（除SEEP外）作为突破口。
+- 认证前利用：在设备完成身份认证之前，利用IKEv2和EAP-5G交互过程中的协议处理逻辑漏洞发起攻击。
+- 信令泛洪与资源耗尽：通过N3IWF向AMF发起大量伪造或恶意的注册尝试，由于AMF需处理这些来自公网的信令，若N3IWF未实施严格的速率限制，将导致核心网控制面（AMF）资源耗尽，引发拒绝服务。
+- 威胁模型错位：利用了3GPP协议设计假设（NAS信令来自受信任的RAN）与实际部署环境（NAS信令来自公网且经N3IWF中继）之间的差异，针对NAS解析器的健壮性漏洞进行攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-09-04T09:03:19</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>N3IWF security in 5G: how untrusted Wi-Fi access reaches the core and where it breaks</p>
+    <div class="analysis" style="white-space:pre-wrap;">The N3IWF is the function that lets a device on an untrusted Wi-Fi network reach the 5G core, terminating an IKEv2 and IPsec tunnel from the handset on one side and the N2 and N3 interfaces of the core on the other. That makes it one of the very few 5G network functions deliberately exposed to the public internet, which is why it deserves the same attention as a SEPP rather than being filed under Wi-Fi calling and forgotten. Its security model is defined in 3GPP TS 33.501, with the architecture in TS 23.501 and the device-facing procedures in TS 24.502, and the interesting part is not the cryptography, which is standard IETF work, but how much behaviour 3GPP leaves to operator configuration.
+Anyone who has assessed an ePDG will recognise the shape of the problem, because the ePDG plays the equivalent role for 4G and VoWiFi. The N3IWF is not simply a renamed ePDG, though. Authentication is done by tunnelling 5G NAS inside a vendor-specific EAP method, so the decision happens at the AMF and the AUSF rather than at the gateway, and the gateway relays NAS traffic it cannot read. This article covers how a device reaches the core over untrusted access, what EAP-5G does, where the N3IWF differs from the ePDG operationally, what the exposed attack surface looks like, and how to test and monitor it.
+What the N3IWF is and why 5G needed one
+The N3IWF, or Non-3GPP InterWorking Function, is the 5G core&#39;s gateway for access networks that 3GPP does not control and does not trust. In practice that means Wi-Fi, and in most deployments it means Wi-Fi calling and Wi-Fi data offload for handsets that are already 5G subscribers.
+3GPP separates non-3GPP access into trusted and untrusted categories, and the distinction is about who operates the access network rather than about the strength of its encryption. An untrusted access network is any network the operator has no control over, which includes home broadband, hotel Wi-Fi and public hotspots. Because the operator cannot make assumptions about that path, the security model does not try to secure the access network. It secures the tunnel that runs across it, end to end between the device and the N3IWF, and treats everything in between as hostile. That is the same decision 3GPP made for the ePDG in the evolved packet core.
+Architecturally the N3IWF sits in an unusual position. On the device side it terminates the NWu reference point, carrying IKEv2 and IPsec from the handset. On the core side it terminates N2 toward the AMF and N3 toward the UPF, exactly as a gNB does. From the core&#39;s perspective it is an access node. From the internet&#39;s perspective it is a public IKEv2 responder. Those two facts together are the whole security story, because the function has to be reachable by anything on the internet while speaking the same interfaces as the radio access network. For the core-side functions it talks to, see our write-ups on AMF security hardening and UPF security across N3, N4 and N6 .
+How a device reaches the 5G co
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

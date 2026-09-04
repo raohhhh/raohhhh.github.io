@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>借助 Enea Qosmos 技术为后量子密码学做好准备，第 1 部分（共 2 部分） - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>借助 Enea Qosmos 技术为后量子密码学做好准备，第 1 部分（共 2 部分）</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Get Ready for Post-Quantum Cryptography with Enea Qosmos Technology, Part 1 of 2</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-03-28
+ · 作者：Laura Wilber · <a href="https://www.enea.com/insights/get-ready-for-post-quantum-cryptography-with-enea-qosmos-technology-part-1-of-2/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">DPI &amp;amp; Traffic Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">AI</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Deep Packet Inspection</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">后量子</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文详细探讨了量子计算对当前网络安全构成的威胁以及向后量子密码（PQC）迁移的紧迫性与实施步骤。
+- 攻击事件背景：随着量子计算技术的快速发展，现有的公钥基础设施（如RSA、Diffie-Hellman、ECDHE等）面临被破解的严重威胁。攻击者正在实施“先收集，后解密”的攻击策略，即现在窃取加密数据，待量子计算机成熟后再进行解密。
+- 时间线：云安全联盟（CSA）预计距离“Q-Day”（量子计算机能够破解RSA等加密算法的那一天）可能仅有5年时间；美国国家标准与技术研究院（NIST）设定了2030年过渡截止期，并将于2035年完全禁用易受量子攻击的加密算法；Google估计开发出能破解RSA的量子计算机（需约400万量子比特）至少还需要10年。
+- 攻击原理：利用强大的量子计算机运行Shor算法和Grover算法。Shor算法可用于破解非对称加密算法，而Grover算法则用于削弱对称加密算法，从而暴露所有被加密的数据。
+- 攻击详情：量子计算机利用量子比特的叠加和纠缠特性，在极短时间内完成传统计算机需要数千万年甚至更久才能完成的复杂计算。一旦达到足够的量子比特规模，当前的加密体系将形同虚设。
+- 攻击特征：这是一种具有前瞻性、长期潜伏性和深远破坏性的密码学威胁。其影响范围极广，涉及网络基础设施、安全设备、Web服务、数据中心、云平台、API、应用程序、终端设备及源代码等所有依赖加密的环节。文章还指出，深度包检测（DPI）技术可在PQC迁移的发现、规划、执行和监控阶段提供关键的流量可见性，从而加速迁移进程并实现持久的“密码敏捷性”。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:12:59</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Get Ready for Post-Quantum Cryptography with Enea Qosmos Technology, Part 1 of 2</p>
+    <div class="analysis" style="white-space:pre-wrap;">Get Ready for Post-Quantum Cryptography with Enea Qosmos Technology, Part 1 of 2
+The Quantum Threat and the Need to Act Now
+There are two major technology evolutions reshaping the future of cybersecurity today: AI and quantum computing. Of the two, AI captures the lion’s share of attention as it is rewriting the rules of cybersecurity in real time, while quantum computing is still in an R&amp;D phase – like an ocean swell forming at sea versus the AI tsunami crashing our shores. Organizations therefore feel time is on their side in preparing for the impacts of quantum computing on their networks.
+In reality, however, the right time to begin preparing for a quantum world is…yesterday. While quantum computing, like AI, carries both benefits and risks for cybersecurity, the gravity of the risk – and the complexity of mitigating it – makes preparing now an urgent matter. For the day is coming when we will be confronted with a class of quantum computers that can run the powerful Shor’s &amp; Grover’s algorithms, which can respectively be used to break or weaken the cryptographic algorithms at the heart of our global public key infrastructure.
+Table by Geremew &amp; Mohammad (2024) summarizing the anticipated impact of Shor’s &amp; Grover’s algorithms on the key components of contemporary cryptography. 1
+Such a development would expose all our encrypted data to the risk of exfiltration or tampering, including all the encrypted data compromised by prior ‘harvest now, decrypt later’ attacks executed in anticipation of quantum-powered decryption. 3 At the same time, migrating to quantum-safe (or ‘post-quantum’) cryptography is a complex and lengthy process due to how deeply and widely embedded cryptographic assets and systems are in modern networks.
+Fortunately, whether you are a software vendor, a managed security services provider, or an IT team leader, if you are (or plan) to support PQC migration, there are technologies that can help make your solution faster, easier and more successful. Specifically, deep packet inspection (DPI) software, that carries out detailed network traffic analysis, can  accelerate PQC migration by bringing critical visibility to the initial discovery phase, thereby making the subsequent planning and execution phases more efficient and effective. New threat detection software that integrates tightly with the DPI functions can strengthen post-migration monitoring and remediation as standards and networks evolve (i.e., it enables ongoing ‘crypto-agility’).
+To better understand these benefits, let’s begin with a closer look at the nature and progress of quantum computing, followed by an overview of primary PQC processes. Then in the second installment of the blog, we’ll take a close look at the role of DPI and integrated threat detection capabilities within those processes.
+The Power of Quantum Computing
+AI-generated image of a Quantum computer
+Quantum computers are radically different from conventional computers. Their design is based on the co
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

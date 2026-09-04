@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SS7蜜罐搭建：获取真实威胁情报的实用蓝图 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>SS7蜜罐搭建：获取真实威胁情报的实用蓝图</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：SS7 Honeypot Setup: a practical blueprint for real threat intelligence</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-10-23
+ · <a href="https://www.p1sec.com/blog/ss7-honeypot-setup-a-practical-blueprint-for-real-threat-intelligence" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+攻击者持续针对移动通信网络的 SS7 互连边界进行探测和攻击，意图实现位置追踪、呼叫与短信操纵以及窃取用户数据。由于传统互连边界往往缺乏有效监控，容易成为安全盲区。文章提出通过部署 SS7 蜜罐，将互连边界从安全盲区转化为威胁情报源，从而吸引攻击流量、指纹识别对手工具，并在不影响真实用户的前提下提供早期预警。
+
+- 时间线
+文章发布于 2025-10-23，并提供了一个为期一周的蜜罐部署蓝图：
+Day 1-2：构建封闭的 SIGTRAN 域和筛查规则。
+Day 3：部署模拟器（HLR、VLR、MSC、SMSC）和首批虚拟用户身份。
+Day 4：连接遥测系统和仪表板，并进行红队测试。
+Day 5-6：以极其有限的方式开放单个对等连接并进行观察。
+Day 7：审查信号并调整水印和限流策略。
+
+- 攻击原理
+攻击主要利用 SS7 信令协议栈（SIGTRAN/SCTP、MAP、CAP）的固有信任机制。攻击者作为外部网络节点，通过向目标网络的核心网网元发送特定的信令消息（如 MAP 操作），尝试查询用户位置、发送短信或修改用户数据。由于 SS7 协议最初设计时缺乏强认证，攻击者可以通过伪造信令消息源或利用互连边界信任来实施攻击。
+
+- 攻击详情
+文章详细列举了攻击者常用的 MAP 操作和五类攻击家族：
+1. 映射与发现：跨号段重复发送 ProvideSubscriberInfo (PSI) 和 AnyTimeInterrogation (ATI) 进行位置查询。
+2. 位置滥用：针对单一虚拟用户进行异常高频的 PSI 查询。
+3. 短信操纵：发送 SendRoutingInfoForSM (SRI for SM) 后伴随伪造的送达确认。
+4. 写入尝试：来自不可信对等节点的 UpdateLocation 和 InsertSubscriberData 尝试修改用户数据。
+5. 工具指纹：通过分析消息时序和参数默认值来匹配已知的攻击工具包。此外，还包括基于 CAP 的预付费欺诈尝试。
+
+- 攻击特征
+1. 协议特征：使用 SCTP 作为传输层，应用层涉及 MAP 和 CAP 协议，包含特定的信令操作码（如 PSI, ATI, SRI, UpdateLocation 等）。
+2. 行为特征：具有自动化脚本特征，表现为重复探测、高频请求或特定的消息时序模式；针对特定号段进行批量扫描或针对单一用户进行深度探测。
+3. 源特征：攻击可能来自不可信的合作伙伴节点，或者表现为 SCTP 行为突然改变的已知对等节点。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:25:37</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>SS7 Honeypot Setup: a practical blueprint for real threat intelligence</p>
+    <div class="analysis" style="white-space:pre-wrap;">Why an SS7 honeypot
+Attackers still probe interconnects for location, call and SMS manipulation, and subscriber data. A honeypot turns the interconnect from a blind spot into an insight source. Done well, it attracts mapping and abuse traffic, fingerprints adversary tools, and gives operators early warning without touching real subscribers.
+Design goals
+Look authentic to outside networks
+Never touch real customer data or production switching paths
+Produce high quality labeled telemetry for analysis and sharing
+Be simple to reset and safe to fail
+High level architecture
+Think of three concentric parts.
+Perimeter exposure A controlled SS7 SIGTRAN entry that peers like a small operator. It accepts SCTP with realistic point codes and Global Titles and speaks limited MAP and CAP. It answers enough to keep scanners interested but never forwards into production.
+Honeynet core Virtual HLR and VLR logic, a tiny MSC like call flow engine, and SMSC simulators. These components generate believable responses such as roaming status or SMS delivery receipts, while clearly watermarked for later correlation.
+Safety and analytics A screening layer that enforces strict allow lists and rate limits, then a recorder that stores decoded messages, correlation IDs, and transport context. All storage is separate from any customer dataset and lives behind write only ingestion.
+Identity and peering that look real
+Allocate a distinct point code range and Global Titles that do not collide with production
+Use routing rules that keep all honeypot traffic inside a sealed SIGTRAN domain
+Publish minimal but plausible information to partners or directories if required in your region
+If you must announce any reachability to IPX or private peers, do it from dedicated IP ranges with no path back into core networks
+Realistic personas that bait common flows
+Create a small catalog of synthetic subscribers with believable attributes. Each persona has
+MSISDN and IMSI that pass basic checksum tests
+Location states such as home, roaming, or unreachable
+SMS behavior that sometimes fails, sometimes succeeds
+Optional CAMEL service flags for prepaid or fraud baiting
+Rotate persona states on a schedule so that repeated probes see change over time. Never reuse real numbers.
+What the honeypot should answer
+Prioritize the few MAP operations that attackers and scanners love.
+ProvideSubscriberInfo and AnyTimeInterrogation to simulate location
+SendRoutingInfoForSM to simulate SMS routing
+UpdateLocation and InsertSubscriberData to test write attempts but always return controlled errors after minimal handshake so you can fingerprint intent
+MAP AlertServiceCentre to entice delivery probes
+Return responses that are technically valid but carry watermarks. Examples include location areas in a reserved range and SMSC addresses that resolve only inside the honeypot. Every reply includes a correlation token in an otherwise unused field or tag that your analytics knows how to parse.
+What the honeypot must never 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

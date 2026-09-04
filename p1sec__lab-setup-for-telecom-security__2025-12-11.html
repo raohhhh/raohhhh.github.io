@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电信安全实验室搭建 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>电信安全实验室搭建</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Lab Setup for Telecom Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-12-11
+ · <a href="https://www.p1sec.com/blog/lab-setup-for-telecom-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文是一篇关于如何搭建电信安全实验室的技术指南，旨在为红蓝团队提供一个受控环境，用于验证攻击技术、测试防御机制和分析协议行为。
+
+- 攻击事件背景：本文并非针对单一安全事件的复盘，而是从架构层面阐述了构建电信安全实验环境的必要性与方法。由于移动网络（4G/5G）的复杂性，通用的网络安全实验室无法满足需求，必须复现信令层、控制面流程、核心网功能、无线仿真和互连场景，才能发现深层次的协议交互弱点。
+
+- 攻击原理：实验室的核心目标是支持对电信特定漏洞的发现、重放、分析和缓解。攻击原理主要围绕协议健壮性和逻辑漏洞展开，包括信令滥用、畸形数据包注入、模糊测试、SBA API滥用、IMS错误路由以及互连安全故障等。通过在实验室中模拟真实的信令交换，红队可以验证Diameter、GTP-C、SIP、HTTP或SBA API中的安全缺口。
+
+- 攻击详情：
+1. 核心架构与网元部署：实验室需基于轻量级虚拟化技术部署EPC或5G核心网元素。必须包含的核心网网元包括LTE环境的MME、SGW、PGW，5G SBA的AMF、SMF、UPF、NRF，用于用户管理的HSS/UDM，用于策略控制的PCRF/PCF，以及用于语音和SIP信令的IMS组件（P-CSCF, I-CSCF, S-CSCF）和支持互连的STP/DRA。
+2. 信令与流量生成：通过流量生成器模拟附着流程、会话建立、漫游模式或畸形信令序列。红队利用这些能力验证协议安全漏洞；蓝队则用于基准测试检测引擎和监控管道。
+3. 监控与深度包检测 (DPI)：实验室需具备对SCTP、Diameter、GTP、SIP和HTTP的DPI工具，集中式日志收集器，跨接口的时间同步数据包捕获，以及用于关联异常与网元状态的仪表板。
+4. 攻击模拟与漏洞利用开发：支持受控的漏洞利用测试，包括信令滥用、畸形数据包注入、模糊测试、SBA API滥用、IMS错误路由和互连安全故障。同时需保持与外部网络的严格隔离。
+5. 漫游与互连测试：模拟运营商间接口，测试SS7和Diameter互连验证、漫游边界的GTP隧道暴露、半可信网络的SBA API访问以及攻击条件下的过滤规则行为。
+
+- 攻击特征：本文描述的实验室环境旨在复现真实的电信攻击特征，包括发送非一致性流量、边界情况、畸形消息和协议违规。这些特征通常只在完整的协议交互实现中才会暴露，且多发生在漫游和互连等高价值测试面上。实验室通过版本控制和自动化工具确保实验的可重复性，同时支持红蓝双队的并行工作。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:25:05</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Lab Setup for Telecom Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">A telecom security lab provides a controlled environment for validating attack techniques, testing defense mechanisms and analyzing protocol behavior without risking production infrastructure. Unlike generic cybersecurity labs, telecom labs must replicate the complexity of mobile networks: signaling layers, control plane procedures, core network functions, radio emulation, virtualized workloads and interconnect scenarios. This section outlines the components required to build a functional and technically accurate telecom security lab that supports both offensive and defensive testing.
+Core Architecture Requirements
+A telecom lab begins with an environment that can host virtualized or containerized network functions. Most modern testbeds rely on lightweight virtualization for EPC or 5G core elements, signaling gateways and auxiliary services. The environment must support rapid deployment, rollback and snapshotting to allow repeatable testing of attack chains and configuration scenarios.
+Key elements include a hypervisor or Kubernetes cluster, high bandwidth internal networking and isolated segments for emulating roaming, interconnect traffic or compromised nodes.
+Essential Network Functions to Include
+A complete telecom security lab must expose the functions that attackers traditionally target. These typically include:
+MME, SGW and PGW for LTE environments AMF, SMF, UPF and NRF for 5G SBA HSS or UDM for subscriber management PCRF or PCF for policy control IMS components such as P-CSCF, I-CSCF and S-CSCF for voice and SIP signaling STP or Diameter Routing Agent to support interconnect scenarios
+The goal is to reproduce real signaling exchanges so the lab reveals weaknesses that only appear when protocol interactions are fully implemented.
+Signaling and Traffic Generation
+Telecom security testing requires accurate emulation of subscriber actions, device behavior and inter operator traffic. Traffic generators simulate attach procedures, session establishment, roaming patterns or malformed signaling sequences.
+Red teams use these capabilities to validate security gaps in Diameter, GTP-C, SIP, HTTP or SBA APIs. Blue teams use them to benchmark detection engines, rule sets and monitoring pipelines.
+A lab must provide the ability to send both conformant and non conformant traffic, including boundary cases, malformed messages and protocol violations that expose robustness issues.
+Monitoring, Logging and Deep Packet Inspection
+Visibility is essential. A telecom security lab must include tools that capture, decode and analyze signaling at every layer. This ensures that researchers can inspect protocol flows, validate decoding accuracy and understand the effects of an attack in detail.
+Typical components include:
+DPI tools for SCTP, Diameter, GTP, SIP and HTTP Centralized log collectors for NF logs and platform telemetry Time synchronized packet capture across multiple interfaces Dashboards for correlating anomalies with NF state or CPU load
+This monitoring 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

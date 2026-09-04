@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6G 早期安全概念：在热潮到来前进行可信设计 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>6G 早期安全概念：在热潮到来前进行可信设计</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：6G Early Security Concepts: Designing for Trustworthiness Before the Hype Arrives</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-10-30
+ · <a href="https://www.p1sec.com/blog/6g-early-security-concepts-designing-for-trustworthiness-before-the-hype-arrives" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">后量子</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+本文并非针对某一具体的突发网络安全事件，而是站在2026年的时间节点上，对即将到来的6G（IMT 2030）网络进行前瞻性的安全威胁建模与防御设计分析。文章旨在在6G技术 hype 爆发之前，将安全属性“内置”于网络架构中，而非事后“打补丁”。背景涉及3GPP Release 20/21的演进路线，以及5G Advanced向6G过渡的技术节点。
+
+时间线：
+- 2027年：3GPP Release 20完成5G Advanced主要工作。
+- Release 21及以后：开始迈向6G时代功能。
+- 本十年末：预计进行预商业试验。
+- 2026年（当前）：提出早期6G安全概念，建议在未来12个月内进行试点（如混合经典/PQ密钥交换、RAN侧插件供应链加固等）。
+
+攻击原理：
+文章构建了一个早期的6G威胁模型，涵盖了多个维度的攻击原理：
+1. AI攻击（模型中毒与策略滥用）：由于6G是AI原生网络，控制环路依赖学习系统。攻击者通过注入精心构造的恶意数据（模型中毒）或通过策略通道操纵意图，从而改变网络行为。
+2. 供应链与边缘插件风险：第三方应用、xApps和rApps等获得强大权限，若缺乏严格的运行时检查和签名验证，将成为攻击者获取持久控制权的跳板。
+3. 跨域身份蔓延：设备、无人机、卫星、微服务等身份泛滥，任何身份验证薄弱的环节都会成为攻击者横向移动的 pivot。
+4. 传感滥用（ISAC）：利用通信与感知一体化功能收集的位置或环境数据被挪用进行用户跟踪，隐私威胁成为必然。
+5. CI/CD管道妥协：构建网络功能镜像和图表的持续集成/交付管道成为攻击者获取持久控制的最直接路径。
+6. 跨域密钥管理攻击：地面、空中和轨道段（NTN）拉长了信任链，攻击者可能利用不同网段间的密钥管理、轮换和撤销漏洞。
+
+攻击详情：
+针对AI原生控制环路，攻击者通过“模型中毒”干扰AI优化决策，要求网络在设计时必须考虑数据来源、模型完整性和安全回退模式。在供应链层面，攻击者可能利用边缘平台运营商的权限挂钩进行越权操作。在跨域场景下，由于非地面网络（NTN）成为一等公民，攻击面扩展至卫星和高空平台，面临新的欺骗和干扰现实。此外，随着计算和数据在设备、边缘、云之间流动，攻击者可能利用机密性不足的工作负载身份进行跨域攻击。
+
+攻击特征：
+- 前瞻性与系统性：攻击不再局限于单一协议漏洞，而是针对6G架构的系统性变革（如AI原生、ISAC、NTN、云原生RAN）。
+- AI与数据驱动：攻击目标从传统配置错误转向数据源和模型完整性，通过操纵数据影响网络决策。
+- 跨域与供应链延伸：攻击路径跨越地面、空中、轨道，并深入至CI/CD管道和第三方插件供应链。
+- 隐私与感知融合：攻击不仅针对通信保密性，还直接威胁基于感知能力的物理位置隐私。
+- 后量子时代的密码学过渡风险：随着向后量子密码（PQ）演进，混合模式切换和密钥迁移过程可能成为攻击者利用的薄弱环节。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:17:47</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>6G Early Security Concepts: Designing for Trustworthiness Before the Hype Arrives</p>
+    <div class="analysis" style="white-space:pre-wrap;">The label for the next generation is set. The ITU calls it IMT 2030. That gives us time to bake security in instead of bolting it on. Here is a practitioner’s take on early 6G security concepts that matter, with the minimum useful set of threats, controls, and timelines you can plan around.
+Timelines you can anchor to
+Five facts to align teams before anyone sketches an architecture:
+IMT 2030 is the official framework for what most people call 6G.
+3GPP Release 20 completes major 5G Advanced work through 2027.
+Release 21 and beyond begin the run up to 6G era features.
+Pre commercial trials are expected late this decade.
+Devices will show up in labs well before consumer handsets.
+What changes in 6G that moves the security goalposts
+AI native control and optimization
+Control loops and network functions will lean on learning systems by default. Assurance shifts from did we configure it right to can we trust the data and the model. Plan for provenance, model integrity, explainability, and safe fallback modes when confidence drops.
+Integrated sensing with communications
+ISAC lets networks sense their environment using the same waveforms used for connectivity. Great for positioning and awareness. Sensitive for privacy. You will need rules for where sensing is allowed, how data is minimized, and how applications prove they should access it.
+Non terrestrial networks as first class citizens
+Satellites and high altitude platforms become part of the design. That brings new key management and roaming paths, longer trust chains, and different jamming and spoofing realities. Threat models must extend beyond ground domains.
+Cloud native RAN and service orchestration
+Open and cloud friendly RAN work today is the training ground for tomorrow. The same supply chain, plugin, and policy paths that shape O RAN will be even more central in 6G. Translate today’s hard lessons into baseline controls.
+Compute and data continuum
+Workloads will flow across device, edge, and cloud. Security has to follow the data and the compute, not the rack label in a data center. Plan for verifiable workload identity, confidential computing, and remote attestation across that whole continuum.
+Post quantum practicality
+Cutover planning belongs in your 6G backlog now. Inventory algorithms and protocols that need quantum safe replacements and practice hybrid modes well before day zero.
+An early threat model for 6G
+Keep it short, testable, and aligned to how attacks actually land.
+Model poisoning and policy abuse Adversaries nudge learning systems with crafted data or manipulate intent through policy channels to change network behavior.
+Supply chain and plugin risk at the edge Third party apps, xApps and rApps, and platform operators get powerful hooks. Strong ecosystems need strong onboarding and runtime checks.
+Identity sprawl across domains Devices, user equipment, drones, satellites, and microservices all present identities. Any weak link becomes the pivot.
+Sensing misuse Location or enviro
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

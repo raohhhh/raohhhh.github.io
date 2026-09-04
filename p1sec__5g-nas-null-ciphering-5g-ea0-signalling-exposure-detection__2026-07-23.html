@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G NAS 空加密解析：5G-EA0 如何暴露信令及如何检测 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G NAS 空加密解析：5G-EA0 如何暴露信令及如何检测</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：5G NAS null ciphering explained: how 5G-EA0 exposes signalling and how to detect it</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-07-23
+ · <a href="https://www.p1sec.com/blog/5g-nas-null-ciphering-5g-ea0-signalling-exposure-detection" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+5G网络中的非接入层（NAS）负责在终端（UE）和核心网网元（AMF）之间传输控制信令（如注册、移动性管理和会话管理）。3GPP标准在定义加密和完整性保护算法的同时，也定义了不提供机密性的空加密算法（NEA0/5G-EA0）。虽然该算法主要用于未认证的紧急呼叫，但若被误用或恶意利用，会导致普通流量的NAS信令失去机密性保护而暴露。
+
+- 时间线
+文章发布于2026年7月23日，属于针对5G网络信令安全机制的技术研究与预警分析。
+
+- 攻击原理
+攻击或安全缺陷主要利用5G NAS安全模式命令（SMC）过程中的算法选择机制。正常情况下，AMF根据UE广播的安全能力和本地策略选择强加密算法。但如果AMF配置错误，或者攻击者通过篡改UE安全能力广播、部署伪基站等方式进行降级攻击，网络可能会协商使用NEA0空加密算法，从而关闭机密性保护，使信令以明文形式传输。
+
+- 攻击详情
+当NAS使用空加密算法时，虽然完整性保护（如果选择了真实完整性算法）仍然有效（即信令不可伪造），但信令内容对被动观察者可读。这会暴露如请求的NSSAI（网络切片选择辅助信息）等敏感控制信息，从而可能泄露用户请求的服务类型或客户类别。需要注意的是，由于5G使用SUCI隐藏永久用户身份，空加密不会直接导致永久身份（IMSI）的自动泄露。导致空加密被用于普通流量的路径主要有两种：一是网络配置错误（策略或漫游配置允许普通服务使用NEA0），二是降级攻击或伪基站场景（攻击者操纵算法选择强制降级）。
+
+- 攻击特征
+1. 静默性：空加密的使用不会产生错误或警报，网络只是执行了配置指令，暴露极其隐蔽，除非主动盘点协商算法否则难以发现。
+2. 机密性剥离：保留完整性（防篡改）但剥离机密性，信令可读但不可伪造。
+3. 降级特征：在伪基站或篡改场景下，表现为UE安全能力被篡改以强制网络选择空算法。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:15:38</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>5G NAS null ciphering explained: how 5G-EA0 exposes signalling and how to detect it</p>
+    <div class="analysis" style="white-space:pre-wrap;">In 5G, the non-access stratum (NAS) carries the control signalling between the device and the core network: registration, mobility management and session management all travel over NAS between the UE and the Access and Mobility Management Function (AMF). 3GPP protects NAS with a ciphering algorithm and an integrity algorithm, but it also defines a null ciphering algorithm, NEA0 in the 5G security architecture and 5G-EA0 in the NAS protocol specification, that applies no confidentiality at all. That algorithm exists for a reason and is a legitimate part of the standard. The security question is not whether NEA0 exists, but where and when it ends up in use, because a NAS connection running null ciphering exposes signalling content that operators usually assume is protected.
+This article explains what 5G NAS ciphering protects, what the null algorithm removes, how the network chooses the NAS algorithms, when null ciphering is legitimate, what it exposes when it is not, how it can end up applied to ordinary traffic, and how to detect and harden against it.
+What 5G NAS ciphering protects, and what null ciphering removes
+NAS messages between the UE and the AMF carry sensitive control information: the registration requests that attach a device to the network, mobility updates as it moves, session management that sets up data connectivity, and slice selection information such as the requested NSSAI (network slice selection assistance information). 3GPP TS 33.501 defines two independent protections for this traffic: ciphering, which provides confidentiality, and integrity protection, which detects tampering and replay.
+These two protections are separate, and this is the detail that makes null ciphering easy to misread. NEA0 switches off confidentiality while integrity protection, if a real integrity algorithm is selected, can still apply. In that state the NAS payload is authenticated against tampering but is readable by anyone able to observe the signalling. The messages are not forgeable, but they are no longer private. For control traffic that operators generally treat as confidential, that is a meaningful gap, and it is invisible unless someone checks which algorithm was actually negotiated.
+The 5G NAS security algorithms
+3GPP defines a small, fixed set of algorithms for 5G, and it is worth naming them precisely because the null members of each family are the ones that matter here. For ciphering there are NEA0 (the null algorithm, no confidentiality), 128-NEA1 (based on SNOW 3G), 128-NEA2 (based on AES) and 128-NEA3 (based on ZUC). For integrity there is a mirrored family: NIA0 (the null integrity algorithm), 128-NIA1, 128-NIA2 and 128-NIA3, based on the same underlying primitives.
+The non null algorithms all use 128-bit keys and are considered strong; the practical strength of a given NAS connection therefore comes down to which algorithm was selected, not to a weakness in the algorithms themselves. NEA0 and NIA0 are the exceptions by design: they pr
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

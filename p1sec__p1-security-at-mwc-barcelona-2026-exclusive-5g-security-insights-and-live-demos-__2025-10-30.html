@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P1 Security 在 2026 年巴塞罗那 MWC：为移动运营商提供的独家 5G 安全洞察与现场演示 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>P1 Security 在 2026 年巴塞罗那 MWC：为移动运营商提供的独家 5G 安全洞察与现场演示</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：P1 Security at MWC Barcelona 2026: Exclusive 5G Security Insights and Live Demos for Mobile Operators</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-10-30
+ · <a href="https://www.p1sec.com/blog/p1-security-at-mwc-barcelona-2026-exclusive-5g-security-insights-and-live-demos-for-mobile-operators" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+P1 Security在MWC Barcelona 2026大会上展示了针对移动网络运营商的真实5G安全攻击场景与防御洞察。该展示旨在向运营商、监管机构等揭示在真实攻击条件下生产网络中的5G安全现状，而非仅仅停留在理论框架层面。
+- 时间线
+活动时间为2026年3月2日至5日（MWC Barcelona 2026）。
+- 攻击原理
+攻击者利用移动通信基础设施各层（从传统的2G系统到现代5G SA架构）的漏洞进行渗透和横向移动。主要原理包括利用4G/5G共存产生的隐藏攻击路径、信令协议漏洞、虚拟化和云互联带来的风险扩展，以及跨域可见性盲区实现隐蔽移动。
+- 攻击详情
+文章详细列举了多个层面的攻击演示与风险点：
+  1. 核心网安全：针对EPC和5GC的漏洞，利用信令（SS7、Diameter、GTP-C）进行消息操纵和策略控制攻击。
+  2. RAN与Open RAN安全：针对解耦的无线接入网和前传接口的风险。
+  3. 边缘与MEC安全：多接入边缘计算和低延迟数据卸载带来的威胁。
+  4. 漫游安全：跨境互联滥用及位置/短信数据窃取。
+  5. IMS与SIP安全：滥用VoLTE/VoNR信令和多媒体控制平面。
+  6. NFVI与云原生安全：容器逃逸、Kubernetes暴露及服务网格弱点。
+  7. OAM安全：针对管理接口、监控工具和配置管道的攻击，实现持久化。
+现场演示还包括核心网渗透场景、RAN到核心网的横向移动技术、利用配置错误的NFVI和边缘节点等。
+- 攻击特征
+强调基于真实渗透测试和漏洞评估的“实战证据”；攻击面覆盖从遗留2G系统到5G独立组网的端到端全层架构；重点关注4G/5G共存、云原生基础设施盲点以及跨域可见性缺失带来的隐蔽持久化威胁。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:17:27</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>P1 Security at MWC Barcelona 2026: Exclusive 5G Security Insights and Live Demos for Mobile Operators</p>
+    <div class="analysis" style="white-space:pre-wrap;">P1 Security will be exhibiting at MWC Barcelona 2026 , from 2 to 5 March , at the French Pavilion, BLOCK 5B41 – Stand 13 . Learn more about our presence here .
+Our 2026 presence is dedicated to mobile network operators , regulators , and national-scale critical communication providers who want real-world clarity on 5G security , not theoretical frameworks. While many discussions in telecom still revolve around what 5G security should be, we are demonstrating what it actually looks like in production networks when tested under real offensive conditions .
+At P1 Security, we bring proof over promises . Our team will show how attackers behave inside live core environments , how legacy trust models persist , and how the telecom attack surface remains larger than most operators realize.
+A 360° Vision of Telecom Security
+At MWC 2026, P1 Security will showcase its new 360° TelcoSec vision — a comprehensive framework covering every layer of telecom infrastructure:
+Core Network Security – vulnerabilities in EPC and 5GC, signaling (SS7, Diameter, GTP-C) and policy control.
+RAN &amp; Open RAN Security – risks in disaggregated radio access networks and fronthaul interfaces.
+Edge &amp; MEC Security – threats from multi-access edge computing and low-latency data offload.
+Roaming Security – cross-border interconnect abuse and location/SMS exfiltration.
+NTN &amp; Satellite Security – vulnerabilities in non-terrestrial 5G links and gateway systems.
+IMS &amp; SIP Security – abuse of VoLTE/VoNR signaling and multimedia control planes.
+NFVI &amp; Cloud-Native Security – container escape risks, Kubernetes exposure, and service-mesh weaknesses.
+OAM Security – attacks on management interfaces, monitoring tools, and configuration pipelines.
+IP Network Security – underlying transport and routing vulnerabilities used for pivot attacks.
+This 360-degree approach connects risks, threats, impacts, and defenses into one continuous view — from legacy 2G systems to modern 5G Standalone architectures.
+Why Operators Visit Our Stand
+Operators who meet us at MWC are searching for technical truth , not slideware. They want:
+Field evidence of how threat actors move inside live 5G networks.
+Visibility on how 4G/5G coexistence creates hidden attack paths.
+Insight into how virtualization and cloud interconnect expand risk.
+Verification of how NFVI and OAM blind spots allow persistence.
+Guidance on hardening core network security beyond compliance.
+Our offensive missions across multiple operator environments deliver this evidence with data, not speculation.
+Live Offensive Security Demonstrations
+Throughout MWC Barcelona 2026, we’ll run live 5G security demonstrations based on recent penetration tests and vulnerability assessments for tier-one operators.
+Expect to see:
+Core infiltration scenarios and signaling message manipulation.
+Realistic RAN-to-Core pivot techniques.
+Exploitation of misconfigured NFVI and edge nodes.
+Persistent attacks via OAM and management planes.
+Cross-domain visibility gaps that enable
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

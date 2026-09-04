@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们说你想要一场革命 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>我们说你想要一场革命</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：We Say You Want a Revolution</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">citizenlab</span>
+        发布日期：2025-10-14
+ · 作者：Authors Alberto Fittarelli , Ron Deibert , Marcus Michaelsen , Maia Scott , and Darren Linvill 1 Cle · <a href="https://citizenlab.ca/research/2025-10-ai-enabled-io-aimed-at-overthrowing-iranian-regime/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：该事件发生在以色列与伊朗的地缘政治和意识形态竞争背景下。报告评估认为，一个未确认的以色列政府机构或其密切监督下的分包商，直接实施了一项名为“PRISONBREAK”的影响力操作，旨在煽动伊朗受众反抗伊朗伊斯兰共和国。
+- 时间线：虚假账户网络创建于2023年，但大部分活动自2025年1月开始。2025年6月13日爆发“十二日战争”。6月23日，以色列国防军空袭德黑兰的埃文监狱。在空袭期间及之后，PRISONBREAK网络迅速发布虚假内容进行配合。
+- 攻击原理：攻击者利用人工智能（AI）技术生成深度伪造视频和内容，通过协调一致的虚假社交媒体账户网络进行传播，以此操纵信息环境，欺骗新闻媒体，并煽动现实中的暴力或革命行动。
+- 攻击详情：PRISONBREAK网络包含50多个虚假X账户。在埃文监狱遭空袭期间，账户@KarNiloufar发布了一段AI生成的监狱入口被炸的深度伪造视频，该视频一度欺骗了多家国际新闻媒体并将其作为真实新闻发布。随后，该网络的其他账户迅速跟进，声称听到爆炸声，并呼吁民众前往监狱释放囚犯，发布“袭击即将结束”、“该地区安全”等安抚性言论以诱导人群聚集。
+- 攻击特征：高度协调性（发布时间与军事打击精确同步，暗示攻击者拥有事先知情权）；滥用AI技术（使用AI生成视频，存在AI生成的典型瑕疵如身体部位、动态内容不合理等）；虚假账户特征明显（使用被盗头像、相同的发布客户端、相同的发布时间和相同的标签字符串）。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-25T10:36:33</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>We Say You Want a Revolution</p>
+    <div class="analysis" style="white-space:pre-wrap;">Key Findings
+Timeline
+Background
+Research Methodology
+A “Kinetic” Influence Operation: the Evin Prison Bombing
+A Broader Narrative: Overthrowing the Iranian Regime
+A Synthetic Network
+Attribution
+Conclusions
+Appendix
+Key Findings
+A coordinated network of more than 50 inauthentic X profiles is conducting an AI-enabled influence operation. The network, which we refer to as “PRISONBREAK,” is spreading narratives inciting Iranian audiences to revolt against the Islamic Republic of Iran.
+While the network was created in 2023, almost all of its activity was conducted starting in January 2025, and continues to the present day.
+The profiles’ activity appears to have been synchronized, at least in part, with the military campaign that the Israel Defense Forces conducted against Iranian targets in June 2025.
+While organic engagement with PRISONBREAK’s content appears to be limited, some of the posts achieved tens of thousands of views. The operation seeded such posts to large public communities on X, and possibly also paid for their promotion.
+After systematically reviewing alternative explanations, we assess that the hypothesis most consistent with the available evidence is that an unidentified agency of the Israeli government, or a sub-contractor working under its close supervision, is directly conducting the operation.
+Timeline
+Background
+Influence Operations in the Geopolitical Contest Between Israel and Iran
+In the geopolitical and ideological competition between the Islamic Republic of Iran and its international and regional adversaries, control over and strategic manipulation of the information environment has always played a key role.
+While relatively little is known about influence operations (IOs) run directly by the Israeli government, military, or intelligence services, both independent press and social media platforms’ investigations have previously exposed several highly sophisticated Israeli covert influence operators, and their alleged connections to the country’s government. Two notable examples are Team Jorge and Archimedes Group. Both companies offered their services to a wide array of clients globally, used advanced technologies to build and conduct their covert campaigns, and advertised existing or prior connections to the Israeli intelligence community.
+For its part, the Islamic Republic considers media and information technologies as a battleground of regime survival. It has muzzled the press, disrupted satellite reception , and developed one of the most sophisticated systems of internet censorship worldwide. In its attempts to control information and shape narratives beyond borders, the Islamic Republic has also produced IOs targeting both the Iranian diaspora and international audiences , and relied on methods of transnational repression to silence critics abroad.
+Prior Citizen Lab research has uncovered Iranian disinformation efforts . In this investigation, we focus on the “other side” of the geopolitical competition: namely, an 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

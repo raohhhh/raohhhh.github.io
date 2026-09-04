@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRX与移动网络安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>GRX与移动网络安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：GRX and Mobile Network Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-01-01
+ · <a href="https://www.p1sec.com/blog/grx-and-mobile-network-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+文章探讨了全球漫游交换（GRX）网络的安全风险。GRX 作为连接全球移动运营商的私有 IP 网络，其设计初衷是简化运营商间的互连，但其隐式信任模型使其成为攻击者进入移动核心网的高效入口。当 GRX 被误管理或缺乏监控时，它会成为攻击的信任放大器。
+
+- 时间线
+文章发布于 2026 年，回顾了 GRX 从 GPRS（2G/3G）时代演进到支持 LTE（4G）和早期 5G 漫游架构的历程，并指出在 5G 过渡期的混合模式下，由于架构复杂性增加，控制不一致的风险依然存在，GRX 仍是重要的攻击面。
+
+- 攻击原理
+攻击原理基于 GRX 的“隐式信任”模型。来自 GRX 的流量通常被假定为合法运营商或合作伙伴发起。由于信任是传递性的，攻击者只需在 GRX 上的任意一处（如某个测试网络、MVNO 或被攻破的运营商）获得立足点，即可利用合法的信令消息对目标运营商发起攻击，而无需直接攻破目标网络。
+
+- 攻击详情
+1. 协议暴露：SS7 流量通过信令网关到达 GRX，导致传统跨边界攻击；Diameter 用于漫游认证和移动性管理，滥用可暴露用户数据或中断服务；GTP 用于漫游用户面连接，配置不当可导致隧道操纵、流量重定向或拒绝服务。
+2. 具体攻击场景：攻击者利用 GRX 访问权限进行用户位置追踪、短信拦截、呼叫操纵和漫游欺诈。这些攻击不依赖系统漏洞，而是利用从意外位置发送的有效信令消息。
+
+- 攻击特征
+1. 隐蔽性高：恶意信令混入复杂且庞大的合法漫游流量中，难以察觉，常被误认为是合作伙伴的配置错误而非恶意活动。
+2. 信任滥用：利用网络间的传递性信任，使用合法消息发起攻击，无需利用系统底层漏洞。
+3. 低流量高影响：控制面协议（SS7, Diameter, GTP）具有较高权限但流量相对较低，如果缺乏协议感知的监控，很难检测到滥用行为。
+4. 边界模糊：运营商常将 GRX 视为可信内部网络而非外部互连，缺乏细粒度过滤和合作伙伴隔离，导致安全盲区。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:24:44</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>GRX and Mobile Network Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">Global roaming is one of the defining features of mobile networks. It is also one of their most fragile trust models.
+At the center of roaming connectivity sits the GRX, or GPRS Roaming Exchange. Designed to simplify inter operator connectivity, GRX became the backbone for signaling and data exchange between mobile networks worldwide.
+From a security perspective, GRX is not just a transport network. It is a trust amplifier. When mismanaged or poorly monitored, it becomes one of the most effective entry points into a mobile core.
+What Is GRX
+GRX is a private IP based network that interconnects mobile operators for roaming services. It enables signaling and user plane traffic to flow between operators without requiring direct bilateral connections.
+Originally introduced for GPRS, GRX evolved to support multiple generations of mobile technology. Today, it commonly carries Diameter, GTP, DNS, and supporting services used by LTE and early 5G roaming architectures.
+GRX providers act as intermediaries, offering reachability, routing, and sometimes basic security controls between hundreds of interconnected networks.
+Why GRX Exists
+Without GRX, operators would need to maintain direct IP connections with every roaming partner. This does not scale.
+GRX centralizes connectivity and reduces operational complexity. It allows faster onboarding of roaming partners and simplifies routing of roaming traffic across regions.
+From a business standpoint, GRX is efficient. From a security standpoint, it concentrates risk.
+The GRX Trust Model
+GRX is built on implicit trust.
+If traffic comes from the GRX, it is often assumed to originate from a legitimate operator or partner. This assumption was reasonable when the ecosystem was small and tightly controlled.
+Today, GRX connects hundreds of operators, MVNOs, test networks, and service providers. Trust is transitive. If one participant is compromised, others may be exposed indirectly.
+Attackers do not need to compromise the target operator directly. They only need a foothold somewhere on the GRX.
+Protocols Exposed Over GRX
+Several critical telecom protocols traverse GRX.
+SS7 traffic may reach GRX through signaling gateways, enabling legacy attacks to cross network boundaries.
+Diameter is widely used over GRX for roaming authentication, mobility management, and policy control. Abuse of Diameter over GRX can expose subscriber data or disrupt roaming services.
+GTP traffic over GRX enables roaming user plane connectivity. Misconfigured GTP exposure allows tunnel manipulation, traffic redirection, or denial of service.
+Each of these protocols carries high impact control plane authority with relatively low traffic volume, making abuse difficult to detect without protocol awareness.
+Common GRX Security Failures
+One of the most common failures is treating GRX as a trusted internal network rather than an external interconnect.
+Operators often allow broad protocol access from GRX ranges without granular filtering. Firewalls may perm
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

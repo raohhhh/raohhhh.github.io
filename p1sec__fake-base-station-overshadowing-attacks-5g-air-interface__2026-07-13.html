@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G中的伪基站攻击：为何信号压制仍能绕过空中接口 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G中的伪基站攻击：为何信号压制仍能绕过空中接口</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Fake Base Station Attacks in 5G: Why Overshadowing Still Bypasses the Air Interface</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-07-13
+ · <a href="https://www.p1sec.com/blog/fake-base-station-overshadowing-attacks-5g-air-interface" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：5G网络虽然引入了用户身份隐藏（SUPI/SUCI）和强制双向认证（5G-AKA）等强安全机制，但在设备选择驻留小区时，并未在无线层面对小区进行认证。在安全上下文建立之前，广播系统信息、寻呼消息、早期RRC连接建立、NAS身份请求等信令均未受完整性保护，这一结构性缺口导致伪基站和信号覆盖攻击在5G中依然可行。
+时间线：文章发布于2026年7月13日，指出近期发表的学术研究已将信号覆盖攻击扩展至5G独立组网（SA）网络，证明即使迁移到纯5G核心网，该威胁依然存在。
+攻击原理：攻击者利用“信号覆盖”技术，在合法基站传输之上注入精心构造的无线电信号。通过控制发射时机和功率，使接收端解码攻击者的比特流而非真实信号。由于这些操作发生在完整性保护激活之前，设备无法从密码学角度区分真实与伪造的信令。
+攻击详情：
+- 下行链路覆盖：攻击者覆盖来自真实小区的下行消息，注入伪造的系统信息、RRC拒绝、身份请求或注册拒绝消息，从而实现降级或拒绝服务。
+- 上行链路覆盖：攻击者利用随机接入响应中的上行授权，以稍高功率发送伪造消息，覆盖设备在随机接入过程中的合法Msg3，导致隐蔽的拒绝服务或早期RRC交换操纵。
+攻击特征：
+- 降级攻击：通过广播传统技术或伪造拒绝信令，迫使设备回退至安全性较弱的2G/3G/4G网络。
+- 拒绝服务：通过上行链路覆盖随机接入过程或重复发送伪造拒绝信令，静默地阻止设备或群体接入网络。
+- 隐私与存在性测试：强制触发NAS身份请求以捕获SUCI，并重放以测试特定用户是否存在于某区域，利用了身份隐藏机制下的链路性问题。
+- 消息注入：伪造设备接受的任何预认证信令，在安全模式建立前获取操纵设备行为的立足点。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:16:08</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Fake Base Station Attacks in 5G: Why Overshadowing Still Bypasses the Air Interface</p>
+    <div class="analysis" style="white-space:pre-wrap;">Fake base station attacks still work against 5G. 5G introduced strong subscriber identity protection and mandatory mutual authentication, yet it never authenticated the radio cell before a device connects to it. A device still attaches to whichever cell broadcasts the strongest usable signal, and most of the messages exchanged before authentication completes carry no integrity protection. That gap is exactly what fake base stations and signal overshadowing attacks exploit, and recent published research shows the technique remains practical on 5G Standalone networks.
+This article explains how fake base station and overshadowing attacks operate against 5G, what they let an attacker achieve, what 3GPP is doing to close the gap, and how operators can detect the activity on their own networks. For the wider radio access picture, see our overview of RAN security .
+What is a fake base station attack in 5G?
+A fake base station is a radio transmitter that impersonates a legitimate cell so nearby devices attach to it instead of the real network. The concept predates 5G. In 2G, 3G, and 4G it is best known as the IMSI catcher, a rogue cell that tricks a handset into revealing its permanent identity or into using weaker security. If you need a primer on that identifier, see what IMSI is and why it matters .
+In 5G the device is a User Equipment (UE), the cell is a gNB, and the standard adds protections that were missing in earlier generations. The threat did not disappear, it shifted. Instead of harvesting a plaintext identity, a modern fake base station in 5G focuses on the messages and procedures that happen before a trusted security context exists between the UE and the network.
+Why 5G did not remove the fake base station problem
+The short answer: 5G protects the subscriber identity and authenticates the core network, but it does not authenticate the cell at the radio layer before a security context is established.
+Two 5G mechanisms are often cited as the cure. The first is concealment of the subscriber identity. The permanent identifier (SUPI) is no longer sent in clear text. It is encrypted into the Subscription Concealed Identifier (SUCI) using a public key belonging to the home network, which we cover in detail in SUPI and SUCI in 5G . The second is mutual authentication through 5G-AKA, where the network proves itself to the UE using the authentication token (AUTN) and its message authentication code, explained in our breakdown of AKA .
+Neither mechanism authenticates the cell at the moment the UE is choosing where to camp. Cell selection and reselection are driven by signal measurements, so a UE attaches to the strongest suitable cell regardless of who operates it. The broadcast system information (the MIB and SIBs), paging messages, the early RRC connection setup, the NAS Identity Request, and RRC and registration reject messages are all sent before or outside the protection that 5G-AKA eventually establishes. An attacker who can transmit those messag
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

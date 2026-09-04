@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络API安全：保护GSMA Open Gateway与CAMARA API - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>网络API安全：保护GSMA Open Gateway与CAMARA API</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Network API security: securing GSMA Open Gateway and CAMARA APIs</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-06-23
+ · <a href="https://www.p1sec.com/blog/network-api-security-securing-gsma-open-gateway-and-camara-apis" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：随着 GSMA Open Gateway 和 CAMARA 项目的推进，移动网络能力（如 SIM 交换检测、号码验证、设备定位等）通过标准化 API 暴露给第三方应用。这使得原本封闭的移动核心网引入了面向互联网的全新边缘，带来了经典的 Web 应用安全风险与核心网暴露风险的融合。
+- 时间线：文章发布于 2026 年 6 月 23 日，提及截至 CAMARA Fall25 meta 发布，API 目录已包含约 60 个 API（其中 10 个标记为稳定状态），GSMA Open Gateway 已覆盖超过 80 个运营商集团和约 292 个网络。
+- 攻击原理：攻击主要利用网络 API 暴露层的授权和同意机制缺陷。由于敏感 API 基于订阅者标识符进行操作，若对象级授权（BOLA）失效、令牌范围控制不严或同意未重新验证，攻击者可利用合法颁发的令牌越权访问其他订阅者的敏感数据。此外，原本用于反欺诈的 API（如 SIM Swap、Number Verification）若缺乏速率限制，可被攻击者滥用为数据收集源，用于筛选脆弱账户或优化社会工程学攻击。
+- 攻击详情：
+  1. 授权与同意失效：若为某订阅者签发的访问令牌被用于查询另一订阅者，攻击者可枚举大量号码的 SIM 交换状态或位置信息。
+  2. 滥用防欺诈 API：攻击者通过大规模查询 SIM 交换状态，精准定位处于“换卡窗口期”的脆弱账户并进行接管；或通过号码验证探测优化社会工程攻击。
+  3. 聚合器信任滥用：由于开发者多通过聚合器接入网络，若聚合器凭据被窃取或租户隔离薄弱，攻击者可一次性暴露其代理的所有运营商 API。
+- 攻击特征：攻击面集中在 3GPP 定义的暴露层网元（5G 的 NEF、4G 的 SCEF 以及 CAPIF）。攻击手法表现为典型的 Web API 攻击（如负载操纵、模式绕过、破坏的授权和速率滥用），但危害直接延伸至移动核心网底层的订阅者隐私和电信反欺诈体系。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:22:41</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Network API security: securing GSMA Open Gateway and CAMARA APIs</p>
+    <div class="analysis" style="white-space:pre-wrap;">Network API security is the discipline of protecting the standardised interfaces that let external applications use mobile network capabilities such as SIM swap detection, number verification, and device location. With the GSMA Open Gateway initiative and the CAMARA project now exposing these capabilities across hundreds of networks, the mobile core has gained a new, internet facing edge that needs the same rigour operators apply to signalling and the service based architecture.
+This article explains what GSMA Open Gateway and CAMARA are, how their security model works, where the exposure creates risk, and the controls operators should put in place before opening an API to the public internet.
+What are network APIs, GSMA Open Gateway, and CAMARA?
+Network APIs are programmable interfaces that expose specific mobile network functions to third party developers without giving them access to the core itself. GSMA Open Gateway is the industry initiative that defines a common set of these APIs so a developer can integrate once and reach many operators. CAMARA is the open source project, hosted by the Linux Foundation and run jointly with the GSMA, that produces the technical API specifications.
+The scale is now significant. The GSMA reports that Open Gateway spans more than 80 operator groups, representing roughly 292 networks and over 80 percent of mobile connections worldwide. The CAMARA Fall25 meta release brought the catalogue to around 60 APIs, of which 10 are marked stable. Widely deployed examples include the SIM Swap API, which reports whether the SIM bound to a number changed recently, the Number Verification API, which confirms that the number a device presents matches the number seen on the network, and one time password and device location services.
+For background on the core that sits behind these interfaces, see our explainers on the mobile core network and mobile network protocols .
+How the network API security model works
+Network API security rests on standardised authorisation, explicit subscriber consent, and a 3GPP exposure layer that mediates every request. Each layer matters, because an API that returns whether a given subscriber recently swapped their SIM is handling sensitive data about a real person.
+Three legged authorisation and subscriber consent
+CAMARA secures access using OpenID Connect and OAuth 2.0 rather than static keys. Four flows are defined: the OpenID Connect authorisation code flow, the Client Initiated Backchannel Authentication flow known as CIBA, the OAuth 2.0 client credentials flow, and the OAuth 2.0 JWT bearer flow. APIs that act on a specific subscriber require a three legged access token, which involves three parties: the resource owner who is the subscriber, the authorisation server operated by the operator or aggregator, and the client application requesting access.
+CIBA matters for telecom because it lets the network authenticate a subscriber without the subscriber typing credentials into the third party 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

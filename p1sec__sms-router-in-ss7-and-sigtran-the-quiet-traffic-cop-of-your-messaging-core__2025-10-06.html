@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SS7与SIGTRAN中的SMS路由器：消息核心网的静默流量卫士 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>SS7与SIGTRAN中的SMS路由器：消息核心网的静默流量卫士</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：SMS Router in SS7 and SIGTRAN: the quiet traffic cop of your messaging core</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-10-06
+ · <a href="https://www.p1sec.com/blog/sms-router-in-ss7-and-sigtran-the-quiet-traffic-cop-of-your-messaging-core" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要探讨了移动核心网中 SMS Router 的架构、功能及其在防御信令攻击中的关键作用，涵盖了从 2G/3G 到 4G/5G 的演进过程。
+- 攻击事件背景：文章并非针对单一具体攻击事件，而是针对移动通信网络（尤其是 SS7/SIGTRAN 信令互连）中普遍存在的安全威胁。由于早期网络设计缺乏认证机制，外部网络可轻易利用信令协议探测用户隐私或进行欺诈。
+- 攻击原理：攻击者利用 MAP 协议中的 SRI for SM（Send Routing Info for Short Message）操作，向目标网络的 HLR/HSS 发起查询。通过这种方式，攻击者可以枚举有效号码、追踪用户的漫游状态、获取 IMSI 等敏感数据。此外，攻击者还会伪造 SMSC 或网络源地址绕过速率限制发送钓鱼短信，或通过发送大量无效/畸形的 MAP 操作引发信令泛洪，导致网络服务降级。
+- 攻击详情：文章指出，如果网络未部署 SMS Router 或配置不当（如 SRI for SM 对所有对等方开放、允许直接访问 HLR、企业 SMPP 连接绕过路由器），攻击者可以直接触达核心网网元。SMS Router 作为应用层感知的策略边缘节点，通过拦截所有外部 MAP 查询，执行源验证、参数校验和拓扑隐藏，从而阻断攻击者获取内部网络结构和用户信息的路径。
+- 攻击特征：此类攻击主要发生在信令平面（SCCP/MAP 层），具有内容无关性。特征包括：异常激增的 SRI for SM 查询量、伪造的信令源地址、针对特定号段的批量探测、畸形 MAP 操作导致的泛洪，以及利用传统信令路径绕过 IP 核心网安全策略的跨代攻击行为。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:18:17</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>SMS Router in SS7 and SIGTRAN: the quiet traffic cop of your messaging core</p>
+    <div class="analysis" style="white-space:pre-wrap;">What an SMS Router actually is
+An SMS Router sits in the signaling plane between external networks and your subscriber data layer. Think of it as an application aware STP that understands MAP for SMS. It receives queries such as Send Routing Info for Short Message and controls how a message enters your network, which HLR or HSS should answer, and whether the request should be allowed at all. Because it sees the first touch of almost every mobile terminated message from outside, it becomes the natural point to enforce policy, apply screening, and hide the internals of your core.
+Why operators deploy it
+Three reasons explain most deployments. First, privacy and fraud control. Without home routing and a proper router, external parties can use SRI for SM to map subscribers, collect IMSI data, and probe for roaming status. Second, hygiene and reliability. The router forces consistent policy at one choke point instead of scattering allow lists and rules across HLRs, SMSCs, and gateways. Third, commercial control for A2P traffic. Enterprise and aggregator flows can be shaped, validated, and charged with more predictability when everything enters through a governed path.
+Placement in the architecture
+Logically the SMS Router lives on the interconnect edge next to your STP or SIGTRAN edge. It communicates upstream with external SMSCs and partner STPs, and downstream with your HLR or HSS and SMSC or IP short message gateway components. Many operators also connect enterprise messaging platforms and SMPP hubs on a side door that still passes through the router for origin validation and throttling. In multi HLR estates, the router keeps the directory of which HLR owns which MSISDN range and answers SRI for SM accordingly, often without revealing the IMSI or the real HLR address.
+Core functions that matter in the field
+Policy enforcement is the first. The router vets every incoming MAP message for scheme, operation, and parameters before deciding whether to forward, rewrite, or drop. Hiding topology is the second. The device can act as a non transparent home routing front that answers SRI for SM on behalf of the HLR and returns a generic service center address while keeping internal GTs invisible. Traffic steering is the third. It can balance across multiple HLRs or SMSCs, handle maintenance windows, and reroute around failures without leaking those failures to partners. Finally, content independent abuse prevention rounds out the list. Even without looking inside the message body, the router can detect flooding, spoofed origins, and replay patterns at the signaling level.
+Typical abuse the router should block
+Attackers use SRI for SM to enumerate numbers, track roaming status, or recover IMSIs. They spoof SMSC or network origins to bypass rate limits and deliver phishing messages. They flood interconnect links with invalid or malformed MAP operations to degrade service. They try to send mobile originated messages through unexpected paths to exploit tariff or 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

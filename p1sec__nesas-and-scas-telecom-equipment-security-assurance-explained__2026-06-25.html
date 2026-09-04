@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NESAS与SCAS解析：电信设备安全保障如何运作 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>NESAS与SCAS解析：电信设备安全保障如何运作</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：NESAS and SCAS explained: how telecom equipment security assurance works</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-06-25
+ · <a href="https://www.p1sec.com/blog/nesas-and-scas-telecom-equipment-security-assurance-explained" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文详细解析了移动通信网络设备安全保障框架 NESAS（网络设备安全保障方案）和 SCAS（安全保障规范）的工作原理及其在通信安全领域的应用。
+- **核心网网元**：文章明确列举了多个核心网网元的安全保障规范，包括接入和移动性管理功能（AMF，TS 33.512）、用户面功能（UPF，TS 33.513）、统一数据管理功能（UDM，TS 33.514）以及 4G 时代的移动性管理实体（MME）。这表明 SCAS 测试用例紧密围绕核心网网元的安全要求展开。
+- **5G安全与4G安全**：文章指出 SCAS 覆盖范围最初是为 4G 产品类别（如 MME 和 eNodeB）构建的，随后扩展到了 5G 核心网功能。文中特别提到了 5G 基站（gNodeB，TS 33.511）的安全规范，并指出 3GPP 和 GSMA 正在将保障范围扩展至 Open RAN 和边缘计算，反映了 5G 安全架构的演进与虚拟化、解耦趋势。
+- **安全机制分析**：NESAS 机制包含两部分：一是对供应商的开发和生命周期流程进行审计，以防范供应链后门风险；二是由获得 ISO/IEC 17025 认可的实验室对特定产品版本进行 SCAS 技术评估。文章强调，NESAS 提供的是安全基线（底线）而非上限，它不能证明产品完全无漏洞，也无法替代实际部署后的网络级渗透测试和持续评估（特别是信令暴露和漫游风险）。
+（注：由于本文为安全框架与标准解析文章，非具体攻击事件，故省略攻击事件背景、时间线、攻击原理、攻击详情及攻击特征等部分。）</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:22:23</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>NESAS and SCAS explained: how telecom equipment security assurance works</p>
+    <div class="analysis" style="white-space:pre-wrap;">NESAS, the Network Equipment Security Assurance Scheme, and SCAS, the Security Assurance Specifications, are the GSMA and 3GPP frameworks that define how mobile network equipment is tested for security before operators deploy it. NESAS audits how a vendor builds and maintains its products, while SCAS provides the concrete test cases that a product must pass. Together they give operators, regulators, and vendors a common, repeatable baseline for equipment security assurance.
+This article explains what NESAS and SCAS are, how the scheme is structured, which specifications define the tests, what a NESAS evaluation does and does not prove, and how operators, network equipment vendors, and regulators should use it.
+What are NESAS and SCAS?
+NESAS is a voluntary, industry wide assurance scheme defined by the GSMA in partnership with 3GPP. It establishes a security baseline for network equipment through two parallel mechanisms: an audit of the vendor&#39;s product development and lifecycle processes, and a product evaluation against defined security test cases. SCAS is the 3GPP side of that arrangement. The Security Assurance Specifications, produced by 3GPP working group SA3, list the security requirements and test cases for each class of network product.
+The methodology behind SCAS is the security assurance methodology, historically called SECAM, described in 3GPP TR 33.916. It defines how requirements are written, how test cases are derived, and how an evaluator reaches a verdict. NESAS then wraps that technical core in a governance layer of accredited laboratories, audit rules, and a dispute process. This sits alongside the broader baseline work in GSMA FS.31 baseline security for mobile networks , but where FS.31 guides operator configuration, NESAS and SCAS assess the equipment itself.
+How the NESAS scheme works
+A NESAS assessment has two distinct parts that must both hold for an evaluation to be meaningful: a process audit of the vendor and a technical evaluation of a specific product release.
+Part one: vendor development and lifecycle audit
+The first part audits how the vendor designs, builds, maintains, and patches its products. Assessors examine whether the vendor follows a defined secure development lifecycle, manages source code and build integrity, tracks vulnerabilities, and delivers security fixes to deployed products. The logic is that a single secure product release means little if the process that produced it cannot reliably produce the next one. This process focus connects directly to telecom supply chain security and to the risk of vendor backdoors , because both are governed by how disciplined the vendor&#39;s engineering process actually is.
+Part two: product evaluation against SCAS
+The second part evaluates a specific product release against the SCAS test cases for its product class. Testing is performed by a security test laboratory that holds ISO/IEC 17025 accreditation from its national accreditation body and that the GSMA has authorise
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

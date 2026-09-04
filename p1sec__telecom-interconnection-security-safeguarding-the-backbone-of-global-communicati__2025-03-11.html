@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电信互联安全：守护全球通信的基石 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>电信互联安全：守护全球通信的基石</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Telecom Interconnection Security: Safeguarding the Backbone of Global Communication</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-03-11
+ · <a href="https://www.p1sec.com/blog/telecom-interconnection-security-safeguarding-the-backbone-of-global-communication" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：文章探讨了全球通信的骨干——电信互联的安全问题。随着电信运营商之间互联需求的增加，互联点（如国际网关、对等连接和数据交换点）成为恶意攻击者利用的潜在攻击向量，可能导致严重的财务、运营和声誉损失。
+- 时间线：文章发布于2026年8月20日，属于对电信互联安全态势的综合研究与最佳实践总结，未涉及具体单一攻击事件的时间线，而是对当前和未来互联安全威胁的概述。
+- 攻击原理：攻击者利用互联点未加密或安全控制薄弱的漏洞实施攻击。例如，通过未加密通道拦截传输数据；利用互联协议漏洞操纵计费系统或重定向流量（如国际收益分成欺诈 IRSF）；向互联点发起海量流量导致DDoS攻击；或通过弱安全措施获取未授权网络访问权限，进而在网络内部横向移动。
+- 攻击详情：文章列举了四大类主要风险：1. 数据拦截与窃听（针对客户数据、商业通信等敏感信息）；2. 欺诈与计费操纵（包括IRSF、SIM卡欺诈、语音欺诈，导致运营商经济损失）；3. 分布式拒绝服务攻击（通过淹没互联点导致多网络服务中断）；4. 未授权网络访问（获取内网权限并窃取数据或破坏系统）。
+- 攻击特征：此类攻击通常针对运营商之间的互联边界，具有跨网特性；攻击手段多样，涵盖流量劫持、信令与语音欺诈、拒绝服务及越权访问；且往往利用了互联点缺乏强认证（MFA/RBAC）、加密不足或监控缺失等安全盲区。文章最后提出了防御最佳实践，并提及了P1 Security在5G基础设施及电信安全方面的防护能力。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:20:06</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Telecom Interconnection Security: Safeguarding the Backbone of Global Communication</p>
+    <div class="analysis" style="white-space:pre-wrap;">Telecom interconnection is the backbone of global communication, allowing telecom operators to exchange traffic between networks, provide seamless connectivity to users, and ensure the reliability of communication services. However, interconnection points also serve as potential attack vectors for malicious actors, making telecom interconnection security a critical concern for telecom operators worldwide.
+In this blog post, we will explore the importance of telecom interconnection security , the risks associated with unsecured interconnection points, and the best practices telecom operators can implement to ensure robust security across their networks.
+What is Telecom Interconnection?
+Telecom interconnection refers to the process of linking different telecom networks to allow seamless communication between them. This interconnection is necessary for voice , data , and internet traffic to flow between different operators, carriers, or service providers.
+These interconnections typically occur at various points, such as international gateways , peering arrangements , and data exchange points , enabling the transfer of calls, messages, and data packets between different networks. Interconnection is essential for providing customers with uninterrupted services, regardless of their telecom provider.
+However, interconnection points also present opportunities for cybercriminals to exploit vulnerabilities and launch attacks. Therefore, securing these interconnection points is paramount to maintaining the confidentiality, integrity, and availability of telecom networks.
+The Risks of Unsecured Telecom Interconnection
+Unsecured telecom interconnection points can become the entry points for a range of cyber threats and attacks. These attacks can have significant financial, operational, and reputational consequences for telecom operators. Some common risks associated with unsecured interconnection include:
+1. Data Interception and Eavesdropping
+Without proper encryption and security protocols in place, data transmitted between interconnected networks can be intercepted by cybercriminals. This poses a risk to confidential communications , such as customer data, business communications, and sensitive financial transactions.
+The unauthorized interception of data can also violate data protection regulations , leading to legal and compliance challenges for telecom operators.
+2. Fraud and Billing Manipulation
+Telecom fraud is a significant threat at interconnection points. Fraudsters may exploit vulnerabilities in the interconnection process to manipulate billing systems, redirect traffic, or exploit premium-rate numbers for financial gain. Common types of fraud that occur at interconnection points include international revenue share fraud (IRSF) , SIM card fraud , and voice fraud .
+By accessing interconnection points, fraudsters can make unauthorized calls or traffic exchanges, resulting in financial losses for telecom operators.
+3. Distributed Denial-of-Service (D
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

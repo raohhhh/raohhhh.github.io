@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核工业中的专用移动网络：保障关键运营的连接安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>核工业中的专用移动网络：保障关键运营的连接安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Private Mobile Networks in the Nuclear Industry: Securing Connectivity for Critical Operations</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-05-15
+ · <a href="https://www.p1sec.com/blog/private-mobile-networks-in-the-nuclear-industry-securing-connectivity-for-critical-operations" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：本文并非描述具体的攻击事件，而是探讨核工业等关键基础设施中私有5G和LTE网络的安全部署与应用。核工业对通信的隔离性、实时性和安全性要求极高，随着数字化转型，私有移动网络正成为提升运营效率的关键，但也面临严峻的安全威胁。
+时间线：无具体攻击时间线（文章发布于2025年5月15日，属于行业技术应用与安全分析文章）。
+攻击原理：文章提及了针对移动网络的潜在威胁，特别是伪基站和信令攻击。伪基站通过伪装成合法基站诱使终端连接，从而进行中间人攻击或拒绝服务；信令攻击则利用网络协议漏洞拦截、追踪或干扰通信。在核工业等高安全环境中，此类攻击可能导致敏感数据泄露或安全通信中断。
+攻击详情：文章未提供具体攻击案例的技术细节，而是强调了防御策略，包括IT与OT系统的严格隔离、端到端加密与认证、零信任架构、防范伪基站和信令攻击，以及针对电磁脉冲（EMP）和辐射的物理加固。此外，强调了通过独立组网（SA）的私有核心网和频谱隔离来确保网络流量完全限制在设施边界内。
+攻击特征：在核工业场景下，潜在攻击的特征表现为试图破坏网络物理与逻辑隔离（如突破air-gapped环境）、干扰安全系统实时监控、阻断应急响应通信，或通过信令层面的漏洞渗透核心网网元。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:29:23</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Private Mobile Networks in the Nuclear Industry: Securing Connectivity for Critical Operations</p>
+    <div class="analysis" style="white-space:pre-wrap;">The nuclear industry stands among the most secure, highly regulated sectors in the world. With operations involving radiation-sensitive environments, complex safety systems, and 24/7 monitoring, the need for resilient, real-time, and isolated communication networks is non-negotiable.
+As digital transformation reaches even the most sensitive energy sectors, private LTE and 5G networks are emerging as essential tools to modernize connectivity while maintaining the stringent security and reliability required for nuclear operations.
+Why Mobile Networks Are Important in Nuclear Environments
+Unlike many industrial sectors, nuclear facilities demand:
+Air-gapped or highly isolated networks
+Real-time monitoring of safety systems
+Strict electromagnetic compatibility
+Immediate failover communication capabilities
+Traditional wired networks can be costly or impractical to extend into every area of a complex nuclear facility — particularly in zones with radiation shielding or hazardous access. Private 5G and LTE networks solve these problems with secure, low-latency, and high-throughput wireless coverage that can span entire facilities.
+Key Use Cases of LTE/5G in the Nuclear Sector
+1. Real-Time Equipment Monitoring
+Nuclear facilities rely on SCADA systems and real-time data from cooling systems, control rods, radiation sensors, and more. 5G/LTE provides rapid, wireless data transport for better visibility and control without needing to run new cabling into restricted areas.
+2. Safety and Emergency Response Systems
+Mobile networks support real-time alerts, critical communications, and push-to-talk systems for incident response — ensuring safety teams can react immediately to anomalies.
+3. Inspection Robotics and Remote Control
+Robotic crawlers and drones are increasingly used to inspect high-radiation zones or hard-to-access infrastructure. These machines depend on low-latency connections for control and HD video transmission — something 5G handles far better than legacy radio systems.
+4. Worker Health Monitoring
+Connected wearables track exposure levels, location, and vitals of workers in controlled areas. This data is securely transmitted over the private network for real-time supervision.
+5. Secure Site-Wide Communications
+From control room to turbine hall, private LTE/5G ensures encrypted, site-wide voice and data communications, reducing dependency on legacy TETRA or analog radio systems.
+Security Demands of Nuclear-Grade Mobile Networks
+The stakes in nuclear are extraordinarily high — both in terms of safety and national security. Mobile network deployments must meet:
+Strict segmentation between IT and OT systems
+End-to-end encryption and authentication
+Zero trust architectures
+Protection against rogue base stations and signaling attacks
+Physical hardening of network components against EMP and radiation
+Additionally, network isolation is often enforced by design, keeping mobile traffic confined within the facility perimeter — with no exposure to the publi
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

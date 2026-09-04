@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年度回顾：全球信令威胁态势的关键洞察 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>年度回顾：全球信令威胁态势的关键洞察</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Year in Review: Key Insights from the Global Signaling Threat Landscape</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-12-02
+ · 作者：Tomas Hedqvist · <a href="https://www.enea.com/insights/year-in-review-key-insights-from-the-global-signaling-threat-landscape/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Signaling Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">MNO</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Mobile Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Threat Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+文章回顾了过去一年全球移动网络信令威胁态势。指出在冲突和战争加剧的背景下，信令网络依然是获取关键基础设施和重点人物情报的重要来源。同时，A2P SMS 国际终端费率的飙升也促使聚合商寻找更便宜的灰色路由，从而增加了相关攻击的动机。
+- 时间线
+威胁活动贯穿全年：年初至夏季 SS7 威胁活动异常频繁；9月起再次出现异常高水平活动。7月份发布了关于 SS7 新绕过技术的研究发现。年初还观察到 GTP-C 协议上的 IP 扫描活动峰值。
+- 攻击原理
+攻击者利用 SS7、Diameter 和 GTP-C 等信令协议的漏洞进行探测、数据窃取、位置追踪和欺诈。通过伪造 Global Title (GT) 或源运营商来掩盖真实来源、逃避识别和规避检测。跨协议攻击结合了 Diameter 和 SS7 活动。
+- 攻击详情
+1. SS7 探测攻击：针对 SMS 基础设施，旨在检索 IMSI 和其他用户数据，作为定向攻击（拦截和位置追踪）的前兆，或用于识别易受灰色路由 SMS 递送影响的网络。使用了大量伪造的 GT（如来自古巴和缅甸），估计全球至少 75% 的移动网络成为目标。
+2. GT 伪造与欺诈：流氓 SMS 聚合商使用伪造的 GT 发送消息，使流量看起来像来自其他地方，从而逃避终端费用，将费用转嫁给被伪造 GT 的网络。在美洲和欧洲尤为显著。
+3. Diameter 攻击：主要涉及地理定位尝试或从 HSS（归属用户服务器，核心网网元）检索用户数据。存在伪造网络与目标用户网络对齐以逃避检测的情况。
+4. GTP-C 攻击：虽然利用最少，但年初出现了来自意外来源的 IP 扫描峰值，表明攻击者在测试新渠道。
+- 攻击特征
+1. 广泛性：全球至少 75% 的移动网络受到 SS7 探测攻击影响。
+2. 隐蔽性：大量使用伪造的 GT 和源运营商来掩盖真实来源，甚至刻意使伪造网络与用户网络对齐以避免被发现。
+3. 演进性：攻击方法不断演变，出现新的 SS7 绕过技术和跨协议攻击（SS7+Diameter）。
+4. 经济驱动：部分攻击（如 SMS 伪造和探测）受 A2P SMS 终端费率上涨和灰色路由利益驱动。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:08:53</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Year in Review: Key Insights from the Global Signaling Threat Landscape</p>
+    <div class="analysis" style="white-space:pre-wrap;">Year in Review: Key Insights from the Global Signaling Threat Landscape
+Attacks on mobile networks via signaling protocols continue unabated. Over the past year, we have observed attacks across SS7, Diameter, and GTP-C. We have observed increased activity on certain protocols and the emergence of new, sophisticated attack methods. Overall, this highlights that intelligence-driven signaling security remains highly relevant for protecting networks, revenue, and users. Understanding the threat landscape is essential for mobile network operators to ensure their signaling defenses respond well to evolving threats.
+To our clients, we provide threat intelligence with detailed, timely, and actionable insights, helping them proactively strengthen their d efenses . This article is a selection and summary of trends our threat intelligence unit has observed during the year.
+Probing Attacks Surge on SS7
+This year started with unusually high threat activity on SS7, which carried on until summer. Since September, we have again observed unusually high levels of activity. Foremost, we have witnessed an increase in probing attacks , particularly targeting SMS infrastructure , though not exclusively. Attackers are testing networks for weaknesses that allow them to retrieve IMSIs and other user data. Such reconnaissance attacks typically serve one of two purposes. Either they are a precursor to targeted SS7 attacks , such as interception and location tracking of individuals, or they are used to identify networks vulnerable to grey-route SMS delivery.
+One notable aspect of the probing attacks we observed early this year was the large number of spoofed Global Titles (GTs), suggesting a systematic approach. Interestingly, these attacks involved GTs from countries we typically do not see spoofed in probing attacks, such as Cuba and Myanmar. Based on our data, we estimate that at least 75% of all mobile networks worldwide were targeted during this period, though the actual figure could be higher.
+GT Spoofing on the Rise
+Beyond probing attacks, we have observed a general increase in GT spoofing. This is a particularly concerning development where attackers use spoofed GTs to mask their true origin and evade identification. While this can still be detected and malicious signaling traffic from spoofed GTs can still be blocked on grounds other than its origin, this is nevertheless worrisome. If it is not mitigated, the industry’s recent efforts to tighten GT leasing requirements may be in vain .
+GT spoofing is also used to commit fraud against mobile network operators. Typically, rogue SMS aggregators send messages into a network but from a spoofed GT , to make it appear as though the traffic originated elsewhere. This allows the aggregator to avoid termination fees, which are instead billed to the network whose GT was spoofed. We have seen a significant increase in this type of behavior during the year, especially in the Americas and Europe.
+Attacks Continue to Evolve
+Durin
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

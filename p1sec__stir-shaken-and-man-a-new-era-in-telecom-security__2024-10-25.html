@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STIR/SHAKEN 与 MAN：电信安全的新时代 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>STIR/SHAKEN 与 MAN：电信安全的新时代</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：STIR/SHAKEN and MAN: A New Era in Telecom Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2024-10-25
+ · <a href="https://www.p1sec.com/blog/stir-shaken-and-man-a-new-era-in-telecom-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：随着 VoIP 和互联网技术的普及，电信欺诈日益复杂化。来电显示欺骗成为严峻问题，2023年诈骗分子利用该技术在法国造成约3.79亿欧元的损失。为应对此威胁，美国与法国分别推出了 STIR/SHAKEN 和 MAN 框架以恢复消费者信任。
+- 时间线：
+  - 2020年：法国政府认识到增强呼叫认证的必要性，开始讨论《Naegelen 法案》。
+  - 2021年6月：STIR/SHAKEN 框架在美国推出。
+  - 2023年7月：法国正式推出 MAN 机制，建立呼叫认证监管框架。
+  - 2024年6月：要求所有运营商在其网络中部署 MAN。
+  - 2024年10月1日：执法里程碑，切断所有未经验证的呼叫。
+- 攻击原理：恶意行为者通过操纵传输到接收方来电显示的信令信息，伪装其身份（即来电显示欺骗，Spoofing）。在 VoIP 环境下，诈骗分子能够绕过基础验证流程，篡改主叫号码信息，使其显示为合法号码。
+- 攻击详情：以法国马赛的 33 岁教师 Justine 的案例为例。2023年8月，她接到自称银行顾问的电话，对方称其账户被黑客攻击。诈骗者将主叫号码篡改为银行的合法号码以骗取信任。在 45 分钟的通话中，诈骗者诱导其进行多次转账，最终导致 Justine 损失超过 4000 欧元。
+- 攻击特征：1) 身份伪装：通过篡改主叫号码信令显示为合法机构以获取受害者信任；2) 结合社会工程学：利用受害者恐慌心理和诈骗者自信的话术施加压力，诱导转账；3) 技术滥用：利用 VoIP 和互联网技术绕过传统电信网络的初步保护机制。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-26T14:49:43</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>STIR/SHAKEN and MAN: A New Era in Telecom Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">‍
+STIR/SHAKEN: Securing Caller Identity
+STIR/SHAKEN (Secure Telephone Identity Revisited and Signature-based Handling of Asserted Information Using Tokens) is a groundbreaking framework designed to combat caller ID spoofing , a technique where malicious actors disguise their identity by manipulating the information transmitted to the recipient’s caller ID. The STIR/SHAKEN protocol works by utilizing cryptographic certificates to verify the authenticity of calls. This verification occurs at two main points: the originating operator, which authenticates the call, and the terminating operator, which verifies the call&#39;s authenticity before delivering it to the recipient.
+Introduced in the United States in June 2021 , the STIR/SHAKEN framework laid the groundwork for enhancing trust in telecommunication systems. It aims to protect consumers from fraudulent calls, ensuring that legitimate callers are recognized while fraudulent calls can be flagged or blocked. As a result, it represents a significant step towards securing telecommunications in an era where cyber threats reign.
+Understanding MAN: A French Approach to Call Authentication
+The Mécanisme d’Authentification des Numéros (MAN) is a French initiative introduced in July 2023 , directly influenced by the STIR/SHAKEN framework. MAN serves as a regulatory measure aimed at restoring consumer confidence by providing robust mechanisms for call authentication. The French government recognized the growing threats posed by spoofing and financial fraud over the phone, prompting the need for an effective solution.
+The MAN program involves all operators utilizing the French numbering system, mandating that they adopt strict rules to ensure all calls passing through their networks are authenticated. This comprehensive approach aims to create a secure environment where consumers can trust that the identity of the caller is genuine, and mitigating the risks associated with fraudulent calls.
+The Evolution of Call Authentication Systems
+The evolution of call authentication systems has been driven by the rising threat of telecommunications fraud. As technology advanced, so did the sophistication of scams targeting consumers. Early measures to combat fraud primarily relied on consumer awareness campaigns and basic verification processes. However, with the proliferation of Voice over Internet Protocol (VoIP) and the internet, scammers became adept at bypassing these initial protections.
+The introduction of STIR/SHAKEN in North America marked a turning point in the evolution of call authentication. By employing cryptographic techniques to verify caller identity, it created a standardized method for securing calls across networks. This innovation prompted other countries, like France with the implementation of MAN, to adopt similar strategies, emphasizing the global shift towards more secure telecommunications.
+From Legislation to Implementation: Key Milestones of MAN
+The journey towards the implementation of the MAN
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G 核心网中的 NRF 安全：服务发现、注册信任与投毒风险 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G 核心网中的 NRF 安全：服务发现、注册信任与投毒风险</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：NRF Security in 5G Core: Service Discovery, Registration Trust, and Poisoning Risks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-04-15
+ · <a href="https://www.p1sec.com/blog/nrf-security-in-5g-core-service-discovery-registration-trust-and-poisoning-risks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+5G核心网采用服务化架构（SBA），网络仓库功能（NRF）作为该架构中的关键组件，负责网络功能的注册与发现。文章指出，尽管NRF是整个核心网信任结构的基础，但通常未得到足够的安全重视。如果服务发现过程过于宽松、信息过时或被篡改，破坏将不仅局限于单一功能，而是会扭曲整个核心网的通信模式和信任决策。
+
+- 时间线
+文章发布于2026年4月15日，属于对5G核心网NRF安全风险的深度前瞻性研究与技术分析，揭示了当前及未来5G网络部署中持续存在的潜在风险。
+
+- 攻击原理
+攻击的核心原理在于“NRF中毒”（NRF Poisoning），即破坏服务注册或发现过程中的信任机制。攻击者并非直接破坏密码学或进行暴力破解，而是利用系统对控制面数据的信任，通过操纵发现逻辑来间接影响架构。当发现信息被篡改或误导时，系统仍会以高度的“自信”做出错误的通信和路由选择，从而在不知不觉中传播风险。
+
+- 攻击详情
+文章列举了针对NRF的多种潜在攻击路径：
+1. 虚假或不安全的服务注册：在缺乏严格身份验证的环境中，攻击者注册恶意服务，诱使其他网络功能发现并连接。
+2. 过时注册滥用：利用未被及时清理的失效服务注册信息，制造混淆或误导流量。
+3. 操作不一致引发的发现影响：利用架构变更、扩容或故障转移期间产生的与实际不符的发现数据，借助模糊性寻找攻击机会。
+4. 信任链攻击：利用一个管理薄弱的网络功能影响其他功能的发现过程，从而波及多条通信路径。
+5. 可见性失效：由于缺乏对服务发现变化的监控，导致异常通信模式被忽视或解释不清，为滥用提供便利。
+
+- 攻击特征
+此类攻击具有极强的隐蔽性和非破坏性特征。在传输层面，攻击产生的请求格式良好，会话依然安全，流量看似正常，系统表面上保持现代化且连接良好。然而，破坏发生在底层的信任模型中。攻击者通过影响服务发现和注册逻辑，使系统在看似正常运作的情况下做出错误决策。这种“静默”的信任滥用使得攻击难以被传统的可用性监控手段察觉。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:23:26</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>NRF Security in 5G Core: Service Discovery, Registration Trust, and Poisoning Risks</p>
+    <div class="analysis" style="white-space:pre-wrap;">The Network Repository Function is one of the quietest critical components in the 5G Core.
+That usually means it does not get enough security attention.
+In Service Based Architecture, the NRF helps network functions discover each other and understand what services are available in the environment. That sounds neat, efficient, and harmless. In practice, it makes the NRF part of the trust fabric of the entire core. If service discovery is wrong, stale, manipulated, or too loosely governed, the damage does not stay inside one function. It can distort communication patterns, weaken trust decisions, and make bad interactions look legitimate.
+That is why NRF security matters.
+A lot of 5G content mentions the NRF only as a discovery directory. That description is not wrong. It is just far too shallow. In a live 5G Core, the NRF influences how network functions find each other, how services are registered, how trust is expressed operationally, and how communication paths evolve over time. Once a component plays that role, it is no longer just a convenience service. It is part of the control plane’s security model.
+And if the trust model around it gets soft, the rest of the architecture can become much easier to confuse.
+What is the NRF in 5G Core?
+The NRF, or Network Repository Function, is the 5G Core function that supports network function registration and discovery in the Service Based Architecture.
+In simple terms, it helps network functions announce themselves and discover other functions and services they may need to communicate with.
+That is a powerful role.
+Without service discovery, the architecture becomes more rigid and harder to scale. With service discovery, the 5G Core becomes more flexible, dynamic, and operationally manageable. But flexibility always comes with a question: what happens when trust in the discovery process is too broad, too stale, or too easy to influence?
+That is where NRF security starts becoming important.
+The NRF does not just store information. It affects who finds whom, who trusts whom, and which communication patterns become normal. Any weakness there can create downstream consequences that are much larger than the NRF itself. That is why discovery should never be treated as a neutral plumbing task. In a service based core, discovery is part of how trust is operationalized.
+And operational trust is where subtle failures become expensive.
+Why service discovery is a security control, not just a convenience feature
+A lot of teams still think about service discovery as an architectural helper.
+That is too polite.
+In the 5G Core, service discovery influences how network functions locate services, choose destinations, establish communication patterns, and maintain relationships over time. That makes it a security control, whether teams describe it that way or not.
+If discovery is accurate, tightly governed, and continuously validated, it supports a disciplined trust model.
+If discovery is weak, stale, inconsistent, or vuln
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

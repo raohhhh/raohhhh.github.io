@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N32 上的 PRINS 或 TLS：SEPP 之间如何真正协商 5G 漫游安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>N32 上的 PRINS 或 TLS：SEPP 之间如何真正协商 5G 漫游安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：PRINS or TLS on N32: how 5G roaming security is really negotiated between SEPPs</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-08-04
+ · <a href="https://www.p1sec.com/blog/prins-or-tls-n32-5g-roaming-security-negotiation-sepp" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景
+本文深入分析了5G独立组网（5GS）漫游架构中安全边缘保护代理（SEPP）之间N32接口的安全机制。在5G核心网服务化架构（SBA）下，不同运营商网络之间的信令交互需通过N32接口进行。3GPP提供了两种保护机制：端到端的TLS直接连接和PRINS协议。文章指出，在实际部署中，由于漫游中介（IPX）需要修改信令，运营商在TLS和PRINS的选择与配置上存在模糊和矛盾，这为漫游信令安全留下了隐患。
+
+时间线
+文章发布于2026年8月4日，属于对5G漫游安全现状的深度剖析与前瞻性研究。
+
+攻击原理
+攻击主要利用5G漫游部署中的配置缺陷和信任模型弱点：
+1. TLS误用与降级：当运营商选择TLS但仍依赖中介进行信令调解时，中介将被迫终止TLS连接并建立新连接，导致漫游信令在中介网络中以明文存在，端到端保护被破坏。
+2. 证书与信任锚管理缺陷：N32-c握手依赖双向TLS认证，如果SEPP信任了广泛的公共CA，或仅验证了证书链而未核对对端PLMN身份，攻击者可利用伪造证书接入，继承PRINS的密钥派生弱点。
+3. PRINS修改策略滥用：PRINS允许中介对特定信元进行修改并签名。若修改策略过于宽松，或SEPP未严格执行拒绝越权修改的策略，恶意中介可篡改信令且留下看似合法的签名。
+4. 拓扑隐藏失效：若SEPP未正确过滤错误响应或配置拓扑隐藏，外部网络可通过望远镜式FQDN获取核心网内部标识和结构。
+
+攻击详情
+攻击者通常为恶意的漫游中介或利用配置漏洞的外部攻击者。在TLS被中介终止的场景下，信令暴露给中介，中介可任意读取或篡改认证向量、订阅标识符等敏感参数。在PRINS模式下，若N32-c握手派生的密钥因证书校验不严而被攻击者获取，攻击者可解密N32-f消息中的加密块。此外，攻击者倾向于寻找网络中最薄弱的环节，如并存的SS7或Diameter遗留信令接口，进行跨代信令攻击。
+
+攻击特征
+- 利用配置与信任管理缺陷而非协议底层漏洞。
+- 针对漫游中介生态系统的商业需求与安全机制之间的矛盾。
+- 破坏端到端信令机密性与完整性，导致信令在中介处明文暴露或被越权篡改。
+- 攻击行为可能被掩盖在合法的中介调解功能之下，难以归因。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:15:17</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>PRINS or TLS on N32: how 5G roaming security is really negotiated between SEPPs</p>
+    <div class="analysis" style="white-space:pre-wrap;">On the N32 interface between two Security Edge Protection Proxies, 3GPP gives operators a choice of exactly two protection mechanisms, and the choice is not cosmetic. Either the two SEPPs establish TLS directly to each other, in which case nothing in between can read or alter the roaming traffic, or they negotiate PRINS, the protocol for N32 interconnect security, in which case the payload is protected at the application layer with JSON Web Encryption and a roaming intermediary is explicitly permitted to modify a defined subset of information elements and sign those modifications with JSON Web Signature. The short answer to which one an operator should use is that TLS is correct whenever no intermediary needs to touch the content, and PRINS is the only correct option when one does. Choosing TLS while still expecting an intermediary to mediate the traffic is not a security posture, it is a contradiction that gets resolved in the intermediary&#39;s favour.
+That distinction is where a lot of 5G standalone roaming deployments are quietly imprecise, and it is why the N32 interface deserves a closer look than the architecture diagram gives it. This article goes one level below our overview of SEPP security in 5G roaming and examines what the N32-c handshake actually negotiates, how a PRINS protected message is constructed, what the protection policies do and do not cover, where real deployments diverge from the specification, and what a security team should verify at the interconnect edge. The relevant specifications are 3GPP TS 33.501 for the security architecture, 3GPP TS 29.573 for the protocol and API detail, and the GSMA NG.113 5GS roaming guidelines for the interoperability profile the industry actually implements.
+What N32 is and why it has two security modes
+N32 is the inter PLMN interface that carries service based interface signalling between a visited network and a home network in 5G standalone roaming. It exists because the 5G core replaced the point to point signalling of earlier generations with HTTP/2 and JSON over a service based architecture, and that architecture had to be extended across an operator boundary without simply exposing internal network functions to a foreign network. The SEPP is the single point of entry and exit for that traffic, and N32 is the pipe between two SEPPs.
+The interface is split into two logical parts. N32-c is the control part, a mutually authenticated TLS connection between the two SEPPs used for capability negotiation, key material establishment, policy exchange and context management. N32-f is the forwarding part, which carries the actual roaming signalling: the Nudm, Nausf, Namf and other service requests and responses that a visited network needs to make against a home network for registration, authentication, subscription retrieval and session management.
+Two modes exist because the industry has two incompatible operational requirements. Operators want confidentiality and integrity end to end between netw
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

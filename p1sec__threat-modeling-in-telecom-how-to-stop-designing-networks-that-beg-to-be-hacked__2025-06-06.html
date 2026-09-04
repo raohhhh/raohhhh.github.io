@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通信领域的威胁建模：如何停止设计易受黑客攻击的网络 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>通信领域的威胁建模：如何停止设计易受黑客攻击的网络</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Threat Modeling in Telecom: How to Stop Designing Networks That Beg to Be Hacked</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-06-06
+ · <a href="https://www.p1sec.com/blog/threat-modeling-in-telecom-how-to-stop-designing-networks-that-beg-to-be-hacked" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文并非针对单一攻击事件的报告，而是一篇关于移动通信网络（从2G到5G）威胁建模的方法论与实战分析文章。
+- 攻击事件背景：文章指出，从2G到5G，移动网络在设计时优先考虑连通性、互操作性和速度，安全往往滞后。电信系统庞大、协议繁重且深度依赖实体间信任，使其成为攻击者的“游乐场”。传统IT威胁建模框架（如STRIDE）不适用于电信网络，需要基于真实攻击者行为的定制化方法。
+- 时间线：文章发布于2025年6月6日，回顾了从2G到5G网络演进中安全设计滞后的历史问题，并针对当前及未来的网络架构提出威胁建模建议。
+- 攻击原理：文章提出电信安全是分层的，威胁建模也应分层进行（协议栈层、网络拓扑层、操作信任层、设备/用户层）。攻击者利用了电信网络中“设计不安全”的默认状态，如信令消息缺乏认证、设备证书验证缺失、IPX被视为安全传输层等设计缺陷。
+- 攻击详情：文章列举了多个真实的电信威胁场景：
+  1. IMSI捕获与位置追踪：5G中SUCI加密未强制执行时，设备回退到明文SUPI/IMSI，易受伪基站追踪。
+  2. 恶意Diameter对等连接：运营商接受无双向TLS或AVP验证的入站Diameter流量，攻击者可伪装成漫游伙伴发送Update Location Requests、清除用户或触发重新认证洪泛。
+  3. GTP会话劫持：GTP-C验证不足，攻击者伪造Create Session Requests或劫持TEIDs，导致用户冒充、DoS和不受控的隧道穿透。
+  4. VoLTE/IMS中的SIP欺骗：SIP模糊测试或伪造INVITE/REGISTER消息可导致呼叫会话服务器崩溃、伪造CLI或诱导设备接受虚假呼叫。
+  5. Wi-Fi卸载中的ePDG攻击：EAP-AKA证书验证薄弱，攻击者通过伪造ePDG和恶意Wi-Fi诱骗设备泄露会话密钥或静默接受MITM连接。
+- 攻击特征：文章总结了四类现实的攻击者画像及其特征：
+  1. 脚本小子：使用伪基站扫描GTP端口、进行SIP模糊测试。
+  2. 恶意漫游伙伴：通过IPX发送畸形或未授权的信令消息。
+  3. 内部威胁：滥用合法拦截系统、利用NMS接口后门或未记录访问HSS。
+  4. 国家级对手：使用被动探测进行长期用户追踪、SIM级漏洞利用及在IPX或电缆着陆点进行注入攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:28:47</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Threat Modeling in Telecom: How to Stop Designing Networks That Beg to Be Hacked</p>
+    <div class="analysis" style="white-space:pre-wrap;">Every mobile network ever built was designed to function before it was designed to resist attackers .
+From 2G to 5G, mobile networks evolved with a priority on connectivity, interoperability, and speed. Security came later—usually when it was already too late. And that’s exactly why threat modeling in telecom isn&#39;t just useful—it&#39;s essential.
+While threat modeling is well understood in traditional IT and software engineering, applying it to telecom requires a very different mindset. Telecom systems are sprawling, protocol-heavy, often proprietary, and deeply dependent on trust between entities—making them an unusually attractive playground for attackers.
+In this post, we’ll break down how threat modeling works in telecom, which assets and entry points matter most, and how to design defenses based not on best practices—but on what real attackers actually do.
+Why Telecom Needs a Custom Threat Modeling Approach
+Most conventional threat modeling frameworks—like STRIDE, PASTA, or OCTAVE—were built for software systems with bounded scope, APIs, and developer-controlled environments.
+Telecom is different.
+Mobile networks:
+Span physical, virtual, and radio environments
+Rely on complex, layered protocol stacks (SS7, GTP, Diameter, SIP, HTTP/2, etc.)
+Include legacy systems still in active use (hello, 2G roaming)
+Involve third parties with partial trust (roaming partners, MVNOs, IPX carriers)
+Have protocol stacks where “insecure by design” is often the default
+In other words, a SIM card can get a device online, but it can also trigger silent SMS commands or hijack calls. And while HTTP/2 is used in 5G’s Service-Based Architecture, it’s still vulnerable to old-school MITM techniques if TLS isn’t enforced properly.
+A threat modeling exercise for telecom needs to focus less on speculative risks and more on actual attacker playbooks.
+What Are We Modeling? Assets That Actually Get Attacked
+Before modeling threats, you need to define what’s worth protecting. In telecom, these are the assets that consistently appear in real-world pentests and threat reports:
+1. Subscriber Identities and Location
+IMSI, SUPI, MSISDN
+SUCI encryption keys
+Roaming identity leaks
+Paging requests linked to device location
+2. Authentication &amp; Session State
+AKA flows (EPS-AKA, 5G-AKA, EAP-AKA’)
+Attach, detach, and handover procedures
+KASME, K_SEAF, and other session keys
+3. Core Network Functions
+MME, SGW, PGW, AMF, SMF, UPF
+Diameter, GTP-C, SBI interfaces
+Configuration and management APIs (Netconf, REST, SSH)
+4. Signaling Infrastructure
+SS7 and MAP for 2G/3G
+Diameter in 4G
+HTTP/2 APIs in 5G SBA
+IPX/GRX transit networks
+5. Radio Access Network (RAN)
+eNodeBs and gNodeBs
+Open RAN control interfaces
+S1AP, X2, NGAP
+6. SIM and Device APIs
+OTA SMS
+SIM applets (S@T, WIB, USIM Toolkit)
+VoLTE/IMS SIP stacks
+These aren’t theoretical. These are the actual entry points that adversaries—ranging from hacktivists to state actors—actively test and exploit.
+Common Telecom Threat Scenarios
+Threat modeling b
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

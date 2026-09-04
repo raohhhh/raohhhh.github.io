@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动网络的安全与访问控制：准入与拒绝机制 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动网络的安全与访问控制：准入与拒绝机制</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Security &amp; Access Control in Mobile Networks: Who Gets In, Who Stays Out</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-09-22
+ · <a href="https://www.p1sec.com/blog/security-access-control-in-mobile-networks-who-gets-in-who-stays-out" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对单一具体攻击事件的报告，而是对移动通信网络（从2G到5G）中访问控制机制及其安全漏洞的综合性技术分析。背景在于移动网络作为“数字堡垒”，其安全门禁（身份认证与授权）机制存在历史遗留问题和跨代兼容性风险。
+- 时间线：文章跨越了移动通信的发展历程，从早期的2G/3G网络单向认证缺陷，到4G/5G时代的互认证改进，再到当前5G网络切片环境下的访问控制新挑战。发布日期为2026年8月20日（以未来视角探讨当前及演进中的安全态势）。
+- 攻击原理：主要涉及身份验证缺陷利用、协议降级攻击和信令协议暴露。2G/3G网络中网络对设备的单向认证导致伪基站（IMSI Catchers）可轻易获取设备身份；攻击者通过强制降级将4G/5G设备诱导至弱加密或单向认证的老旧网络；此外，运营商将SS7和Diameter等控制面信令协议暴露给不受信任的合作伙伴，导致越权访问。
+- 攻击详情：
+1. IMSI Catcher与降级攻击：利用2G/3G单向认证漏洞，伪造基站诱使设备连接并暴露IMSI；通过降级攻击绕过4G/5G的强双向认证。
+2. 信令协议攻击：SS7和Diameter边界防护薄弱，攻击者利用暴露的信令接口进行用户冒充、通话拦截和欺诈。
+3. 5G网络切片越权：5G引入网络切片后，若访问边界未严格隔离，攻击者可从弱安全切片（如消费级视频流）横向移动至敏感切片（如工业物联网）。
+4. 内部与伪设备威胁：恶意飞蜂窝、被攻陷的物联网设备或内部人员利用合法途径进入网络，在缺乏网络分段的条件下向深处渗透。
+- 攻击特征：利用遗留协议漏洞、跨代网络互操作缺陷、信任边界模糊以及信令面管控不足。攻击往往从外围身份欺骗或信令渗透开始，最终目的是实现网络内部的横向移动或获取敏感资源访问权。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:19:02</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Security &amp; Access Control in Mobile Networks: Who Gets In, Who Stays Out</p>
+    <div class="analysis" style="white-space:pre-wrap;">Mobile networks are massive digital fortresses — but like any fortress, they’re only as strong as their gates. In telecom, those gates are security and access control mechanisms , the systems deciding who’s allowed in, who stays out, and under what conditions. Fail at the gate, and you’re essentially inviting attackers to move freely inside the network.
+The Basics: Identity, Authentication, and Authorization
+Access control begins with identity. A SIM card, an IMSI, and authentication keys form the first layer of “who you are” in a mobile network. The operator challenges devices through cryptographic protocols, verifying whether that subscriber has the right to attach and use services. Once verified, authorization steps in: what resources does this subscriber get? Voice? Data? Roaming?
+Sounds airtight, but theory and reality don’t always match.
+The Insecurities of Legacy Protocols
+2G and 3G authentication was famously one-sided — the network checked the device, but the device didn’t check the network. That flaw birthed IMSI catchers , fake base stations that trick devices into connecting and revealing identities. Even worse, attackers can downgrade a device from 4G or 5G to weaker legacy networks, bypassing stronger mutual authentication.
+Diameter and SS7, the control-plane protocols behind roaming and interconnection, also play into access control. In practice, many operators still expose these signaling protocols to untrusted partners, leaving doors wide open for subscriber impersonation, call interception, and fraud .
+Access Control in the 5G Era
+5G finally introduced stronger cryptography, mutual authentication, and subscriber concealment (SUCI). On paper, this closes many long-abused loopholes. But in practice, 5G networks coexist with older generations, and interworking functions often reintroduce the same weaknesses operators thought they’d outgrown. A secure 5G core doesn’t mean much if your SS7 or Diameter border is still a free-for-all.
+Beyond subscriber authentication, 5G access control now covers network slices . A slice designed for industrial IoT should not be as open as one meant for consumer video streaming. Yet attackers who compromise weak slices may pivot laterally to more sensitive ones if access boundaries aren’t enforced.
+Rogue Devices and Insider Risks
+Not all access problems come from outside. Rogue femtocells, compromised IoT devices, or malicious insiders can sneak through legitimate access pathways. Once inside, weak segmentation often allows attackers to move deeper into the network than intended.
+Security Engineers at the Gate
+For operators, securing access control means more than just trusting the specs. It requires:
+Continuous monitoring of signaling traffic to spot abnormal requests.
+Enforcing strict border controls between trusted and untrusted networks.
+Disabling legacy fallback where possible, or at least detecting forced downgrades.
+Testing and auditing authentication procedures under real-world attack scenarios
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

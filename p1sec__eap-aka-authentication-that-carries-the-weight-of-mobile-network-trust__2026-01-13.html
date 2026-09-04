@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAP-AKA：支撑移动网络信任体系的认证机制 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>EAP-AKA：支撑移动网络信任体系的认证机制</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：EAP-AKA: Authentication That Carries the Weight of Mobile Network Trust</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-01-13
+ · <a href="https://www.p1sec.com/blog/eap-aka-authentication-that-carries-the-weight-of-mobile-network-trust" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文并非针对单一具体攻击事件的报道，而是对移动通信中 EAP-AKA 认证协议的安全机制、部署场景及潜在攻击面的深度技术分析。
+- **攻击事件背景**：EAP-AKA 协议将移动核心网的信任模型扩展到了 Wi-Fi 等基于 IP 的非 3GPP 接入网。虽然协议本身在密码学上较为健全，但在实际部署中，由于边界模糊和信任假设失效，使其成为暴露用户身份、密码材料和核心网信任关系的高风险攻击面。
+- **时间线**：文章发布于 2026 年 1 月 13 日，是对当前及未来移动网络（特别是 5G 与 LTE、Wi-Fi 混合部署环境）中 EAP-AKA 持续存在风险的预警性分析。
+- **攻击原理**：攻击主要利用 EAP-AKA 在实际部署中的缺陷而非协议本身的底层算法。由于 EAP-AKA 紧密耦合了接入认证与核心网用户数据（如 HLR/HSS/UDM），接入网与核心网之间的距离被压缩。攻击者通过利用对接入网的过度信任、认证向量处理不当或错误处理不一致等漏洞，可实施重放、身份冒充或信令滥用等攻击。
+- **攻击详情**：
+ 1. **认证向量保护薄弱**：如果认证向量在跨内部网络传输或 AAA 组件缓存时未得到充分保护，攻击者可截获并重放这些敏感材料。
+ 2. **身份暴露与隐私泄露**：在缺乏固有隐私保护的 Wi-Fi 环境中，EAP-AKA 交换期间对永久标识符处理不当会向被动观察者暴露用户身份。
+ 3. **过度信任接入网**：被攻破或恶意的接入网基础设施可操纵认证流程，触发过量向量请求，或实现对用户的追踪。
+ 4. **错误处理不一致**：认证失败消息如果过于详细，会泄露用户状态、配置或网络信息，辅助攻击者侦察。
+- **攻击特征**：
+ 1. **跨域渗透**：攻击从 IP 接入网（边缘）发起，直接影响核心网后端系统（如 HSS/UDM）。
+ 2. **混合环境脆弱性**：在 5G（EAP-AKA&#39;）与 LTE、Wi-Fi 向后兼容的混合部署中，安全控制最为薄弱，经典 EAP-AKA 的风险依然暴露。
+ 3. **信任滥用**：利用协议对非 3GPP 接入网络“默认可信”的假设，实施中间人或追踪攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:24:31</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>EAP-AKA: Authentication That Carries the Weight of Mobile Network Trust</p>
+    <div class="analysis" style="white-space:pre-wrap;">In mobile networks, authentication is not just a gatekeeping mechanism. It is the foundation upon which subscriber trust, service continuity, and billing integrity are built. Among the authentication protocols used across cellular and non-cellular access, EAP-AKA (Extensible Authentication Protocol – Authentication and Key Agreement) occupies a particularly sensitive position.
+EAP-AKA extends the trust model of cellular networks into IP-based access environments such as Wi-Fi, trusted non-3GPP access, and interworking scenarios. When implemented correctly, it provides strong mutual authentication rooted in the SIM and the operator core. When implemented poorly, it becomes a high-impact attack surface that directly exposes subscriber identity, cryptographic material, and core network trust relationships.
+This article breaks down how EAP-AKA works, why it matters, where it is deployed, and where security assumptions tend to fail in real-world networks.
+What Is EAP-AKA?
+EAP-AKA is an authentication protocol defined by 3GPP and IETF that allows a user device to authenticate to a network using credentials stored in the SIM or USIM. Instead of relying on passwords or certificates, EAP-AKA leverages the same cryptographic material used in traditional cellular authentication.
+At a high level, EAP-AKA enables:
+Mutual authentication between the user equipment and the operator network
+Derivation of session keys bound to subscriber identity
+Reuse of operator-grade authentication in IP-based access networks
+This makes EAP-AKA particularly attractive for environments where operators want SIM-based security beyond the radio access network.
+Where EAP-AKA Is Used
+EAP-AKA is most commonly encountered in scenarios where mobile subscribers authenticate over non-cellular access networks while still relying on their home operator for identity verification.
+Typical deployments include:
+Wi-Fi offloading and carrier-grade Wi-Fi authentication
+Trusted non-3GPP access to EPC or 5G Core
+IMS access authentication flows
+Roaming and inter-operator authentication environments
+In these contexts, EAP-AKA often traverses multiple systems, including access points, AAA servers, HLR or HSS, and sometimes cloud-based authentication infrastructure.
+Each hop introduces assumptions. Each assumption introduces risk.
+How EAP-AKA Works at a High Level
+At its core, EAP-AKA mirrors the classic AKA procedure used in cellular networks, but wraps it inside the EAP framework.
+The simplified flow looks like this:
+The user device initiates EAP authentication over an IP-based access network
+The network requests authentication vectors from the home operator core
+The core generates cryptographic challenges based on the subscriber key
+Mutual authentication is performed between the SIM and the network
+Session keys are derived and bound to the access session
+This tight coupling between access authentication and core subscriber data is both the protocol’s strength and its primary weakness.
+Why EAP-AKA Is 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

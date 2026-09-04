@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为何移动网络与传统网络存在本质区别 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>为何移动网络与传统网络存在本质区别</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Why Mobile Networks Are Fundamentally Different from Traditional Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-06-23
+ · <a href="https://www.p1sec.com/blog/why-mobile-networks-are-fundamentally-different-from-traditional-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非描述单一的攻击事件，而是从宏观架构角度深度剖析移动网络与传统IT网络在安全层面的根本差异。文章指出移动网络因遗留协议、空口暴露、漫游隐式信任以及以用户为中心的身份模型等因素，面临着独特的安全威胁。
+- 时间线：文章涵盖了从20世纪70年代引入的SS7协议，到3G/4G时代的GTP-C和Diameter协议，再到5G时代的HTTP/2 SBA架构的技术演进时间线，揭示了遗留协议长期存在带来的安全债务。
+- 攻击原理：文章阐述了多种移动网络攻击面的原理：1) 利用缺乏鉴权和加密的遗留信令协议（如SS7、MAP）进行信令拦截和篡改；2) 通过未鉴权或过滤不当的GTP-C协议进行会话劫持、DoS和身份冒充；3) 利用空口暴露拦截广播消息，或通过伪基站（IMSI catcher）实施降级攻击以提取用户身份；4) 利用漫游网络间的隐式信任和协议碎片化进行跨国信令攻击；5) 针对SIP等协议的模糊测试和注入攻击；6) 通过欺骗、窃取或修改用户IMSI及策略配置进行计费欺诈和流量拦截。
+- 攻击详情：详细列举了移动网络特有的脆弱点。例如，SS7和MAP设计于可信环境，缺乏基本安全特性；GTP-C在核心网组件间管理会话状态时若未鉴权将引发严重攻击；空口广播消息（如寻呼请求、SIBs）可被任意拥有SDR设备的人拦截；2G不安全回退机制被利用来迫使受害者进入不安全通道；多供应商环境下的接口（S1, N2, S6a, N4等）成为信任边界破裂的攻击“接缝”。
+- 攻击特征：移动网络攻击具有显著特征：攻击者无需传统IT意义上的内网访问权限或突破防火墙，仅凭无线电波（空口）或利用漫游信令的隐式信任即可发起被动或主动攻击。攻击往往发生在协议假设破裂或供应商逻辑分歧的边界处。此外，由于移动协议具有状态化、二进制且常被供应商定制的特点，传统安全工具（如SIEM、防火墙、IDS）难以有效检测，除非经过专门训练。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:28:28</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Why Mobile Networks Are Fundamentally Different from Traditional Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">At first glance, a mobile network might appear to be just another way to deliver internet connectivity. But from a security and architectural standpoint, mobile networks are an entirely different ecosystem—riddled with legacy protocols, implicit trust assumptions, radio exposure, and subscriber-centric identity models. These factors make mobile networks both uniquely complex and uniquely vulnerable.
+This article outlines the structural, technical, and operational differences that set mobile networks apart—and why those differences demand a dedicated approach to security.
+1. Legacy Protocols Still Power the Core
+Unlike IT environments that have evolved away from outdated protocols, mobile networks still rely heavily on technologies designed decades ago:
+SS7 (Signaling System 7): A signaling protocol introduced in the 1970s, still widely used in 2G and 3G networks. It was designed for trusted environments and lacks basic security features like authentication and encryption.
+MAP (Mobile Application Part): Built on SS7, MAP handles critical signaling functions such as location updates, authentication vector exchange, and roaming coordination.
+GTP-C (GPRS Tunneling Protocol – Control Plane): Used in 3G/4G to manage session state between different core components. If left unauthenticated or improperly filtered, GTP-C opens the door to session hijacking, denial-of-service attacks, and impersonation.
+These protocols remain operational not because they are secure, but because they are embedded into the telco ecosystem—and replacing them is non-trivial.
+2. Radio Interface Is a Default Exposure Point
+In traditional networks, attackers typically need internal access or a compromised host. In mobile, the air interface (radio) is wide open:
+Broadcast messages like paging requests and system info blocks (SIBs) can be intercepted by anyone with a software-defined radio.
+IMSI catchers or rogue base stations can impersonate network elements to downgrade connections or extract identities from mobile devices.
+Unsecured fallback mechanisms , such as 2G support, can be leveraged to force users into insecure channels.
+This exposure makes mobile networks inherently vulnerable to passive and active attacks from anyone within range—no login, no authentication, no firewall breach required.
+3. Roaming Expands the Threat Surface Globally
+Roaming is one of the most misunderstood and underestimated risks in telecom. It allows mobile users to access services through foreign networks by exchanging signaling messages between their home and visited networks.
+The problems stem from:
+Implicit trust: Most roaming signaling is accepted without authentication or verification of sender intent.
+Inconsistent security postures: Some operators implement firewalls and anomaly detection, others do not.
+Protocol fragmentation: Roaming still uses SS7 for 2G/3G, Diameter for 4G, and HTTP/2 in 5G—each with its own quirks and security assumptions.
+This effectively turns any malicious or compromise
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

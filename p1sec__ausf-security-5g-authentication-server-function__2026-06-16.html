@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G中的AUSF安全：保护鉴权服务功能 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G中的AUSF安全：保护鉴权服务功能</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：AUSF security in 5G: protecting the Authentication Server Function</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-06-16
+ · <a href="https://www.p1sec.com/blog/ausf-security-5g-authentication-server-function" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对某个单一的突发安全事件，而是对 5G 核心网中关键网元 AUSF（认证服务器功能）的安全态势进行深度剖析。AUSF 作为归属网络的认证锚点，负责确认用户身份并生成顶层密钥，其安全性直接决定了整个 5G 网络对用户身份的信任基础。尽管其角色至关重要，但在实际安全防护中往往被 AMF 或无线侧所忽视。
+- 时间线：文章发布于 2026 年 6 月 16 日，属于针对 5G 核心网安全架构的前瞻性或阶段性技术研究总结，无特定的事件时间线。
+- 攻击原理：攻击核心原理在于利用 5G 服务化架构（SBA）的弱点或 AUSF 自身逻辑缺陷，破坏认证流程的机密性、完整性或可用性。由于 AUSF 集中了认证路径和顶层密钥处理两大敏感功能，攻击者无需接触无线侧，直接通过核心网内部信令交互即可动摇整个网络的身份信任体系。
+- 攻击详情：
+  1. 服务化接口暴露：攻击者利用 Nausf 接口（基于 HTTP/2）的弱点，如缺失或弱双向 TLS、OAuth2 令牌验证不严或权限过宽、NRF 注册或发现机制投毒等，使非法或流讯网络功能能够直接与认证锚点通信，进行探测或干扰。
+  2. 密钥与密钥层次结构破坏：AUSF 负责派生 KSEAF 并处理 KAUSF，这些密钥是 5G 密钥层次的根。攻击者通过窃取传输中的密钥材料、利用弱传输保护或诱导认证方法降级，削弱所有底层派生密钥的机密性与完整性。
+  3. 归属控制与漫游欺诈：如果 AUSF 未正确执行认证结果存储和归属控制逻辑，攻击者（如恶意漫游网络）可伪造用户的认证状态和位置信息，而归属网络无法察觉，从而实施漫游和位置欺诈。
+  4. 拒绝服务：针对 AUSF 发起 DoS 攻击，导致全网新的用户注册和重新认证流程停滞。
+- 攻击特征：此类攻击主要针对 5G 核心网信令面和 SBA 架构，具有“不触碰无线侧”的特征。攻击者通常通过未授权的网络功能探测或干扰认证、利用弱 SBA 安全配置模拟或重定向 AUSF 流量、破坏归属控制逻辑以支持漫游欺诈等手段，直接针对核心网的身份信任机制发起攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:22:48</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>AUSF security in 5G: protecting the Authentication Server Function</p>
+    <div class="analysis" style="white-space:pre-wrap;">AUSF security matters because the Authentication Server Function is where the home network decides whether a subscriber is real. In the 5G core, the AUSF is the authentication anchor that sits in the home network and confirms every primary authentication. If an attacker can weaken, bypass, or abuse the AUSF, they undermine the trust the entire network places in subscriber identity. Yet the AUSF receives far less security attention than the AMF or the radio.
+What is the AUSF and what does it do?
+The Authentication Server Function is defined across 3GPP TS 23.501 for architecture, TS 33.501 for security, and TS 29.509 for its service-based interface, Nausf. It lives in the home network (HPLMN) and is responsible for primary authentication of the subscriber using 5G-AKA or EAP-AKA prime.
+In the authentication flow, the Security Anchor Function (SEAF), hosted in the AMF in the serving network, sends an authentication request to the AUSF. The AUSF obtains authentication material from the UDM and its ARPF, which hold the long-term credentials, runs the authentication exchange, and on success derives the anchor key KSEAF that seeds the rest of the 5G key hierarchy. The AUSF also records the authentication result, which is the basis for the home-control feature.
+Why the home network anchor matters
+The AUSF gives the home network a say in authentication even when the subscriber is roaming. Through home control, the AUSF stores confirmation that authentication actually happened, so the home network can detect a visited network that falsely claims a subscriber is present and authenticated. That makes the AUSF a control point against a class of roaming and location fraud, and therefore a target.
+Why is the AUSF a security concern?
+The AUSF concentrates two sensitive things: it is on the authentication path for every subscriber, and it handles key material at the top of the 5G key hierarchy. Three exposures follow from that.
+Service-based interface exposure
+The AUSF is reached over Nausf, a service-based interface using HTTP/2 inside the 5G core service-based architecture. Every weakness that affects the SBA affects the AUSF: missing or weak mutual TLS, OAuth2 access tokens that are not validated or are over-scoped, and NRF registration or discovery that can be poisoned to redirect AUSF lookups. A compromised or rogue network function that can reach Nausf without proper authorization is talking directly to the authentication anchor.
+Key material and the 5G key hierarchy
+The AUSF derives KSEAF and handles KAUSF. These keys anchor the confidentiality and integrity protection that follow. Weak transport protection, key exposure, or a downgrade in the authentication method weakens everything derived below. Protecting AUSF key handling is protecting the root of the hierarchy.
+Home control and roaming fraud
+If the authentication confirmation and home-control logic are not enforced correctly, the home network loses its ability to detect a serving network that lies a
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>善、恶与编码：一次 SS7 旁路攻击 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>善、恶与编码：一次 SS7 旁路攻击</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：The Good, the Bad, and the Encoding: An SS7 Bypass Attack</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-07-14
+ · 作者：Cathal McDaid · <a href="https://www.enea.com/insights/the-good-the-bad-and-the-encoding-an-ss7-bypass-attack/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Signaling Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">MNO</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Mobile Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Mobile Surveillance</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">SS7 Network</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Article</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+随着移动运营商对SS7网络安全的防御措施不断增强，攻击者为了获取高额回报，开始研发新型的SS7绕过攻击技术。文章指出，近年来针对SS7协议栈中TCAP层的编码异常利用已成为攻击者的主要突破口，旨在绕过运营商部署的信令防火墙等安全防护系统，进而对目标用户进行位置追踪等恶意操作。
+
+- 时间线
+自2017年以来，真实环境中开始出现多种SS7绕过攻击。2019年首次报告了利用异常TCAP编码技术（global opcode encoding）的攻击方法。近期，Enea威胁情报部门又检测到了一种新型的TCAP不规则编码变体。
+
+- 攻击原理
+攻击核心利用了SS7协议栈中TCAP（Transaction Capabilities Application Part）层采用ASN.1 BER（基本编码规则）编码的灵活性与复杂性。ASN.1 BER允许同一对象有多种编码方式，攻击者通过构造结构非预期但符合规范的PDU（协议数据单元），使得目标网络的安全防护系统或防火墙无法正确解码数据包内容，进而绕过安全检查。
+
+- 攻击详情
+最新发现的攻击针对Invoke组件中包含IMSI字段的IE（信息元素）。攻击者修改了ProvideSubscriberInfo (PSI) Invoke的编码，利用了ASN.1 BER中鲜为人知的Tag扩展机制。正常情况下，包含IMSI的IE起始编码为 `30 12 80 08`，而攻击者将其改为 `30 13 9f 00 08`，其中 `9f 00` 利用了规范中当Tag code大于30时使用后续字节扩展的机制。由于许多SS7软件解码栈和安全解决方案未实现该扩展Tag的解码逻辑，或对无法解码的字段采取“能路由则放行”的保守宽容策略，导致包含恶意IMSI（针对本地用户）的PSI包绕过了边界防火墙，成功进入核心网。
+
+- 攻击特征
+1. 针对TCAP层及ASN.1 BER编码的灵活性进行漏洞挖掘。
+2. 利用合法但非常规的协议规范（Tag扩展机制）构造畸形数据包。
+3. 利用安全设备底层解码栈的缺陷或“宽容”处理策略实现绕过。
+4. 最终目的是绕过边界防护，利用PSI命令对特定IMSI用户进行位置追踪、获取用户状态及IMEI信息。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:11:10</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>The Good, the Bad, and the Encoding: An SS7 Bypass Attack</p>
+    <div class="analysis" style="white-space:pre-wrap;">The Good, the Bad, and the Encoding: An SS7 Bypass Attack
+There are two kinds of SS7 commands, my friend: the harmless ones… and the ones that can blow things up…
+… Okay, that may be an exaggeration, however just like the characters in Spaghetti Westerns, the commands encountered in the SS7 landscape come in a wide range of shapes and sizes and can sometimes be difficult to interpret (or most importantly, process safely). SS7 commands (or PDUs) that are not processed correctly pose significant risks, potentially resulting in the equivalent of a signaling “zero-day” enabling any of the wide range of attacks possible via SS7.
+A Fistful of Exploits
+Several effective SS7 bypass attack techniques have emerged in the past few years, to bypass new defences that have been put in place over time. While not numerous, they do emerge on a fairly regular basis, as would be expected from attackers who are paid large sums of money to devise new ways of avoiding defences. A table summarizing the SS7 bypass attacks encountered in real-life over the last few years is below.
+SS7 Bypass Attacks Encountered in Real Life Since 2017
+[1] Some of these have GSMA CVD numbers, however for these cases the GSMA allocated these not when the vulnerability was first reported or made public, but when formally submitted to the GSMA by different researchers.
+[2] Link
+[3] Link
+[4] An earlier version of this blog erroneously reported this finding as 2022. This has since been corrected to 2023.
+You can see that the majority of the above involve what is called the TCAP layer, which is part of the SS7 protocol stack. This layer has turned into an attractive area for attackers to exploit due to its history, nature and specifically, how it is structured. The first reported attack that used an unusual TCAP encoding technique was a method known as global opcode encoding, detected and reported in 2019. Since then a variety of other methods have been observed and shared within the industry . The aim of all of these methods has been to try to avoid (bypass) the increasing security that mobile operators have put in place for their SS7 networks. In recent months, Enea’s Threat Intelligence Uit has detected a new variant of these TCAP manipulation structures, which fits into this trend of exploitation by the attackers.
+Every Byte Counts
+First some background. TCAP (Transaction Capabilities Application Part) is the layer of the SS7 protocol that carries application data to be exchanged between SS7 nodes. It is encoded in ASN.1 BER (Basic Encoding Rules), in a series of recommendations defined by the ITU. ASN.1 notation was first standardized in 1984 and is a way of specifying abstract data objects being widely used in industries where  “ efficient (low-bandwidth, low-transaction-cost) computer communications are needed ”.  ASN.1 BER, is a specific set of rules of encoding ASN.1 objects and are characterised by a level of freedom in how the ASN.1 objects can be encoded, in that objects may be enco
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

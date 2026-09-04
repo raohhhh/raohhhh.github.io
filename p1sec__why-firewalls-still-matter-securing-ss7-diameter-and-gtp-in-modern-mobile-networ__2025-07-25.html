@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>防火墙为何依然重要：在现代移动网络中保护 SS7、DIAMETER 和 GTP 的安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>防火墙为何依然重要：在现代移动网络中保护 SS7、DIAMETER 和 GTP 的安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Why Firewalls Still Matter: Securing SS7, DIAMETER, and GTP in Modern Mobile Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-07-25
+ · <a href="https://www.p1sec.com/blog/why-firewalls-still-matter-securing-ss7-diameter-and-gtp-in-modern-mobile-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：移动通信网络在向 5G 和云原生核心网演进的过程中，SS7、DIAMETER 和 GTP 等遗留信令协议仍被广泛使用。由于这些协议在设计之初缺乏安全考量（如认证和加密机制缺失），导致网络攻击面不断扩大，攻击者能力往往领先于信令层的安全防护。
+- 时间线：文章发布于 2025-07-25，针对当前及未来 2G 至 5G NSA 混合组网环境下的移动通信网络安全态势进行分析。
+- 攻击原理：
+  1. SS7 攻击：利用 SS7 协议默认缺乏认证和加密的缺陷，滥用 MAP/CAP 信令消息实施攻击。
+  2. DIAMETER 攻击：在许多部署未启用 TLS 加密或缺乏强对等验证的情况下，利用合法接口进行数据窃取或慢速滥用。
+  3. GTP 攻击：针对用户面数据隧道（GTP-U）和控制面会话信令（GTP-C）的漏洞，操纵隧道会话或制造洪泛攻击。
+- 攻击详情：
+  1. SS7：攻击者通过滥用 SRI-SM 进行位置跟踪，利用 ForwardSM 欺骗拦截短信，或对 HLR、MSC、VLR 等核心网网元发起拒绝服务攻击。配置错误的漫游伙伴可能发送看似合法但利用过时规则的消息。
+  2. DIAMETER：受损的对等节点可能在允许的接口上逐渐窃取用户数据，这种慢速数据泄露难以被基于静态策略的防火墙发现。
+  3. GTP：攻击者利用慢速隧道操纵、格式错误的 GTP-U 有效载荷，或滥用漫游对等连接进行 IMSI 欺骗、恶意会话创建、IP 地址冲突及隧道洪泛 DoS 攻击。
+- 攻击特征：攻击行为通常具有高度的隐蔽性和持续性（如“慢烧”型攻击）。攻击者利用看似合法的信令消息或非阻断性的异常行为绕过传统防火墙的静态规则，在数天或数周内进行缓慢的数据泄露或隧道操纵，表现出行为异常和零日信令行为特征。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:27:00</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Why Firewalls Still Matter: Securing SS7, DIAMETER, and GTP in Modern Mobile Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">In mobile telecom, security at the signaling layer is still catching up with attacker capabilities. Even as networks evolve toward 5G and cloud-native cores, legacy signaling protocols like SS7, DIAMETER, and GTP remain deeply embedded—and persistently vulnerable.
+This is why signaling firewalls are essential. But as attack surfaces grow and adversaries become more sophisticated, firewalls alone are no longer enough. Operators need Intrusion Detection Systems (IDS) purpose-built for telecom—like PTM (P1 Telecom Monitor) —to gain real-time visibility into what firewalls miss.
+Let’s break down why.
+SS7 Firewalls: Defending a 1970s Protocol in 2025
+The risk: SS7 was never designed with security in mind. It enables call setup, roaming, SMS delivery, and more in 2G and 3G networks—but lacks authentication and encryption by default.
+Firewall role: SS7 firewalls inspect signaling messages (MAP/CAP), applying policy rules to:
+Block location tracking (SRI-SM abuse)
+Stop SMS interception (ForwardSM spoofing)
+Prevent denial of service to HLR, MSC, or VLR
+Beyond firewalls: SS7 attacks can be stealthy and subtle. A misconfigured roaming partner, for instance, might send messages that appear legitimate but exploit outdated rules. That’s where an IDS becomes critical—detecting behavioral anomalies across days or weeks, even when firewalls permit the message.
+DIAMETER Firewalls: 4G’s Core Needs Core Security
+The risk: DIAMETER is the backbone protocol in LTE—used for authentication (S6a), charging (Gy), and policy control (Gx). But many deployments still operate without TLS encryption or robust peer validation.
+Firewall role: DIAMETER firewalls inspect AVPs and validate:
+Session states
+Origin-host correctness
+AVP length and content
+Interface-specific policies
+Why you also need IDS: Firewalls can enforce static policy, but can’t always detect slow misuse or data leakage. A compromised peer may gradually exfiltrate user data over allowed interfaces. An IDS like PTM can observe this over time and raise alerts based on behavioral baselines—something a rule-based system won’t catch.
+GTP Firewalls: Protecting the Data Plane Tunnel
+The risk: GTP enables user plane data tunneling (GTP-U) and control plane session signaling (GTP-C). It’s critical for 4G and 5G NSA networks but is vulnerable to:
+IMSI spoofing
+Rogue session creation
+IP address conflicts
+DoS via tunnel floods
+Firewall role: A GTP firewall monitors control plane messages and:
+Validates CreateSessionRequest and TEIDs
+Tracks tunnel lifecycles
+Ensures integrity between control and user planes
+Why an IDS is vital: Attackers may exploit slow tunnel manipulations, malformed GTP-U payloads, or abuse roaming peer connections with erratic but non-blockable behavior. Firewalls may miss these unless explicitly configured. PTM continuously analyzes all GTP traffic—both control and user plane—to detect anomalies at the tunnel level.
+The Role of Telecom Intrusion Detection Systems (IDS)
+Unlike traditional firewalls that b
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

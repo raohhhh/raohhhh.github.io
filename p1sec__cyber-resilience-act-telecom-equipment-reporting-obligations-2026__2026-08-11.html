@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络弹性法案与电信设备：2026年9月11日将发生哪些变化 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>网络弹性法案与电信设备：2026年9月11日将发生哪些变化</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Cyber Resilience Act and telecom equipment: what changes on 11 September 2026</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-08-11
+ · <a href="https://www.p1sec.com/blog/cyber-resilience-act-telecom-equipment-reporting-obligations-2026" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要分析了欧盟网络弹性法案对电信设备合规性的影响，深度涉及5G核心网网元及信令安全防护设备等相关领域。由于本文为法规合规分析而非具体的攻击事件，故省略攻击事件背景、攻击原理、攻击详情和攻击特征的分析。
+
+- 时间线：文章指出了CRA法案的几个关键时间节点：2024年12月10日法规生效；2026年6月11日通报机构规则适用；2026年9月11日漏洞和事件报告义务正式生效（要求24小时内早期预警，72小时内技术通知，14天或1个月内提交最终报告）；2027年12月11日实质性要求全面适用。
+
+- 核心内容分析：
+1. **核心网网元与5G安全**：文章明确指出，作为软件销售的虚拟化5G核心网功能属于具有数字元素的产品，受CRA管辖。其分类取决于实际功能，执行防火墙或入侵检测功能的网元可能落入Class II高风险类别。文章还对比了CRA与现有NESAS/SCAS评估体系的差异，强调CRA具有市场监督效力且要求在整个产品支持期内（默认至少5年）履行持续义务，这将深刻影响核心网设备的采购与生命周期管理。
+2. **信令安全**：文章特别提到，用于保护SS7、Diameter和GTP互连的信令防火墙和电信入侵检测系统被明确列入CRA的Annex III Class II（最高重要产品层级）。这意味着此类防御信令攻击的关键设备供应商不能仅依赖自我评估，必须接受更严格的合规性评估，这填补了以往该细分市场监管较轻的空白。
+3. **法规重叠与区别**：文章梳理了CRA与无线电设备指令（RED）及NIS2指令的区别。RED针对无线电设备，NIS2是运营商义务，而CRA是针对产品制造商的义务，要求其对漏洞处理、安全更新和CE标志负责。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:15:07</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Cyber Resilience Act and telecom equipment: what changes on 11 September 2026</p>
+    <div class="analysis" style="white-space:pre-wrap;">From 11 September 2026, manufacturers of products with digital elements sold in the European Union must report actively exploited vulnerabilities and severe security incidents to ENISA and a national CSIRT, with an early warning inside 24 hours. That deadline is the first hard obligation of Regulation (EU) 2024/2847, the Cyber Resilience Act, and it lands well before the bulk of the regulation applies on 11 December 2027. For telecom, this matters more than most sectors realise, because routers, modems, switches and network management systems are named explicitly in the regulation&#39;s list of important products, and because the vulnerability-handling practices the CRA assumes are not the ones the mobile industry has historically run on.
+The mobile ecosystem already has a security assurance scheme in NESAS and SCAS, and a mature set of GSMA baseline documents. Neither of those is a substitute for the CRA. NESAS and SCAS test whether a product meets a set of security requirements at a point in time. The CRA is a product regulation with market-surveillance teeth, a CE marking pathway, and continuous obligations across the whole support period of a product. This post sets out what the CRA covers, which telecom equipment sits where in its risk classes, what changes on 11 September 2026 versus 11 December 2027, and what operators and network equipment vendors should be doing about it now. It is written for procurement, product security and network security teams, not for lawyers.
+What the Cyber Resilience Act actually regulates
+The CRA regulates products with digital elements placed on the EU market. It is not a network operator obligation in the way NIS2 is, and it is not a data protection regime. It sits on the product side: whoever manufactures, imports or distributes hardware or software with a digital element carries obligations about how that product is designed, how its vulnerabilities are handled, and how long it is supported.
+The regulation entered into force on 10 December 2024. Its substantive requirements apply from 11 December 2027, with two earlier milestones: the rules for notified bodies apply from 11 June 2026, and the reporting obligations in Article 14 apply from 11 September 2026. The staggered structure is deliberate. The Commission wanted incident and vulnerability visibility to start flowing before the full conformity assessment machinery is running.
+Two clusters of requirements matter for anyone who builds or buys telecom infrastructure. The first is the essential cybersecurity requirements in Annex I Part I, which cover things like shipping without known exploitable vulnerabilities, secure default configuration, protection of confidentiality and integrity of data, minimisation of attack surface, and the ability to distribute security updates. The second is the vulnerability handling requirements in Annex I Part II, which cover maintaining a software bill of materials, addressing vulnerabilities without delay, having a coordinated
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

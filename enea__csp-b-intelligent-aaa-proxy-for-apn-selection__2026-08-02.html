@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP B – 用于 APN 选择的智能 AAA 代理 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>CSP B – 用于 APN 选择的智能 AAA 代理</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：CSP B – Intelligent AAA Proxy for APN Selection</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2026-08-02
+ · 作者：Johan Terve · <a href="https://www.enea.com/insights/csp-b-intelligent-aaa-proxy-for-apn-selection/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Data Management Applications</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">AAA</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Case Study</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要介绍了北美某 Tier 1 移动运营商（CSP B）采用 Enea AAA Server 作为智能 AAA 代理以实现 4G/5G APN 自动选择的案例研究。
+
+- 技术背景与架构：文章详细阐述了运营商在核心网中部署 AAA 代理系统的架构，涉及的核心网网元包括分组网关（PGW）、AAA 服务器（负责认证、授权和计费）、归属 AAA（HAAA）等。系统采用虚拟化网络功能（VNF）部署，支持高吞吐量和大规模并发会话。
+- 4G/5G 通信安全与信令处理：文章明确提到系统通过处理来自 PGW 的 RADIUS Access-Request 信令来为设备分配预定义的 4G/5G APN。这涉及 4G 和 5G 网络中的接入点名称（APN）选择机制、RADIUS 协议信令处理（包括认证和计费请求的代理与路由）。
+- 业务逻辑与策略控制：系统通过可编程规则集、模式匹配和数据库查找来执行动态认证逻辑和多目的地路由。这包括对特定设备（如受限设备、测试 IMSI/IMEI）的专门处理，以及通过 TPS 节流来保护后端基础设施免受信令突发的影响。
+
+虽然本文不涉及具体的网络攻击事件，但其探讨的 AAA 代理、信令路由、APN 选择策略和核心网网元管理在移动通信网络安全与架构中扮演着关键的基础性角色，因此匹配“4G安全”、“5G安全”及“核心网网元”标签。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:04:25</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>CSP B – Intelligent AAA Proxy for APN Selection</p>
+    <div class="analysis" style="white-space:pre-wrap;">CSP B – TIER 1 NORTH AMERICAN MOBILE OPERATOR
+Intelligent AAA Proxy for APN Selection
+The primary objective of this solution, built for a major North American Tier 1 mobile operator (CSP B), is to facilitate automated Access Point Name (APN) selection by assigning a predefined 4G/5G APN to an authenticating device. This selection is determined by evaluating the attributes within the incoming RADIUS Access-Request received from the Packet Gateway (PGW).
+Explore seven additional case studies by downloading the full Why Intellegent AAA is the Swiss Army Knife of Telecom paper below. You can also go here to learn more about the Enea AAA Server.
+Once the APN Selection process is complete, the Enea AAA Server performs one of two actions based on the subscriber profile:
+Proxy Authentication: Forwards the request to an external Home AAA Server (HAAA).
+Local Authentication: Validates the session directly against the Enea AAA internal account database.
+To ensure consistent billing and session tracking, all RADIUS Accounting-Requests received from the PGW are transparently proxied to the designated external HAAA. In some cases, the Accounting-Request is also copied to another AAA server.
+To optimize performance and management, the architecture is divided into two functionally identical AAA proxy systems, each dedicated to a specific subscriber segment:
+Consumer: The AAA system described in more detail in this case study.
+Corporate: A dedicated Enea AAA environment tailored for enterprise-grade IoT and data services, not covered in further detail here.
+Overcoming Inflexible APN Selection
+CSP B’s existing core systems lacked the necessary flexibility to manage complex APN Selection requirements. The operator required a highly programmable solution capable of executing sophisticated business logic on incoming RADIUS Access-Requests to drive precise APN assignments.
+Key requirements for the new solution included:
+Dynamic Authentication Logic: The operator required the ability to determine the appropriate handling for each subscriber based on predefined policies. Specifically, the system needed to decide whether a request should be “Always Accepted,” proxied to the correct HAAA for external authentication, or authenticated against the solution’s local database.
+Multi-Destination Routing: The flexibility to proxy accounting messages to one or more HAAA nodes as well ass DPI and billing systems, based on predefined policy rules.
+CSP B sought to implement an intelligent mediation layer to bridge the gap between their legacy core routing and the dynamic business logic needed to handle modern APN selection and proxying requirements.
+Enea AAA Server as AAA Proxy for APN Selection
+To achieve the necessary flexibility and performance, CSP B selected the Enea AAA Server to serve as an intelligent AAA proxy for APN Selection. While many AAA platforms can deliver high transactions per second (TPS) for standard RADIUS signaling, executing advanced business logic for APN sel
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

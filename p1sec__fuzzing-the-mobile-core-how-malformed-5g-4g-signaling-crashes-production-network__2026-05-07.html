@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动核心网模糊测试：畸形 5G/4G 信令如何导致生产网络崩溃 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动核心网模糊测试：畸形 5G/4G 信令如何导致生产网络崩溃</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Fuzzing the Mobile Core: How Malformed 5G/4G Signaling Crashes Production Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-05-07
+ · <a href="https://www.p1sec.com/blog/fuzzing-the-mobile-core-how-malformed-5g-4g-signaling-crashes-production-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+文章探讨了移动核心网在面对畸形信令时的脆弱性。作者指出，相较于空口监听或IMSI捕获等无线电侧攻击，核心网内部信令协议的崩溃往往会导致更灾难性的后果。开源5G/4G核心网（如Ella Core、Open5GS）被广泛用作参考实现、集成平台以及商业产品的基础构建块，因此在这些系统中发现的漏洞具有广泛的代表性，揭示了商业核心网同样面临的协议解析与状态机安全风险。
+
+时间线：
+文章发布于2026年8月20日，主要披露了2026年的一系列漏洞（如CVE-2026-32319至CVE-2026-33283等），属于较新的安全研究成果。
+
+攻击原理：
+攻击者利用模糊测试技术，生成大量畸形、变异或特定构造的信令输入，发送给核心网网元。由于许多协议栈实现假设对端完全符合3GPP规范，缺乏对恶意输入的健壮性校验（如缺少长度检查、未校验可选/必选信息元素IE、越界索引、盲目信任攻击者控制的字段等），导致网元在解析处理时触发内存安全漏洞、空指针解引用、断言失败或状态机损坏，最终引发进程崩溃和控制面中断，实现拒绝服务攻击。
+
+攻击详情：
+1. Ella Core AMF崩溃（5G）：披露了6个远程拒绝服务漏洞。例如，通过未认证的2字节畸形NAS payload导致切片越界（CVE-2026-32319）；通过PathSwitchRequest中空的NR安全能力位串导致越界访问（CVE-2026-32320）；已注册UE发送缺少RequestType IE的ULNASTransport导致空指针解引用（CVE-2026-33283）；恶意gNB发送畸形LocationReport导致空指针（CVE-2026-33282）；UE发送无效PDU Session ID导致数组越界（CVE-2026-33281）；以及NGReset缺少必选ResetType IE导致崩溃。这些攻击均发生在NGAP/NAS信令层面。
+2. Open5GS SMF崩溃（5G）：通过PDU Session Establishment Request中的畸形扩展协议配置选项（EPCO）IE，导致SMF在解析时触发断言失败并abort，影响会话管理功能。
+3. Open5GS MME崩溃（4G/LTE）：通过EPS Attach Request中IMSI IE的奇偶标志翻转（0x91代替0x99），结合释放和重新附着的信令序列，导致MME在无效的EMM FSM状态下崩溃。这是一个典型的有状态信令攻击。
+
+攻击特征：
+- 信令面攻击：所有攻击均针对控制面信令协议（NGAP, NAS, S1AP, PFCP等）。
+- 拒绝服务：攻击结果均为网元进程崩溃，造成局部或区域控制面中断。
+- 低门槛/预认证：部分攻击（如CVE-2026-32319）无需UE认证即可在N2接口发起。
+- 状态相关：部分漏洞需要驱动网元经历完整的状态机流程（如Attach -&gt; Release -&gt; Re-attach）才能触发，传统的无状态模糊测试难以发现。
+- 协议信任假设：根本原因在于网元实现过度信任对端发送的信令符合规范，缺乏对IE长度、存在性、有效性的严格校验。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:16:23</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Fuzzing the Mobile Core: How Malformed 5G/4G Signaling Crashes Production Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">1. Why the mobile core is a fuzzing goldmine
+When most people think of &#34;5G security,&#34; they picture air-interface eavesdropping, IMSI catchers, or radio-side jamming. The reality of modern mobile networks is that the most catastrophic failures live deeper in the stack inside the signaling protocols that are critical for the smooth operation of the core network functions.
+A 5G core (5GC) is a collection of many network functions, serving different purposes:
+AMF (Access and Mobility Management Function) — the entry point for every UE attaching to the network.
+SMF (Session Management Function) — establishes and manages PDU sessions, which provides data connectivity to users.
+UPF (User Plane Function) — forwards user traffic.
+AUSF / UDM / NRF / PCF / NSSF / … — authentication, subscriber data, service discovery, policy, slicing.
+Between them, several signaling protocols carry billions of messages a day:
+NGAP (NG Application Protocol) over SCTP — between gNB and AMF.
+NAS (Non-Access Stratum) — end-to-end UE-to-AMF signaling, carried over RRC on the radio side and transported inside NGAP between the gNB and AMF.
+PFCP — between SMF and UPF.
+HTTP/2 + JSON (SBI) — between core network functions.
+GTP-U — user-plane tunneling on N3/N9.
+GTP-C — mainly EPC/NSA/interworking control-plane tunneling (e.g., N26-based on S10 inter-MME link).
+Most of these protocols are ASN.1 based with length-prefixed encodings, optional IEs, conditional fields, and nested sub-containers. SBI is different: HTTP/2 uses binary framing, the application payload is typically JSON/OpenAPI-defined. There are other protocols present, which are non-ASN.1 but still typically binary based, e.g., NAS or PFCP. All of these protocols are highly structured and stateful — exactly the kind of surface that rewards fuzzing with high-impact memory-safety, panic, parser, and state-machine bugs.
+2. What fuzzing buys you in a telco stack
+Fuzzing is the practice of generating large volumes of malformed, mutated, or generationally-crafted inputs and feeding them to a target while monitoring for crashes, hangs, asserts, panics, or state corruption.
+For mobile core software, fuzzing is valuable because:
+The protocols are highly complex. 3GPP TS 38.413 (NGAP), TS 24.501 (5G NAS), TS 24.301 (LTE NAS), and TS 29.244 (PFCP) collectively define thousands of IEs and hundreds of message types. Manual review will not catch every length-check or optional-IE bug.
+Implementations trust the wire. Many open-source and commercial stacks were written assuming the peer is completely compliant to the specifications. Real attackers are not.
+A single panic = large outage. A single panic in an AMF/MME instance can cause a major local or regional control-plane outage, depending on pooling, redundancy, restart behavior, and UE distribution.
+The blast radius extends past the lab. Open-source projects like Open5GS, Free5GC, OpenAirInterface, and Magma act as reference implementations, integration platforms, and building blocks for 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

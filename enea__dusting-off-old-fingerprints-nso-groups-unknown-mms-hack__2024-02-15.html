@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拂去旧指纹：NSO Group 未知的 MMS 黑客攻击 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>拂去旧指纹：NSO Group 未知的 MMS 黑客攻击</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Dusting off Old Fingerprints: NSO Group’s Unknown MMS Hack</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2024-02-15
+ · 作者：Cathal McDaid · <a href="https://www.enea.com/insights/dusting-off-old-fingerprints-nso-groups-unknown-mms-hack/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Messaging Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Mobile Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Article</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+网络安全研究人员在审阅 WhatsApp 诉 NSO Group 案件的公开法庭文件时，发现了一份 NSO Group 经销商与加纳电信监管机构之间的合同。合同中列出了一项此前未在业界公开的监控功能，名为“MMS Fingerprint”（MMS 指纹）。该功能声称只需向目标设备发送 MMS，即可在无需用户任何交互或打开消息的情况下，获取目标设备的型号和操作系统版本。研究人员对此进行了深入分析和复现。
+
+- 时间线
+2019年5月：WhatsApp 发现漏洞并被用于安装 Pegasus 间谍软件。
+2019年10月：WhatsApp 起诉 NSO Group 并提交证据，包含上述合同文件。
+近期（文章发布前）：研究人员发现“MMS Fingerprint”术语并成功复现了该攻击。
+
+- 攻击原理
+攻击利用了 MMS（多媒体消息服务）的接收流程及其与 SMS 信令的混合机制。正常的 MMS 流程如下：
+1. 发送方 MMSC 通过 MM4 接口将 MMS 转发给接收方 MMSC。
+2. 接收方 MMSC 通过 MM1_notification.REQ 向目标设备发送通知。由于早期网络兼容性考虑，该通知实际上是通过二进制 SMS（WSP Push）发送的。
+3. 目标设备收到通知后，会自动通过 HTTP GET 请求（MM1_retrieve.REQ）去指定的 URL（X-MMS-Content-Location 字段）下载 MMS 内容。
+攻击者伪造 MM1_notification.REQ（二进制 SMS），并将其中的 URL 指向攻击者控制的服务器。目标设备收到伪造通知后，会自动发起 HTTP GET 请求，该请求的 Header 中会携带设备的 UserAgent 和 x-wap-profile 字段，从而向攻击者泄露了设备的具体型号和系统版本信息。
+
+- 攻击详情
+研究人员使用西欧某运营商的 SIM 卡成功复现了该攻击。通过 Wireshark 抓包证实，设备在收到伪造的 MM1_notification.REQ 后，确实会向攻击者服务器发起 HTTP GET 请求并暴露设备信息。这些信息对攻击者极具价值，可用于针对特定设备定制漏洞利用载荷（如 Pegasus）或策划精准的钓鱼攻击。此外，攻击者可通过将 TP-PID 值设置为 0x40 将通知转换为静默 SMS，使目标手机屏幕上不显示任何 MMS 通知内容，实现无痕攻击。但使用静默 SMS 可能更容易被运营商网络的安全机制拦截。
+
+- 攻击特征
+1. 利用信令通道：攻击本质上是利用了 MMS 通知机制中的二进制 SMS 信令进行触发。
+2. 零交互：无需受害者点击或打开任何消息，设备在后台自动请求下载时即泄露信息。
+3. 隐蔽性：可结合静默 SMS 技术（TP-PID=0x40）隐藏攻击痕迹。
+4. 涉及核心网网元：攻击流程依赖于核心网中的 MMSC（多媒体消息服务中心）以及 MM1/MM4 等接口的正常运作。
+5. 信息收集：主要目的是获取设备指纹（UserAgent 和 UAProf），为后续的高阶攻击做情报收集。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-27T09:11:18</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Dusting off Old Fingerprints: NSO Group’s Unknown MMS Hack</p>
+    <div class="analysis" style="white-space:pre-wrap;">Dusting Off Old Fingerprints: NSO Group’s Unknown MMS Hack
+In the ever-evolving landscape of mobile network security, it’s essential to stay vigilant and informed about the latest threats. However to do so, sometimes we end up looking in places we would not normally look. Today, we delve into a previously unknown mobile network attack known as the “MMS Fingerprint” attack, reportedly used by NSO Group , a well-known actor in the realm of surveillance technologies. How we found this attack – which had essentially been hiding in plain sight – and how this attack might work, takes a bit of explaining.
+Hiding in Plain Sight
+In May 2019, WhatsApp, a widely used encrypted messaging platform, discovered a vulnerability in its system that allowed attackers to install Pegasus spyware on users’ devices. The flaw was exploited through a WhatsApp voice call , and it could compromise a device without the owner’s knowledge. WhatsApp blamed NSO Group for exploiting the vulnerability, which reportedly targeted a range of individuals , including journalists, human rights activists, lawyers, and government officials. The attack was global in scope, with victims in various countries. Subsequently, in October 2019 WhatsApp sued NSO Group. Since then, appeals by NSO group to have the case stop have failed both in the US appeal court and the US Supreme Court .
+While interesting from a strategic and high-level viewpoint, at first glance there is nothing new here as this has been in the public domain for years. However, as part of its court case, WhatsApp/Facebook committed into evidence in October 2019 several exhibits. Most of this material was examined and discussed in the public domain. However, what was not discussed were some specific details within a copy of a contract between a NSO Group reseller and the telecom regulator of Ghana . Within that contract, in Exhibit A-1, was a list of “Features and Capabilities” offered by NSO Group. To telecom security specialists like us, these features were largely known, however there was a feature title that was (at first sight) unknown. This was the entry termed “MMS Fingerprint”.
+“MMS Fingerprint” is not a term that was known about in the industry. At the time of writing a Google search doesn’t find any other entries with this term, other than the court case itself. While we always must consider that NSO Group may simply be “inventing” or exaggerating the capabilities it claims to have (in our experience, surveillance companies regularly over-promise their capabilities), the fact this was on a contract rather than an advertisement suggests that it was more likely to be for real.
+How Could an MMS Fingerprint Attack Work?
+Going forward on that basis, I decided to consider how exactly an MMS Fingerprint could work. Next to no technical details were given, other than it stated it would:
+Reveal the target device and OS version by sending an MMS to the device.
+No user interaction, engagement or message opening is required to rec
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

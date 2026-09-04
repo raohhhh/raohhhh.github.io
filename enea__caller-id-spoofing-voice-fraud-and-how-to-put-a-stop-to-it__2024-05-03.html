@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>来电显示伪造、语音欺诈及如何制止它 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>来电显示伪造、语音欺诈及如何制止它</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Caller ID Spoofing, Voice Fraud, and How To Put a Stop To It</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2024-05-03
+ · 作者：Jelte Jansons · <a href="https://www.enea.com/insights/caller-id-spoofing-voice-fraud-and-how-to-put-a-stop-to-it/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Signaling Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Voice Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：电信欺诈，特别是来电显示伪造，正成为移动用户和电信运营商面临的严峻问题。据文章引用的数据，过去12个月全球61%的人口收到过诈骗电话，2023年全球移动用户因诈骗电话损失高达580亿美元，电信欺诈损失估计达到389.5亿美元，占电信收入的2.5%。
+- 时间线：文章发布于2024年5月3日，文中引用了2023年的欺诈损失数据（较上年增长12%，达389.5亿美元）以及过去12个月内的相关统计。
+- 攻击原理：攻击者利用主叫线路识别（CLI）系统的机制漏洞。CLI包含网络号码和“呈现”号码，正常情况下两者相同，但在呼叫中心等合法场景下可能不同。攻击者通过操纵信令，伪造“呈现”号码，使其显示为受害者信任的合法企业或联系人号码，从而降低受害者警惕性并诱导其接听，进而实施诈骗。
+- 攻击详情：除了来电显示伪造，文章还提及了其他利用信令和语音服务漏洞的攻击，包括Wangiri电话（响一声挂断诱导回拨高额收费）、Flash calls（闪呼）和SIM box欺诈。这些攻击均利用了传统通信协议基于信任的机制。为应对这些威胁，文章探讨了STIR/SHAKEN框架与“零信任”信令安全模型的对比，指出在核心网络中集成零信任语音防火墙（如Enea的解决方案）可以实时验证通话真实性。
+- 攻击特征：1. 隐蔽性强：通过伪装成合法号码，克服了受害者对未知或国际号码的警惕性；2. 针对性强：针对更依赖语音服务的中老年群体（45-75岁）进行重点攻击；3. 结合社会工程学：常以“防范欺诈”为借口，诱骗受害者登录账户或提供身份验证信息；4. 破坏性大：不仅造成巨额直接经济损失，还严重侵蚀了用户对品牌、数字通信和社会的信任。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-27T09:08:57</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Caller ID Spoofing, Voice Fraud, and How To Put a Stop To It</p>
+    <div class="analysis" style="white-space:pre-wrap;">Caller ID Spoofing, Voice Fraud, and How To Put a Stop To It
+61% of the world’s population has received scam calls in the last 12 months, according to GASA . Telecoms fraud, and in particular caller ID spoofing, is a rapidly rising problem for both mobile users and telecommunications companies alike. Many of these attempts to defraud are uncannily convincing and vast numbers of people, especially more vulnerable members of society, fall prey to the tactics: last year mobile users worldwide lost an eye-opening $58 billion to scam calls ( Juniper Research ). It’s costing operators dearly too. 2023 saw a 12% increase in fraud loss reported, equating to an estimated $38.95 billion lost in 2023 and representing 2.5% of telecommunications revenues according to the Communications Fraud Control Association .
+Until very recently, one of the dead giveaways for these scam calls was that they came from an unknown number – often from an international number that is immediately suspicious and gives people cause to hesitate before they answer, if they answer at all. However, that is now changing as caller ID spoofing becomes more common.  When it comes to caller line identification (CLI), there are two numbers at play – the network number, and the “presentation” number. The latter is what recipients see when their phone rings, whereas the former is what it shared with providers to identify where the call came from.
+In the vast majority of cases, these two numbers are the same. However, there are some legitimate reasons they might be different, such as a call center making calls on behalf of a business they represent or distributed public bodies that want to display one common phone number.
+Caller ID spoofing is when phone fraudsters exploit this system to disguise their identity and “present” as a legitimate business or contact with which their victims already have a relationship. When a phone number looks legitimate, they are, of course, more likely to answer the call.
+The Vulnerability of Voice Services
+It wasn’t too long ago that most financial transactions were based on in-person relationships; opening a bank account, buying a new house or car, applying for a business loan, choosing stocks and shares. These decisions and many more were based on trusted relationships that were developed in person. Digital transformation has altered these processes almost beyond recognition. However, even though we can access many services with just a few clicks, voice is still a key go-to service for choosing service providers, resolving customer service issues, checking information, and verifying the legitimacy of businesses.
+This, of course, varies through generations. According to eMarketer, 53% of consumers aged 18-44 prefer digital to phone when interacting with a business, whereas only 35% of consumers aged 45-75 prefer it. In both cases voice calls still play a signicant role, but older generations tend to depend on it even more, and as such have become more heavily t
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

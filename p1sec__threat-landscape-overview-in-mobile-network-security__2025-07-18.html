@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动网络安全威胁态势概述 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动网络安全威胁态势概述</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Threat Landscape Overview in Mobile Network Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-07-18
+ · <a href="https://www.p1sec.com/blog/threat-landscape-overview-in-mobile-network-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景
+本文是一篇发布于2025年7月的移动网络安全威胁态势综述。背景在于移动网络已从纯粹的通信基础设施转变为数字社会的基础层，广泛应用于国家身份系统、银行访问和工业物联网等关键领域。随着网络复杂性、全球互联性以及向云原生架构（如5G SBA和Open RAN）演进的增加，移动网络的攻击面显著扩大，吸引了从 lone hacker 到资源丰富的国家级 APT 组织等各类攻击者。
+
+时间线
+文章基于2025年的视角，对当前及未来的移动网络威胁态势进行结构化概述，同时指出由于向后兼容性导致的安全回归问题，使得遗留协议（SS7、Diameter等）在2025年及以后仍是高价值目标。
+
+攻击原理
+1. 遗留协议信任滥用：SS7、GTP和Diameter等协议在设计之初缺乏安全机制（如认证、加密或验证）。攻击者利用运营商在漫游链路或互连边界暴露的遗留协议访问权限，利用固有信任发起攻击。
+2. 5G SBA与云原生架构漏洞：5G服务化架构引入了大量API端点，若TLS加密缺失或NEF认证薄弱，可被直接利用。同时，虚拟化/容器化网元共享底层基础设施，易受横向提权、侧信道泄露和容器逃逸攻击。
+3. 互连与漫游盲区：电信网络设计上的互联特性产生了隐式信任。攻击者利用对等配置弱点或漫游链路降级，在信任盲区中实施信令滥用或会话劫持。
+4. Open RAN解耦风险： disaggregation 引入了新接口（CU/DU/RU）和第三方模块，若管理协议（SSH/SNMP）不安全或固件存在后门，将形成不可预测的攻击路径。
+
+攻击详情
+- 信令攻击：利用SS7进行地理位置追踪、呼叫重定向和SMS拦截；利用Diameter进行订阅者冒充和对核心网元的DoS攻击；滥用GTP-C隧道绕过计费、注入流量或重路由会话。
+- 5G与核心网网元攻击：针对网络功能（NF）间的通信进行拦截；探测或攻击暴露的网络开放功能（NEF）API端点；利用网络切片隔离不当实现跨切片数据泄露或权限提升；通过VM/容器逃逸攻击电信核心云基础设施。
+- 用户面与欺诈：通过SIM swap绕过2FA；发起Smishing钓鱼；滥用OTA静默注入SIM配置；利用SMS-C和IMS网关投递恶意载荷或伪造消息。
+- APT与跨域攻击：国家级行为者利用零日漏洞获取持久信令层访问，监控人口流动或拦截通信；劫持网元（NE）进行大规模监视；利用共享服务（DNS、LDAP）从IT域横向渗透至电信核心域。
+
+攻击特征
+1. 多层化与复合化：攻击不再局限于单一协议，而是结合电信与企业向量（如DNS投毒+SIP注入），形成混合攻击。
+2. 隐蔽性与持久性：APT攻击者利用协议层滥用和SBA API探测，这些行为通常能绕过传统面向TCP/IP的SIEM和IDS检测系统，实现长期潜伏与“慢燃”攻击。
+3. 边界模糊与信任利用：攻击多发生在运营商、区域或供应商之间的互连信任盲区，无需直接攻破核心网，仅需攻陷边界节点或受信任的对等方即可实施。
+4. 供应链与边缘化：攻击面向Open RAN第三方模块、MEC边缘站点及供应商更新渠道转移，呈现出动态且不透明的特征。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:27:49</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Threat Landscape Overview in Mobile Network Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">In the past decade, mobile networks have transitioned from being pure communications infrastructure to becoming the foundational layer of digital society. Whether it’s voice calls, national identity systems, banking access, or industrial IoT — mobile networks are now deeply embedded in critical functions. This growing reliance, coupled with increased complexity and global interconnectivity, has significantly expanded the mobile network threat landscape.
+Understanding this threat landscape is no longer optional for mobile operators, government cybersecurity bodies, or telecom security engineers. It’s the baseline for securing a rapidly evolving attack surface.
+In this post, we break down the key components of the mobile network threat landscape in 2025, structured by vector, layer, and attacker type.
+1. Legacy Protocols Remain High-Value Targets
+Despite the arrival of 5G, protocols such as SS7 , GTP , and Diameter are still widely deployed across production networks. Originally designed without security in mind, these protocols are inherently trusted and typically lack proper authentication, encryption, or validation mechanisms.
+Common attack scenarios include:
+SS7 abuse for geo-location, call redirection, and SMS interception.
+Diameter exploitation for subscriber impersonation and DoS targeting core elements.
+GTP-C tunneling abuse , used to bypass billing, inject traffic, or reroute sessions.
+What makes these especially dangerous is the fact that many operators still expose legacy protocol access via roaming links or poorly segmented interconnects. Attackers don&#39;t need to compromise the core network; they just need access to an insecure border node or a trusted peer.
+2. Interconnect Exploits and Roaming-Based Threats
+Telecom networks are, by design, interconnected. That interconnection creates implicit trust between operators, regions, and vendors. This is exactly where attackers operate best — in the blind spots of assumed trust.
+Key threats in this category:
+Interconnect-level attacks exploiting weaknesses in peering configurations.
+Roaming links that downgrade session security or introduce legacy protocol fallback paths.
+Malicious or compromised partners using shared links to inject signaling abuse or trigger session misbehavior.
+Even with proper firewalling, real-world interconnect enforcement is inconsistent across operators. Attackers increasingly exploit this asymmetry, especially when targeting regional carriers or overlooked B2B MVNOs.
+3. 5G-Specific and Cloud-Native Vulnerabilities
+5G introduced a more modular, API-driven architecture known as Service-Based Architecture (SBA) . While the 5G standard introduces numerous security enhancements, real-world implementations often deviate from the ideal due to speed of deployment, vendor constraints, or lack of internal expertise.
+Observed misconfigurations include:
+Missing or optional TLS encryption between Network Functions (NFs).
+Exposed API endpoints , especially the Network Exposure Funct
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

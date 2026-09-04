@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>了解 SIM 卡类型：安全风险、攻击与渗透测试 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>了解 SIM 卡类型：安全风险、攻击与渗透测试</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Understanding SIM Types: Security Risks, Attacks, and Penetration Testing</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-03-20
+ · <a href="https://www.p1sec.com/blog/understanding-sim-types-security-risks-attacks-and-penetration-testing" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：本文是一篇关于 SIM 卡技术（传统 SIM、eSIM、iSIM）安全风险与渗透测试的技术分析文章，探讨了随着 SIM 技术演进带来的安全优势及新引入的攻击向量。
+时间线：文章发布于 2025-03-20，内容回顾了从传统物理 SIM 卡到 eSIM 再到集成 iSIM 的技术发展及其对应的安全威胁演进。
+攻击原理：文章详细描述了针对不同 SIM 类型的攻击原理。对于传统 SIM，攻击者通过提取认证密钥 (Ki) 进行 SIM 克隆，或利用社会工程学进行 SIM 交换攻击；在网络侧，利用 SS7 信令漏洞追踪位置、拦截短信和重定向呼叫，以及使用 IMSI Catcher 伪基站强制降级加密。对于 eSIM 和 iSIM，攻击原理转向远程配置劫持、固件漏洞利用以及针对可信执行环境 (TEE) 的硬件级侧信道攻击。
+攻击详情：文章重点提及了与信令和网络代际相关的安全风险。例如，传统 SIM 使用的 COMP128-1 算法（2G时代）易受密码分析攻击；SS7（2G/3G核心网信令协议）和 Diameter（4G信令协议）的异常信令消息可被用于拦截通信和位置追踪；IMSI Catcher 通过伪基站迫使设备降级到不安全的网络（如 2G/3G）以获取身份信息。此外，eSIM/iSIM 的远程配置如果在下载和切换过程中加密或认证薄弱，容易遭受中间人攻击和配置文件劫持。
+攻击特征：攻击手段呈现出多层次的复合特征，涵盖了物理层（SIM 克隆、硬件侧信道分析、故障注入）、逻辑层（固件漏洞利用、远程配置劫持）和网络层（SS7/Diameter 信令攻击、IMSI Catcher 伪基站降级攻击）。攻击者通常利用遗留的弱加密算法、远程管理机制的认证缺陷以及移动通信信令协议的固有漏洞来实施攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:31:12</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Understanding SIM Types: Security Risks, Attacks, and Penetration Testing</p>
+    <div class="analysis" style="white-space:pre-wrap;">Introduction to SIM Technology
+Subscriber Identity Modules (SIMs) are crucial for mobile network authentication, enabling secure communication and subscriber identification. Over time, SIM technology has evolved from removable plastic cards to embedded solutions, improving security while also introducing new attack vectors.
+This article explores the security risks of different SIM types—traditional SIM, eSIM, and iSIM—and the penetration testing techniques used to assess vulnerabilities.
+Traditional SIM Cards: Security Strengths and Weaknesses
+What is a SIM Card?
+A traditional SIM card is a physical chip that stores:
+International Mobile Subscriber Identity (IMSI)
+Authentication Key (Ki)
+Mobile network authentication and encryption credentials
+SMS and limited application data
+Security Risks of Traditional SIMs
+SIM Cloning Attackers extract the Ki and create a duplicate SIM to intercept communications. Older encryption algorithms (COMP128-1) are vulnerable to cryptographic attacks.
+Attackers extract the Ki and create a duplicate SIM to intercept communications.
+Older encryption algorithms (COMP128-1) are vulnerable to cryptographic attacks.
+SIM Swapping Attacks Social engineering tricks operators into transferring a subscriber’s number to an attacker’s SIM. Used for identity theft, OTP bypass, and financial fraud.
+Social engineering tricks operators into transferring a subscriber’s number to an attacker’s SIM.
+Used for identity theft, OTP bypass, and financial fraud.
+SS7-Based Exploits Exploits vulnerabilities in SS7 signaling to track locations, intercept SMS, and redirect calls.
+Exploits vulnerabilities in SS7 signaling to track locations, intercept SMS, and redirect calls.
+IMSI Catchers (Stingrays) Fake base stations force SIMs to downgrade encryption or reveal subscriber identities.
+Fake base stations force SIMs to downgrade encryption or reveal subscriber identities.
+Penetration Testing for Traditional SIMs
+Ki Extraction Tests : Assess whether cryptographic attacks can extract the authentication key.
+Over-the-Air (OTA) Testing : Check if OTA updates are secure against unauthorized modifications.
+IMSI-Catcher Simulation : Evaluate resilience to fake base stations.
+eSIM (Embedded SIM): Security Advantages and Risks
+What is eSIM?
+An eSIM is a reprogrammable SIM embedded in a device. Unlike traditional SIMs, it does not require physical swapping, enabling remote profile management and multi-network support.
+Security Advantages of eSIMs
+✔ Tamper-Resistant : Harder to extract authentication data than physical SIMs.
+✔ Remote Management Security : Uses secure encryption for profile downloads and network switching.
+✔ Reduced SIM Swap Fraud : Eliminates physical SIM transfers, reducing attack feasibility.
+Security Risks of eSIMs
+Profile Provisioning Attacks If remote SIM provisioning (RSP) is compromised, attackers can hijack eSIM profiles. Poorly implemented authentication mechanisms can allow unauthorized eSIM profile installations.
+If remote SIM pro
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

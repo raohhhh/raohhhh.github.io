@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS与SIP协议：应对预付费与后付费系统中的漏洞 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>IMS与SIP协议：应对预付费与后付费系统中的漏洞</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：IMS and SIP Protocol: Addressing Vulnerabilities in Prepaid and Postpaid Systems</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2024-12-10
+ · <a href="https://www.p1sec.com/blog/ims-and-sip-protocol-addressing-vulnerabilities-in-prepaid-and-postpaid-systems" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对某一具体的突发攻击事件，而是对移动通信网络中IMS（IP多媒体子系统）和SIP（会话初始协议）在预付费和后付费系统中面临的安全漏洞与风险的深度技术分析。随着通信技术演进及5G网络的发展，IMS和SIP作为提供VoLTE、RCS等核心多媒体服务的基石，其安全问题日益凸显。
+- 时间线：文章发布于2026年8月20日，属于对当前及未来通信网络（特别是5G演进背景下）IMS和SIP安全威胁的综合性分析与前瞻。
+- 攻击原理：攻击主要利用IMS架构的复杂性、第三方应用集成的安全短板以及SIP协议在认证和传输层面的弱点。针对IMS，攻击者通过未授权访问进行服务盗窃，或通过海量请求发起DoS/DDoS攻击耗尽网络资源；针对SIP，攻击者利用明文传输或弱认证机制进行窃听、身份欺骗和会话劫持。
+- 攻击详情：
+  - IMS漏洞与攻击：攻击者可能利用集成第三方应用时未严格遵循安全标准而产生的后门，获取对核心IMS组件的非法访问权限，导致服务盗窃和运营商收入损失。此外，恶意行为者通过DoS攻击使IMS网络资源过载，导致合法用户无法获得服务。
+  - SIP漏洞与攻击：攻击者通过窃听拦截并监听语音/视频通话，破坏用户隐私；通过SIP欺骗冒充合法用户，接管其通信信道；或通过会话劫持夺取正在进行的实时通信会话控制权，造成通信中断或数据泄露。
+- 攻击特征：攻击行为集中在信令层面和核心网网元层面，特征包括利用协议灵活性带来的安全盲区、针对多媒体会话的窃听与劫持、以及针对计费和服务交付系统的拒绝服务攻击。随着5G网络架构的复杂化，此类攻击的攻击面进一步扩大，需要结合多因素认证、TLS/SIPS加密传输及基于AI/ML的异常行为检测等手段进行防御。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:20:49</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>IMS and SIP Protocol: Addressing Vulnerabilities in Prepaid and Postpaid Systems</p>
+    <div class="analysis" style="white-space:pre-wrap;">The growing reliance on telecommunications technology in both prepaid and postpaid systems has underscored the importance of understanding  IMS (IP Multimedia Subsystem) and SIP (Session Initiation Protocol). Let’s dive into how they function, the vulnerabilities and risks they face, and the strategies and approaches to mitigate these security risks to enhance telecommunications services.
+Understanding IMS and SIP Protocol
+To grasp how IMS and SIP function in telecommunications, it is essential to understand their definitions and roles. IMS and SIP serve vital purposes in enabling multimedia services over IP networks.
+Defining IMS: An Overview
+IMS, or IP Multimedia Subsystem, is a framework that allows the delivery of internet protocol (IP) multimedia services. It enables voice, video, and data services to be seamlessly integrated and delivered over the same network. IMS provides a standardized approach to managing multimedia communication, ensuring interoperability between different service providers and devices.
+IMS  built on a service-oriented architecture and enables operators to deploy new multimedia services quickly by utilizing existing network infrastructure. As a result, IMS is crucial for the evolution of next-generation networks, offering users enhanced service experiences while optimizing operational costs for telecom operators.
+Furthermore, IMS supports various applications such as Voice over LTE (VoLTE ) and Rich Communication Services (RCS), which enhance user engagement through high-quality voice calls and enriched messaging experiences. By leveraging IMS, service providers can also introduce innovative services like video conferencing and interactive gaming, thereby expanding their service portfolios and meeting the growing demands of consumers for richer multimedia experiences.
+SIP Protocol Explained
+The Session Initiation Protocol (SIP) is a signaling protocol used for initiating, managing, and terminating real-time communication sessions. These sessions can include voice calls, video calls, and messaging services. SIP is essential in establishing a connection between two endpoints in an IP network, allowing users to communicate effectively while providing features like call transfer, call hold, and conference calling.
+SIP&#39;s flexibility and ease of integration into existing infrastructures have made it a popular choice among service providers looking to offer robust communication services. The protocol operates independently of the underlying transport layer, allowing it to work across different network types.
+In addition to its core functionalities, SIP supports various extensions that enhance its capabilities, such as SIP for Instant Messaging and Presence Leveraging Extensions (SIMPLE). This allows users not only to communicate in real-time but also to share their availability status, making it easier to coordinate conversations. Moreover, the protocol&#39;s ability to facilitate multimedia sessions means that it can adapt to di
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

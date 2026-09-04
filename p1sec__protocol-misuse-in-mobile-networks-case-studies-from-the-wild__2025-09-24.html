@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动网络中的协议滥用：真实案例研究 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动网络中的协议滥用：真实案例研究</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Protocol Misuse in Mobile Networks: Case Studies from the Wild</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-09-24
+ · <a href="https://www.p1sec.com/blog/protocol-misuse-in-mobile-networks-case-studies-from-the-wild" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+移动网络的基础运作依赖于各类通信协议（如SS7、Diameter、GTP、SIP等）。这些协议在设计之初普遍遵循“功能优先，安全其次”的原则，且默认处于一个所有互联方互相信任的封闭生态系统中。随着电信生态系统的开放与互联，现代恶意攻击者（包括欺诈团伙、间谍组织甚至国家级行为体）利用这些协议固有的信任缺陷，将其转化为实施全球间谍活动、金融欺诈和网络攻击的工具。
+
+- 时间线
+文章发布于2026年8月20日，是对过去多年间移动网络协议滥用案例的总结与回顾。涵盖了从20世纪70年代诞生的SS7协议，到4G时代的Diameter协议，再到现代IMS架构中的SIP协议等一系列由于历史遗留问题导致的安全事件演进过程。
+
+- 攻击原理
+攻击核心原理在于“利用系统自身的规则攻击系统”。由于协议设计时缺乏零信任架构，且存在遗留兼容性问题，攻击者通过接入信令网络，滥用合法的协议消息机制（如位置更新、会话创建等），绕过边界控制与计费系统，从而实现数据拦截、身份冒充或拒绝服务。此外，运营商面向漫游伙伴的接口缺乏有效的过滤和监控，为协议滥用提供了通道。
+
+- 攻击详情
+1. SS7协议滥用（涉及2G/3G安全）：攻击者滥用“Provide Subscriber Info”消息大规模查询用户位置，实现对政客、记者的跨境追踪；通过发送“Update Location”消息欺骗网络，将受害者的短信一次性密码（OTP）重定向至恶意节点，导致银行账户资金被盗。
+2. Diameter协议滥用（涉及4G安全）：由于过滤不严，恶意网络利用Diameter消息认证伪造的漫游用户，绕过计费系统获取免费数据与通话服务；同时滥用用户管理消息请求IMSI等敏感数据，用于定向监控和身份盗窃。
+3. GTP协议滥用（涉及核心网网元）：攻击者构造恶意GTP-C“Create Session”请求，将虚假用户注入核心网，隐藏恶意C2流量或逃避计费；通过海量伪造请求引发GTP洪泛，导致核心网网元过载宕机，造成大规模断网。
+4. SIP/IMS滥用：利用VoLTE部署中SIP头处理不当的漏洞，攻击者实施中间人攻击窃听语音通话；通过伪造SIP REGISTER请求劫持IMS注册，截取受害者的所有呼叫和消息。
+
+- 攻击特征
+1. 隐蔽性强：利用合法协议信令进行伪装，往往绕过传统安全防御机制，攻击长期未被发现。
+2. 影响面广且危害深：不仅造成巨额电信欺诈损失和大规模服务中断，更直接威胁个人隐私（位置追踪、通信窃听）和国家安全。
+3. 防御滞后：运营商在边界控制（如漫游接口）上缺乏信令防火墙和异常检测机制，往往在服务失败或资金流失后才察觉攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:18:56</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Protocol Misuse in Mobile Networks: Case Studies from the Wild</p>
+    <div class="analysis" style="white-space:pre-wrap;">Mobile networks don’t run on magic — they run on protocols . These are the signaling languages that connect base stations to cores, operators to operators, and users to services. Without them, you don’t get calls, SMS, or data. But protocols also come with a fatal flaw: they were designed with function first, security second .
+Attackers know this, and they’ve turned protocol misuse into a full-time business. Fraud rings, espionage actors, and even nation-states have exploited signaling vulnerabilities for years, often without detection. Let’s take a closer look at the most notorious protocol misuse case studies and what they tell us about the fragile trust model in telecom.
+SS7: The Granddaddy of Protocol Abuse
+SS7 (Signaling System No. 7) is the poster child of protocol misuse. Born in the 1970s, SS7 assumed all connected parties were “friends” — operators trusted each other by default. Unfortunately, the modern telecom ecosystem is anything but friendly.
+Case Study: Location Tracking at Scale Attackers abused SS7 “Provide Subscriber Info” messages to query the location of mobile subscribers. Real-world investigations revealed that individuals — including politicians, journalists, and activists — were tracked across borders. Lawful intercept systems had built-in features to query location, but when exposed to third parties via SS7 access resellers, the system became a global spy tool.
+Case Study: Intercepting SMS Authentication Codes Bank accounts were drained when criminals exploited SS7 to redirect SMS one-time passwords (OTPs). By sending “Update Location” messages, attackers tricked networks into routing victim SMS messages to rogue destinations. Financial institutions learned the hard way: SMS-based 2FA is only as secure as the telecom protocols carrying it.
+The damage? Billions in fraud and a permanent dent in user trust.
+Diameter: A Modern Protocol with Legacy Weaknesses
+Diameter was supposed to be the “secure, modern” replacement for SS7 in 4G networks. But when you inherit weak trust assumptions and expose interfaces to untrusted peers, you repeat history.
+Case Study: Unauthorized Roaming Access Operators discovered that poorly filtered Diameter messages allowed rogue networks to authenticate fake roaming subscribers. This effectively granted free data and calls, bypassing billing systems. Fraud groups monetized the loophole while operators paid the bill.
+Case Study: Information Disclosure Diameter messages designed for legitimate subscriber management were misused to request sensitive data, such as IMSI or device capabilities. In some documented breaches, this information was used for targeted surveillance and identity theft.
+Lesson learned? Wrapping SS7’s problems in XML and TLS doesn’t solve them.
+GTP: When Tunnels Become Attack Vectors
+The GPRS Tunneling Protocol (GTP) makes mobile data work. Every time your phone connects, a GTP tunnel establishes your data session. The problem? GTP wasn’t designed with the idea that hostile entiti
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

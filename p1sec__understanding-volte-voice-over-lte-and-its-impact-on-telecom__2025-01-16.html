@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>了解 VoLTE：LTE 语音及其对电信业的影响 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>了解 VoLTE：LTE 语音及其对电信业的影响</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Understanding VoLTE: Voice over LTE and Its Impact on Telecom</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-01-16
+ · <a href="https://www.p1sec.com/blog/understanding-volte-voice-over-lte-and-its-impact-on-telecom" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对单一具体攻击事件的报道，而是对 VoLTE（Voice over LTE）技术及其在电信网络演进中带来的安全挑战的全面分析。随着全球 2G/3G 网络的逐步淘汰，VoLTE 成为 4G 及未来 5G 网络中语音通信的核心技术，其安全性成为电信运营商的重点关注领域。
+- 时间线：文章发布于 2025-01-16。文中提及了 VoLTE 部署的关键时间节点，如美国主要运营商（AT&amp;T 和 Verizon）在 2022 年全面拥抱 VoLTE 并停止 3G 网络，以及欧洲国家计划到 2025 年淘汰传统网络。
+- 攻击原理：VoLTE 引入了基于 IP 的语音传输架构，这使得传统电信网络面临新的 IP 层面威胁。文章指出，攻击者可能利用 VoLTE 呼叫建立过程中的 SIP（会话初始协议，属于信令协议）漏洞发起攻击，或者针对 RTP（实时传输协议）媒体流进行拦截和操纵。
+- 攻击详情：文章未提供具体的攻击案例细节，但明确了 VoLTE 面临的主要威胁类型，包括窃听、呼叫拦截以及基于 SIP 的信令攻击。这些攻击可能破坏 VoLTE 服务的完整性。防护措施需聚焦于保护 SIP 和 RTP 流量免受拦截和操纵，并监控针对 VoLTE 基础设施的异常网络行为。
+- 攻击特征：针对 VoLTE 的攻击特征主要表现为针对 SIP 信令和 RTP 媒体流的异常网络活动，可能导致呼叫建立失败、通话内容被窃听或篡改，以及针对 VoLTE 基础设施的异常流量行为。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:31:42</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Understanding VoLTE: Voice over LTE and Its Impact on Telecom</p>
+    <div class="analysis" style="white-space:pre-wrap;">As telecom technology continues to evolve, Voice over LTE (VoLTE) has emerged as a pivotal advancement in mobile communication. Offering higher-quality voice calls, better network efficiency, and enhanced user experiences, VoLTE is reshaping the way we connect. But what exactly is VoLTE, and what does it mean for telecom operators and subscribers?
+What is VoLTE?
+VoLTE, or Voice over Long-Term Evolution , is a technology that allows voice calls to be transmitted over LTE ( 4G ) networks rather than relying on older 2G or 3G infrastructure. Traditionally, 4G networks were primarily designed for data transmission, with voice calls defaulting to legacy systems. VoLTE eliminates this dependency, enabling voice communication to leverage the advantages of modern LTE networks.
+Benefits of VoLTE
+VoLTE offers numerous benefits for both telecom operators and users:
+1. Superior Voice Quality
+VoLTE provides high-definition (HD) voice calls that offer better clarity compared to traditional circuit-switched voice calls. The wider frequency range supported by VoLTE captures more nuances in speech, resulting in a more natural-sounding conversation.
+2. Improved Connectivity
+By using LTE networks for voice, VoLTE eliminates the need for calls to switch back to 2G or 3G networks. This ensures faster call setup times and more stable connections, even in areas with heavy data traffic.
+3. Enhanced Data Usage During Calls
+Unlike older technologies, VoLTE allows users to continue using high-speed internet services while on a call. Whether streaming, browsing, or downloading, users can maintain their data activities without interruption.
+4. Increased Network Efficiency
+For telecom operators, VoLTE is more efficient than legacy voice technologies. It consolidates both voice and data services into a single LTE network, reducing operational costs and optimizing network resources.
+5. Future-Proofing
+As 2G and 3G networks are gradually phased out globally, VoLTE ensures continuity of voice services in a world increasingly dominated by 4G and 5G technologies.
+VoLTE’s Role in the Transition to 5G
+VoLTE is a critical stepping stone to Voice over New Radio (VoNR) , the voice communication standard for 5G networks. As 5G adoption grows, VoLTE will serve as the primary voice solution, ensuring seamless call quality and network efficiency while operators transition to 5G voice services.
+Additionally, VoLTE is essential for providing consistent voice service on devices that roam between 4G and 5G networks. This backward compatibility ensures users experience uninterrupted connectivity during the global shift toward 5G infrastructure.
+Challenges in VoLTE Adoption
+Despite its benefits, VoLTE implementation is not without challenges:
+1. Compatibility Issues
+Not all devices support VoLTE, especially older smartphones. Telecom operators must work with manufacturers to ensure device compatibility and provide software updates where possible.
+2. Coverage Gaps
+VoLTE relies on LTE network avail
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

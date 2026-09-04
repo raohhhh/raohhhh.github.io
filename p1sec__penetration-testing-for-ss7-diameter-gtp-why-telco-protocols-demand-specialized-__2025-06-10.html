@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SS7、Diameter 与 GTP 渗透测试：为何电信协议需要专业的攻击性安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>SS7、Diameter 与 GTP 渗透测试：为何电信协议需要专业的攻击性安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Penetration Testing for SS7, Diameter &amp; GTP: Why Telco Protocols Demand Specialized Offensive Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-06-10
+ · <a href="https://www.p1sec.com/blog/penetration-testing-for-ss7-diameter-gtp-why-telco-protocols-demand-specialized-offensive-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+本文并非描述单一的攻击事件，而是深入探讨了针对移动通信核心网协议（SS7、Diameter、GTP）的渗透测试与攻防安全评估。背景在于这些电信协议设计之初缺乏现代安全机制（如认证和加密），且在复杂的互联互通和漫游环境中存在巨大的攻击面，一旦被利用将对运营商和用户造成灾难性后果，因此需要专业的针对性 offensive security 测试。
+
+- 时间线
+文章发布于2025年6月10日。文中未涉及具体攻击事件的时间线，但梳理了协议的历史演进：从2G/3G时代的SS7协议，发展到4G/LTE时代的Diameter协议，再到跨越3G、4G和5G NSA核心网的GTP协议。
+
+- 攻击原理
+1. SS7协议：由于设计于前威胁时代，缺乏内置认证和加密，攻击者可利用其进行位置跟踪、短信拦截、欺诈和用户数据窃取。
+2. Diameter协议：虽然理论上比SS7更安全，但由于其复杂性及实际部署中缺乏网络分段，特别是在与旧版SS7系统或外部漫游伙伴交互时，存在严重安全缺陷，可被用于认证绕过或降级攻击。
+3. GTP协议：作为用户数据传输的骨干，其漏洞可导致用户冒充、计费欺诈、DoS攻击和数据泄露，例如通过GTP-U欺骗或注入实现。
+
+- 攻击详情
+文章详细描述了针对这些协议的渗透测试与攻击利用步骤：
+1. 情报收集：识别暴露的STP（SS7）、Diameter Agents或GGSNs/S-GWs等核心网网元，映射互连伙伴和漫游路径。
+2. 协议模糊测试与注入：使用电信专用模糊测试器操纵SRI-SM、Update Location或Create Session Requests等消息，测试安全过滤策略。
+3. 滥用场景与漏洞利用链：通过MAP ProvideSubscriberInfo进行位置跟踪（SS7）；通过MAP SendRoutingInfoForSM进行短信拦截；通过GTP-U欺骗或注入进行欺诈；通过畸形Diameter AVPs进行认证绕过。
+4. 横向移动：利用对等互连配置错误，通过不安全的互连进行内网穿透。
+
+- 攻击特征
+1. 针对性强：针对移动核心网信令协议，需具备深度的电信协议知识，通用渗透测试工具（如Metasploit、Burp Suite）无效。
+2. 利用信任边界：攻击多源于网络互连和漫游路径，利用了运营商之间的信任假设和协议本身的认证缺失。
+3. 影响重大：攻击直接威胁网络完整性、用户隐私和计费系统，可导致大规模数据泄露和金融欺诈。
+4. 依赖专用工具：需使用PTA (P1 Telecom Auditor)、协议模拟器（模拟MME、SGW、HSS等核心网网元行为）及针对MAP、CAP、AVP、GTP-U的定制Fuzzer。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:28:33</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Penetration Testing for SS7, Diameter &amp; GTP: Why Telco Protocols Demand Specialized Offensive Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">Penetration testing in the telecom world isn’t your average port scan and exploit script routine. When it comes to SS7 , Diameter , and GTP protocols, the stakes are higher, the attack surface is vast, and the vulnerabilities—when exploited—can have catastrophic consequences for operators and users alike. These protocols were not designed with modern security in mind, making them prime targets for telecom-specific offensive security testing .
+In this article, we’ll dive deep into how penetration testing is performed on these protocols, why it&#39;s critical for mobile network operators (MNOs), and what unique tools, techniques, and mindsets are required to get it right.
+Why Focus on SS7, Diameter &amp; GTP?
+SS7 (Signaling System 7)
+Used in 2G and 3G networks, SS7 underpins international roaming, SMS delivery, call setup, and subscriber data access. Designed in a pre-threat era, it lacks built-in authentication and encryption. This makes it vulnerable to location tracking , SMS interception , fraud , and subscriber data exfiltration .
+Diameter
+Diameter is the successor to SS7 for 4G/LTE networks and plays a core role in policy control , authentication , and charging . While more secure on paper, its complexity and lack of segmentation across real-world deployments introduce serious security flaws—especially when interacting with legacy SS7 systems or external roaming partners.
+GTP (GPRS Tunneling Protocol)
+GTP is the backbone of user data transport, especially across 3G, 4G, and 5G NSA (Non-Standalone) cores. Vulnerabilities in GTP can lead to user impersonation , billing fraud , DoS attacks , and data leakage .
+How Penetration Testing Works for These Protocols
+Penetration testing for mobile core protocols requires far more than scanning IPs and looking for open ports. These are stateful protocols with complex dialogues , meaning effective testing mimics the behavior of legitimate network elements.
+Step 1: Intelligence Gathering
+Identifying exposed STPs (for SS7), Diameter Agents, or GGSNs/S-GWs.
+Mapping interconnect partners and roaming paths.
+Performing passive monitoring when possible to fingerprint services.
+Step 2: Protocol Fuzzing &amp; Injection
+Using telecom-specific fuzzers to manipulate messages like SRI-SM , Update Location , or Create Session Requests .
+Testing enforcement of policies and security filters.
+Step 3: Abuse Scenarios &amp; Exploit Chains
+Location tracking via MAP ProvideSubscriberInfo (SS7).
+SMS interception via MAP SendRoutingInfoForSM.
+Fraud via GTP-U spoofing or injection.
+Authentication bypass or downgrade via malformed Diameter AVPs.
+Step 4: Lateral Movement and Persistence
+Exploiting peering misconfigurations.
+Discovering ways to pivot through insecure interconnects.
+Step 5: Reporting with Telecom Context
+Unlike standard PT reports, telecom penetration testing must tie findings to GSMA FS.11 , IR.82 , 3GPP TS 29.060 , and other industry standards.
+Risk levels must be assessed not just in CVSS scores, but in terms of impact on networ
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

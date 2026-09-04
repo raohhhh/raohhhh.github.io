@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G 漫游中的 SEPP 安全：安全边缘保护代理如何保护运营商间信任 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G 漫游中的 SEPP 安全：安全边缘保护代理如何保护运营商间信任</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：SEPP Security in 5G Roaming: How the Security Edge Protection Proxy Protects Inter Operator Trust</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-03-25
+ · <a href="https://www.p1sec.com/blog/sepp-security-in-5g-roaming-how-the-security-edge-protection-proxy-protects-inter-operator-trust" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">该文章深入分析了5G独立组网（SA）漫游架构中的核心网安全网元——安全边缘保护代理（SEPP）的安全机制与潜在风险。文章不涉及具体的单一攻击事件或时间线，而是从架构和防御视角剖析了5G漫游边界的信任问题。
+
+- 攻击原理：攻击者并非寻找SEPP标准本身的漏洞，而是利用实际部署和运营中的“软化”环节。在多运营商、IPX提供商及委托管理模型构成的分布式信任环境中，攻击者寻找信任边界变得可协商的盲点。任何过宽的信任策略、混乱的证书管理或薄弱的可见性都会成为边界系统的攻击面。
+
+- 攻击详情与风险点：文章列举了针对SEPP及N32接口的常见安全风险和配置失误：1) 将部署SEPP视为安全终点，导致后续策略纪律松懈；2) 信任策略设计过于宽泛，违背了引入显式安全控制的初衷；3) 密钥和证书生命周期管理脆弱，导致强架构退化为弱实践；4) 对委托或中介模型盲目信任，增加信任层级和假设风险；5) 漫游边缘可观测性弱，无法有效识别异常服务路径或策略违规；6) 误将安全传输等同于安全行为，忽视授权逻辑和监控。
+
+- 攻击特征：此类攻击通常不破坏标准协议，而是利用环境摩擦产生的“例外”和操作捷径。攻击者关注信任委托的复杂性、证书更新的运维痛点以及跨组织边界的行为基线偏差，通过利用宽泛的策略和弱可见性，在合规的架构掩护下实施边界信任滥用或越权访问。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:23:45</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>SEPP Security in 5G Roaming: How the Security Edge Protection Proxy Protects Inter Operator Trust</p>
+    <div class="analysis" style="white-space:pre-wrap;">SEPP Security in 5G Roaming: How the Security Edge Protection Proxy Protects Inter Operator Trust
+Roaming security has always been a trust problem.
+The difference in 5G is that the industry finally stopped pretending that inter operator trust should work on optimism alone.
+That is where SEPP comes in.
+The Security Edge Protection Proxy, or SEPP, is one of the most important security components in 5G SA roaming because it is designed to protect communication between operators across the N32 interface. In simple terms, it sits at the edge of trust between mobile networks and helps secure service based inter PLMN communication. That alone makes it strategically important. But what makes SEPP especially interesting is that many people talk about it as if its existence automatically solves roaming security. It does not.
+SEPP improves the security model of 5G roaming. It does not eliminate bad trust decisions, weak policy design, poor visibility, weak certificate hygiene, or sloppy operational assumptions. That is exactly why SEPP security deserves a serious article of its own.
+A lot of roaming security content still stays too abstract. It explains that SEPP exists, mentions N32, says 5G is more secure than legacy roaming, and stops there. Real deployments are not that neat. In production, the important questions are much more practical. What exactly is being protected? What remains exposed if policy is weak? What happens when trust is delegated? Where do operators lose visibility? What do attackers look for when the architecture is standards aligned but operationally soft?
+Those are the questions that matter if your goal is to protect real 5G roaming, not just pass an architecture review.
+What is SEPP in 5G roaming?
+SEPP stands for Security Edge Protection Proxy.
+In 5G SA roaming, it is the security function that protects service based communication between different public land mobile networks across the N32 interface. In plain English, each operator places a trusted security gateway at the roaming edge, and those gateways help enforce how inter operator communication is secured and controlled. 3GPP’s roaming security overview describes SEPP as central to end to end security for different 5G roaming deployment models, and ETSI’s TS 29.573 defines the stage 3 protocol and APIs for the PLMN interconnection interface, N32.
+That sounds straightforward. But the real value of SEPP is not just that it exists. The value is that it changes how operators think about roaming trust.
+Legacy roaming often relied on assumptions that were too broad, too inherited, and too comfortable. 5G roaming security introduces more explicit mechanisms for protecting inter operator communication, but explicit does not mean foolproof. A SEPP can only enforce a strong trust model if the underlying policies, identities, and operational controls are also strong.
+That is the first important lesson.
+SEPP is not magic. SEPP is a security control. Like every security control, it is only
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

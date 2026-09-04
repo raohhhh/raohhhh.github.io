@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自愈网络 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>自愈网络</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Self Healing Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-12-11
+ · <a href="https://www.p1sec.com/blog/self-healing-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文探讨了电信安全领域中“自愈网络”的架构与应用，重点分析了5G及未来网络中的自动化防御与恢复机制。
+
+- **技术背景**：随着移动网络规模扩大和动态性增强，传统的人工监督已无法满足安全需求。自愈网络通过实时识别异常状态并自主恢复正常运行，防止安全事件升级。
+
+- **检测与分类原理**：自愈网络依赖多层遥测数据（涵盖信令、RAN行为、控制面一致性及核心网服务性能）进行实时检测。系统结合机器学习模型进行异常评分，并依靠确定性规则验证协议约束（如3GPP行为）。在执行补救前，系统会跨网络功能（NF）、信令接口、切片和底层基础设施关联遥测数据，以区分操作故障、配置错误与恶意攻击（如控制面拥塞模仿的信令洪泛）。
+
+- **防御与补救详情**：文章详细描述了闭环补救动作，包括重新配置NF实例、隔离受损工作负载、重建会话完整性以及对可疑接口实施速率限制。在安全聚焦的自愈机制中，网络能够自动应对未授权信令序列、5G SBA中的异常API访问、可疑切片创建及加密状态偏差。典型措施包括自动隔离受损NF、在完整性计数器异常漂移时重新生成加密密钥，以及通过一致性检查快速移除非法实体。
+
+- **架构与特征**：该机制要求网络具备分布式可观测性管道、策略引擎、安全编排层及支持细粒度API重配的NF实现。这些操作主要在云化/容器化部署的平台层执行（如重启Pod、重建节点、跨可用区转移工作负载），且所有操作均需安全认证和日志记录以防引入新攻击向量。此架构主要适用于全虚拟化的5G核心网，并将成为6G设计的标准。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:16:46</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Self Healing Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">Self healing networks represent the next operational shift in telecom security. Instead of waiting for degradations, misconfigurations or intrusions to propagate through the network, self healing architectures identify abnormal states in real time and autonomously restore normal operation. The concept relies on continuous telemetry, deterministic decision engines and automated enforcement actions that are pre validated and compliant with operator policy.
+For mobile operators, the value is straightforward. When the environment becomes too large and too dynamic to be manually supervised, remediation must be automated, consistent and fast enough to prevent security incidents from escalating.
+Real Time Detection Driven by Multi Layer Telemetry
+The foundation of self healing is granular, high frequency visibility across signaling, RAN behavior, control plane consistency and core service performance. Detection systems evaluate thousands of indicators at once: abnormal attach patterns, unusual GTP tunnel lifecycles, unexpected SBA interactions, rogue slice identifiers or protocol sequences that diverge from defined 3GPP behavior.
+Machine learning models may support anomaly scoring, but deterministic rules remain essential for telecom. The network needs to understand not only when traffic deviates from a learned profile, but when it violates a precise protocol constraint.
+Autonomous Classification of Failure and Attack States
+Before a network can repair itself, it must classify the origin of the degradation. Failures and attacks often look similar: a misconfigured AMF may produce patterns that resemble scanning, while congestion on the control plane may mimic a signaling flood.
+Self healing logic distinguishes between operational faults, configuration errors and malicious activity by correlating telemetry across NFs, signaling interfaces, slices and the underlying compute infrastructure. This classification ensures that automated remediation does not mask an active compromise or escalate damage.
+Closed Loop Remediation Actions
+Once the root condition is identified, remediation occurs through pre defined, operator approved actions. These actions are precise, reversible and measurable. Typical responses include reconfiguring NF instances, reallocating compute resources, isolating compromised workloads, re establishing session integrity or temporarily enforcing stricter rate limits on suspicious interfaces.
+Closed loop means every action is validated by continuous monitoring and reverted if it produces adverse effects. The network corrects itself in small, controlled increments rather than through disruptive global resets.
+Security Focused Self Healing
+Self healing is not only about fault tolerance. It is a defensive capability.
+Mobile networks increasingly rely on automated correction of security relevant anomalies, including unauthorized signaling sequences, abnormal API access patterns in 5G SBA, suspicious slice creation attempts or discrepancies in cry
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

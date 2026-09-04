@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>零费率欺诈——更完整的图景 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>零费率欺诈——更完整的图景</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Zero-Rating Fraud – A More Complete Picture</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2025-09-25
+ · 作者：Fergus Wills · <a href="https://www.enea.com/insights/zero-rating-fraud-a-more-complete-picture/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Traffic Management</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">MNO</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Network DPI</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">White Paper Excerpt</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+零费率服务在移动通信中日益普及，常用于促销或提供关键公共服务（如医疗、教育）。由于DNS等关键互联网控制/信令协议通常被运营商零费率处理，攻击者利用这一机制进行欺诈，获取免费且不受监控的互联网访问，导致运营商收入流失和网络安全风险。
+
+- 时间线
+文章发布于2025年9月25日，描述了当前正在发生且日益严重的零费率欺诈趋势，并指出欺诈用户在在线社区中分享策略（如SNI欺诈群组拥有超2万关注者）。
+
+- 攻击原理
+DNS作为控制/信令协议通常被运营商零费率（如端口53）。攻击者利用DNS的扩展记录（如TXT记录或通过DNS查询/响应携带载荷），将DNS转化为隐蔽的数据传输通道，从而绕过计费和监控机制。
+
+- 攻击详情
+通过随机生成的域名进行基于DNS的攻击，每分钟可外泄高达7MB的数据。在5分钟内即可传输35MB（相当于一个移动应用的大小）。由于DNS流量是双向的，该方法既可用于数据外泄，也可用于未经授权的下载。在某些会话中，高达2%的TCP和UDP流量可能与此类欺诈活动有关。
+
+- 攻击特征
+利用合法的信令/控制协议（DNS）进行隐蔽通信；流量不计费且不受监控；攻击者手段日益复杂，并在社区中共享策略；不仅造成收入损失，还带来数据外泄等严重安全风险。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:09:59</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Zero-Rating Fraud – A More Complete Picture</p>
+    <div class="analysis" style="white-space:pre-wrap;">Zero-Rating Fraud – A More Complete Picture
+Zero-rated access is especially valuable for essential services such as healthcare, education, and government platforms—commonly referred to as Type 1 services by the UK regulator Ofcom. Whether used as a promotional strategy or to ensure access to critical services, zero-rating is expanding in scope and implementation. While end users are not charged for this data usage, it may still appear on bills to demonstrate the value of the telecom service provided.
+Examples of Zero-Rated Access Include:
+Promotional social media access – e.g., zero-rated WhatsApp™ and Facebook in Brazil.
+Educational and public services – e.g., free access to public benefit organizations (PBOs) in South Africa.
+Commercial promotions – e.g., free Uber data provided by Safaricom.
+There is also a class of technical traffic essential to internet access—such as Domain Name System (DNS) queries—which is typically zero-rated. DNS functions as a control/signalling protocol and operates over well-known ports assigned by the Internet Assigned Numbers Authority (IANA), such as port 53. Many mobile operators zero-rate this traffic. However, DNS can be exploited to transfer data via extended records, effectively turning it into a covert channel for data exchange.
+Zero-Rating Fraud: A Growing Concern
+In our research, we explore how users are exploiting zero-rated services to access data beyond what is intended—essentially obtaining ‘free’ internet access. We have observed that up to 2% of TCP and UDP (core internet transports) traffic in certain sessions may be associated with such fraudulent activity.
+A single DNS attack accessed 7MB of data per minute
+For example, a single DNS-based attack using randomly generated domain names was able to exfiltrate up to 7MB of data per minute—completely  unbilled and unmonitored. Over just five minutes, this amounts to 35MB—the average size of a mobile app. Given that DNS traffic flows both ways, this method could be used for data exfiltration or unauthorized downloads, creating both revenue loss and a significant security risk.
+Taking a new look at the problem
+In our updated paper, we delve into the anatomy of such attacks and outline what network operators and MVNOs should consider before launching a zero-rated offer. Critical internet protocols like DNS, though not intended for content delivery, are often indirectly zero-rated and must be monitored closely for both security and revenue protection.
+Fraudulent users are becoming increasingly sophisticated, often sharing tactics in online communities. For instance, one group discussing Server Name Indication (SNI) fraud has over 20,000 followers.
+Looking Ahead
+In our next excerpt, we will discuss actionable steps that operators can take to safeguard their networks and revenue streams—ensuring that zero-rated offerings are secure, properly enforced, and used as intended.
+But if you can’t wait download our updated paper on bypass fraud:
+Access Paper
+Review o
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

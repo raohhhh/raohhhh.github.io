@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全的 5G 核心网设计模式 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>安全的 5G 核心网设计模式</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Secure 5G Core Design Patterns</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-10-16
+ · <a href="https://www.p1sec.com/blog/secure-5g-core-design-patterns" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对单一攻击事件的复盘，而是针对5G核心网架构演进带来的安全威胁背景分析。文章指出，5G核心网从4G时代的强边界防御转向云原生、微服务和API化架构，导致攻击面急剧扩大，传统的边界防火墙策略失效。
+- 时间线：文章发布于2026年8月20日，反映了5G核心网全面云化部署后，业界对微服务架构安全设计模式的系统性总结与反思。
+- 攻击原理：5G核心网的潜在攻击原理主要基于架构复杂性和内部信任滥用。攻击者可利用网络功能（NF）间基于HTTP/2的SBI接口漏洞（如负载模糊、模式绕过）进行攻击；在缺乏零信任机制下，攻陷单一NF后可进行横向移动；或通过篡改SMF与UPF之间的PFCP协议实现流量重定向、数据泄露或网络中断。
+- 攻击详情：文章从防御视角反向揭示了多种攻击路径：1) 针对SBI API的Web安全攻击；2) 利用内部网络信任进行东西向移动；3) 篡改PFCP控制信令以操纵用户面流量；4) 跨网络切片的边界突破（如从IoT切片渗透至关键切片）；5) 利用可变基础设施中的“调试Pod”或未受保护的CI/CD流水线植入后门。
+- 攻击特征：5G核心网攻击特征表现为：隐蔽性强（利用内部合法通信通道）、横向移动快（扁平化网络导致单点突破后迅速扩散）、针对API和协议层面（如SBI和PFCP）、以及利用云原生环境的配置缺陷（如容器逃逸或权限提升）。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:17:58</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Secure 5G Core Design Patterns</p>
+    <div class="analysis" style="white-space:pre-wrap;">When 5G showed up, it didn’t just change bandwidth—it changed the rules of architecture. Everything became microservice-based, cloud-native, API-exposed, and software-defined. That’s great for flexibility. Terrible for attack surface.
+In the 4G era, a firewall and a strong perimeter were enough to keep things sane. In 5G, there is no perimeter. Your core is a distributed, containerized set of Network Functions (NFs) talking to each other over HTTP/2 APIs. The attack vectors? They’ve multiplied by ten.
+Let’s go through the design patterns that actually make a 5G core secure—not just compliant.
+1. Service Mesh + Mutual TLS Between Network Functions
+In 5G, Network Functions (AMF, SMF, UDM, etc.) communicate over the Service-Based Interface (SBI). The best way to lock down those interactions is by enforcing mutual TLS (mTLS) between every NF.
+That’s where a service mesh comes in. Think of it as a sidecar that handles:
+Encryption (TLS for all traffic)
+Authentication (cert-based identity for each NF)
+Authorization (fine-grained who-talks-to-who policies)
+Logging and visibility of all inter-NF calls
+It means if one NF is compromised, it can’t just talk freely to others. The mesh isolates and verifies every request. It’s the telecom version of “don’t talk to strangers.”
+2. Zero Trust Core: Never Trust Internal Traffic
+The idea that “internal equals trusted” died the moment we moved the core to containers. Every single call between NFs must be authenticated and authorized, even if it’s happening “inside” the same cluster.
+Zero Trust in 5G core means:
+Every NF has an identity (certs, tokens, service accounts).
+Every API call is validated and logged.
+Every privilege is explicitly granted, not assumed.
+The real benefit? Compromise one NF, and you still hit a wall everywhere else. No silent lateral movement, no hidden pivoting.
+3. API Gateway and NF Mediation Layers
+5G’s SBI is just APIs—lots of them. That means the same web security issues (payload fuzzing, schema bypass, rate abuse) now exist inside your mobile core.
+An API gateway or NF firewall validates everything that crosses the wire. It checks schema compliance, rate limits, headers, authentication, and payload sanity. It also provides visibility—because knowing who’s calling what and how often is half the battle.
+It’s not glamorous, but neither is a 3AM incident caused by an exposed test API.
+4. Micro-Segmentation and NF Isolation
+“Flat networks are for flat-earth believers.”
+Each NF or slice should be isolated by design—separate trust domains, separate namespaces, separate routing rules. That’s called micro-segmentation , and it stops east–west movement cold.
+The trick is balancing isolation and orchestration. Too much segmentation, and your DevOps team will spend their lives debugging inter-NF communication. Too little, and one breach spreads faster than gossip on Slack.
+5. PFCP Hardening: Protect the SMF ↔ UPF Link
+PFCP (Packet Forwarding Control Protocol) is where your control plane tells the use
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

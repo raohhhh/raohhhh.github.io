@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深入理解IMSI：移动身份与安全的关键 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>深入理解IMSI：移动身份与安全的关键</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Understanding IMSI: The Key to Mobile Identity and Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-02-06
+ · <a href="https://www.p1sec.com/blog/understanding-imsi-the-key-to-mobile-identity-and-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：文章介绍了IMSI（国际移动用户识别码）在移动通信网络中的关键作用，包括用户识别、鉴权、漫游和资源分配。由于IMSI是用户的核心身份标识，它成为了网络犯罪分子的重要攻击目标。随着eSIM技术的发展，远程配置IMSI也引入了新的安全挑战。
+时间线：文章未提及具体攻击事件的时间线，主要为基础概念和安全挑战的科普分析。
+攻击原理：攻击者利用IMSI在网络通信中的传输特性，通过伪造基站强制用户设备连接并捕获IMSI。获取IMSI后，攻击者可进一步进行身份伪造、窃听或位置追踪。
+攻击详情：
+1. IMSI Catchers（伪基站/Stingrays）：通过模拟合法基站来拦截IMSI号码，进而追踪用户位置、拦截通信或发起攻击。
+2. 窃听：攻击者获取IMSI后，可能对通话、短信或数据进行窃听，破坏用户隐私。
+3. SIM克隆与欺诈：利用IMSI信息克隆SIM卡，导致未授权使用、经济损失或身份盗窃。
+4. 位置追踪：由于IMSI与个人绑定，可用于实时追踪用户位置。
+攻击特征：主要表现为利用空口信令交互过程中的身份暴露，攻击者通过主动诱导（伪基站）或被动监听获取用户永久身份标识，进而实施针对隐私和通信安全的复合型攻击。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:19:49</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Understanding IMSI: The Key to Mobile Identity and Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">The International Mobile Subscriber Identity, or IMSI, is a fundamental component of telecom networks that plays a crucial role in identifying and authenticating mobile users. While IMSI enables seamless connectivity and mobility for users, it also poses security challenges that telecom operators must address to protect their subscribers and networks.
+In this blog, we’ll explore the concept of IMSI, its role in mobile networks, the security challenges it faces, and how operators can mitigate risks to safeguard their systems.
+What is IMSI?
+The International Mobile Subscriber Identity (IMSI) is a unique identifier assigned to every mobile subscriber in a telecom network. It is stored on the Subscriber Identity Module (SIM) card and is critical for enabling communication between the subscriber&#39;s device and the telecom network.
+eSIM and IMSI
+With the rise of embedded SIM ( eSIM ) technology, the way IMSI is stored and managed is evolving. Unlike traditional physical SIM cards, eSIMs are built into devices and can be remotely provisioned with different operator profiles. This flexibility enhances user convenience but also introduces new security challenges, such as remote attacks on IMSI provisioning systems or unauthorized profile swaps. Telecom operators must implement strong encryption, authentication protocols, and remote management security measures to protect IMSI data on eSIM-enabled devices.
+Structure of an IMSI
+The IMSI is a 15-digit number composed of three main parts:
+Mobile Country Code (MCC): Identifies the country where the mobile network operates (e.g., 310 for the United States).
+Mobile Network Code (MNC): Identifies the specific mobile operator within a country (e.g., 260 for T-Mobile US).
+Mobile Subscriber Identification Number (MSIN): A unique identifier for the subscriber within the operator&#39;s network.
+Example: An IMSI might look like this: 310260123456789 , where &#34;310&#34; represents the United States, &#34;260&#34; represents T-Mobile US, and &#34;123456789&#34; is the subscriber&#39;s unique identifier.
+The Role of IMSI in Mobile Networks
+IMSI is critical for ensuring smooth operations in telecom networks. Here are some of its primary functions:
+1. Subscriber Identification
+The IMSI uniquely identifies a subscriber in the network, allowing operators to link the user to their mobile plan, billing details, and services.
+2. Authentication
+When a subscriber connects to the network, the IMSI is used to authenticate the user and establish a secure connection between the device and the network.
+3. Roaming Support
+IMSI enables seamless roaming by allowing operators to identify and authenticate subscribers from other networks when they travel internationally.
+4. Network Resource Allocation
+Operators use IMSI to manage network resources efficiently by tracking active subscribers and their service usage.
+Security Challenges Associated with IMSI
+Despite its importance, IMSI is a target for cybercriminals due to its role in subscriber identification and network acc
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

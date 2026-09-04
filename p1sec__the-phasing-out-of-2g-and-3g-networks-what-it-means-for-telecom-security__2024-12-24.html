@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2G与3G网络的退网：对电信安全意味着什么 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>2G与3G网络的退网：对电信安全意味着什么</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：The Phasing Out of 2G and 3G Networks: What It Means for Telecom Security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2024-12-24
+ · <a href="https://www.p1sec.com/blog/the-phasing-out-of-2g-and-3g-networks-what-it-means-for-telecom-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文主要探讨 2G 和 3G 网络在全球范围内逐步淘汰并向 4G/5G 过渡期间所引发的电信安全风险与应对策略。随着技术进步、成本优化和频谱重分配需求，旧网络的退役成为必然，但这也带来了新的安全挑战。
+- 时间线：文章列举了全球主要国家淘汰 2G/3G 的时间表，包括美国（2022年）、英国（2023年）、印度和澳大利亚（2024年），以及德国、法国、韩国、意大利和西班牙等计划在 2025 年前后完成 3G/2G 网络的关闭。
+- 攻击原理：风险主要源于遗留系统的固有缺陷和过渡期的架构复杂性。2G 网络缺乏加密机制，易受通信拦截；3G 认证和加密机制相对薄弱。在过渡期间，未彻底清除的废弃基础设施可能成为攻击入口；新旧网络并存时的互操作性问题会产生安全盲区；同时，4G/5G 引入的 IoT 设备和网络切片等新技术也扩大了整体攻击面。
+- 攻击详情：攻击者可利用 2G 网络的加密缺失进行窃听并窃取敏感数据；利用未妥善处理的废弃网络硬件和软件获取未授权访问权限；针对仍在使用旧设备的用户（如农村和发展中地区）实施网络攻击和欺诈；此外，攻击者还可能针对 5G 环境下的 IoT 设备和网络切片配置缺陷发起定向攻击。
+- 攻击特征：此类安全风险的特征表现为“过渡期脆弱性”，包括旧技术固有的低安全水位、废弃资产未安全下线带来的暴露面、新旧系统交替时的安全缝隙，以及向新技术演进时伴随的攻击面扩张。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:20:29</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>The Phasing Out of 2G and 3G Networks: What It Means for Telecom Security</p>
+    <div class="analysis" style="white-space:pre-wrap;">Telecommunication networks have evolved rapidly over the past few decades. With the rise of 4G and 5G technologies, the legacy networks— 2G and 3G —are gradually being phased out. This transition is not only a technological shift but also a critical moment for telecom operators, users, and security professionals to reconsider the security implications.
+As these older generations of networks are decommissioned, their retirement poses new risks and opportunities for mobile network security. In this article, we’ll explore the reasons behind the phasing out of 2G and 3G, the security risks involved, and how operators can protect their infrastructures as they transition to newer technologies.
+Why Are 2G and 3G Networks Being Phased Out?
+The move away from 2G and 3G networks is primarily driven by several factors:
+1. Technological Advancements
+With the advent of 4G and 5G technologies, the need for older network infrastructures has diminished. These newer generations provide faster speeds, lower latency, and improved coverage, making them more suitable for the growing demands of modern telecommunications. Additionally, 4G and 5G technologies support more advanced services, such as IoT (Internet of Things) and high-definition video streaming.
+2. Cost Efficiency
+Maintaining multiple generations of networks can be costly for telecom operators. Phasing out legacy networks allows operators to focus on modernizing and optimizing their 4G and 5G infrastructures, reducing maintenance and operational costs.
+3. Spectrum Efficiency
+2G and 3G networks require significant amounts of spectrum that could be better utilized for newer technologies. By reallocating this spectrum to 4G and 5G, telecom operators can improve network capacity and offer more efficient services.
+4. End of Support
+Many vendors are ceasing support for 2G and 3G technologies, including hardware and software updates. As these networks become increasingly obsolete, it becomes harder to ensure that they remain secure and efficient. This lack of support makes them vulnerable to cyberattacks.
+Security Risks Associated with the Phasing Out of 2G and 3G Networks
+While the decommissioning of 2G and 3G networks offers many benefits, it also comes with security challenges that need to be addressed:
+1. Vulnerabilities in Legacy Systems
+2G and 3G networks have long been known to have security weaknesses. For instance, 2G’s lack of encryption makes it susceptible to interception attacks, where cybercriminals can eavesdrop on communications and steal sensitive data. 3G improved security somewhat but still lacks the robust encryption and authentication mechanisms of modern technologies like 4G and 5G. As these networks are decommissioned, they could become even more vulnerable to attacks.
+2. Exploitation of Unused Infrastructure
+Once 2G and 3G networks are phased out, there may still be infrastructure left behind, creating potential attack vectors. Hackers could exploit these unused systems to launch attacks o
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

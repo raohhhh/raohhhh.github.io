@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSIM物联网远程配置安全：SGP.32、eIM和IPA带来了哪些改变 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>eSIM物联网远程配置安全：SGP.32、eIM和IPA带来了哪些改变</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：eSIM IoT remote provisioning security: what SGP.32, the eIM and the IPA change</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-09-01
+ · <a href="https://www.p1sec.com/blog/esim-iot-remote-provisioning-security-sgp32-eim-ipa" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+本文分析了基于GSMA SGP.32规范的eSIM物联网远程配置安全。SGP.32将配置流程从人工确认（SGP.22）转变为由远程服务器（eIM）自动管理的无人工干预模式，引入了eIM（eSIM IoT远程管理器）和IPA（IoT配置文件助手）两个新组件，导致信任边界从用户设备转移到了云端管理平台。
+
+攻击原理：
+攻击核心在于利用信任边界转移带来的管理平面漏洞以及设备自治状态机的缺陷。攻击者无需直接攻破eUICC的底层密码学，而是通过攻破eIM管理平台、利用证书验证缺陷、重放合法指令或通过无线电干扰触发回退机制，即可实现对大规模物联网设备机队的控制或引发网络侧异常。
+
+攻击详情：
+1. 管理平面与信任边界攻击：eIM作为机队级控制点，若存在多因素认证缺失、北向API授权缺陷或多租户隔离不足，攻击者攻破eIM即可接管整个设备机队，进行配置文件的启用、禁用和删除。
+2. 证书链与重放攻击：eUICC在验证签名证书链时，若代码存在宽容的失败路径（未检查完整链或角色），攻击者可绕过验证。此外，若未严格防范重放，攻击者可捕获并重放旧的合法签名指令来改变设备状态。
+3. 回退与紧急配置滥用：SGP.32允许设备在失去服务时自动启用回退配置。攻击者可通过无线电范围内的干扰制造服务丢失，迫使设备状态改变，切换至不同网络、漫游路径和互连暴露面。
+4. 网络侧信令风暴与身份暴露：大规模机队配置文件切换会导致数千模块在极短窗口内同时发起附着和认证，产生与信令攻击/DDoS无异的海量信令负载。同时，IoT模块常使用空保护方案，导致5G永久标识符（IMSI/SUPI）明文传输，丧失5G身份隐私保护；配置切换还会改变HSS/UDM中的订阅记录及信令互连路径。
+
+攻击特征：
+- 爆炸半径大：一旦配置路径被攻破，影响范围不再是单一设备，而是数以万计的物联网模块。
+- 跨域攻击：结合了IT管理平面漏洞、密码学协议实现缺陷与物理层无线电干扰。
+- 隐蔽性强：在网络侧，计划内的机队迁移产生的信令负载与恶意的信令攻击模式几乎无法区分，极易掩盖真实攻击行为。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-09-02T09:03:10</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>eSIM IoT remote provisioning security: what SGP.32, the eIM and the IPA change</p>
+    <div class="analysis" style="white-space:pre-wrap;">SGP.32 changes eSIM security for IoT by taking the human out of the provisioning loop. In the consumer model defined by GSMA SGP.22, a person holds the device, opens a local profile assistant and consents to a profile download. In the IoT model defined by GSMA SGP.31 and SGP.32, that consent is replaced by a remote server, the eSIM IoT remote Manager (eIM), whose signed instructions the eUICC accepts with no local confirmation. The cryptography underneath is largely inherited from SGP.22 and well understood. What is new is that a single management platform can now enable, disable and delete profiles across an entire fleet, and that the device-side component which used to be a user interface is now an unattended agent running in the device application environment.
+That shift matters for operators, IoT connectivity platforms and enterprises running private networks, because the blast radius of a compromised provisioning path is no longer one handset. It is every module the eIM is authorised to manage, which in industrial deployments means tens or hundreds of thousands of devices in places nobody wants to visit. This article covers what SGP.32 specifies, where the trust boundaries moved, which failure modes deserve attention in an assessment, and what an operator can observe from the network side once profiles start moving.
+What SGP.32 is, and how it relates to SGP.02 and SGP.22
+SGP.32 is the GSMA technical specification for eSIM remote provisioning in IoT devices, sitting alongside SGP.31, which carries the architecture and requirements. It is the third remote SIM provisioning family the GSMA has produced, and understanding why it exists requires knowing what the first two could not do.
+SGP.02 was the original machine-to-machine specification. It put the operator in charge through a Subscription Manager Secure Routing platform that pushed profiles to the eUICC, often over SMS or CAT-TP bearers. It still runs a very large installed base, but the push model assumed an operator relationship enterprises found restrictive, and the bearer choices aged badly as legacy networks were switched off, removing the transport a lot of older M2M provisioning quietly depended on. Our note on the phasing out of 2G and 3G networks covers the wider consequences of that retirement.
+SGP.22 solved the commercial problem by putting the subscriber in control through a Local Profile Assistant, and it introduced the SM-DP+ and the bound profile package that remain the core of profile protection today. Its problem for IoT is structural: SGP.22 assumes there is a user interface and a user, and a water meter in a basement has neither. SGP.32 keeps what works, retaining the SM-DP+, the bound profile package and the ES8+ and ES9+ interfaces toward it, and replaces what assumed a person. The entity that decides a profile operation should happen becomes the eIM. The entity on the device that carries it out becomes the IoT Profile Assistant, or IPA. The specification was first publi
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

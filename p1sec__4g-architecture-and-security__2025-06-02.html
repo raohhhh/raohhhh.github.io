@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4G架构与安全：剖析仍在支撑全球运行的移动网络骨干 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>4G架构与安全：剖析仍在支撑全球运行的移动网络骨干</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：4G Architecture and Security: Dissecting the Mobile Network Backbone Still Running the World</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-06-02
+ · <a href="https://www.p1sec.com/blog/4g-architecture-and-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：尽管5G技术正在普及，4G LTE仍是全球主导的移动网络技术，并作为当前5G非独立组网（NSA）部署的骨干。4G从电路交换转向全IP网络虽然简化了运营商操作，但也引入了新的攻击面。文章旨在剖析4G核心网架构、关键接口与协议及其安全假设和误区。
+- 时间线：文章发布于2025年6月2日，属于技术分析与总结，总结了P1团队在长期电信安全评估和审计中观察到的持续存在的真实威胁，无特定单一攻击事件的时间线。
+- 攻击原理：4G网络向全IP架构演进，抛弃了许多旧的安全假设。核心网网元（EPC组件）和信令协议（Diameter、GTP、NAS、SIP）由于缺乏加密、弱对等认证、跨地理和供应商实现不一致等问题，存在丰富的攻击面。
+- 攻击详情：
+  1. 核心网网元攻击：MME易受信令风暴、IMSI寻呼暴力破解和畸形NAS消息攻击；SGW易受畸形GTP-U数据包或欺骗隧道端点攻击；PGW面临DoS和IP欺骗；HSS面临基于Diameter的枚举和操纵；PCRF可通过未验证的AVP被操纵。
+  2. 信令协议攻击：Diameter协议缺乏加密和强认证，易受重放攻击和AVP注入；GTP协议易受欺骗的创建会话请求（CSR）、隧道ID预测和GTP-in-GTP反射攻击；NAS协议在初始附着时暴露IMSI，且可被模糊测试导致MME崩溃；SIP/IMS易受注册泛洪、主叫ID欺骗和资费欺诈攻击。
+  3. 漫游攻击：Diameter漫游存在位置跟踪、DoS、静默SMS、S9接口劫持等漏洞。
+- 攻击特征：攻击往往利用协议设计缺陷（如Diameter缺乏加密、NAS暴露IMSI）和运营商配置不当（如明文Diameter、MME调试端口开放、暴露的PCRF节点）。攻击者可通过SIP扫描器或自定义模糊测试器在几分钟内识别可利用的服务器。由于5G NSA依赖4G EPC，4G的漏洞会直接波及5G网络，使得4G安全成为不可忽视的底线。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:29:03</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>4G Architecture and Security: Dissecting the Mobile Network Backbone Still Running the World</p>
+    <div class="analysis" style="white-space:pre-wrap;">When most people think about 4G, they picture streaming video, faster apps, and “more bars.” But for those of us in the mobile network security world, 4G represents something more foundational—and more fragile.
+Despite the rise of 5G, 4G LTE remains the dominant mobile network technology in use globally. It’s not just the infrastructure behind your phone; it’s also the backbone of most current 5G Non-Standalone (NSA) deployments. That means any vulnerabilities within 4G continue to impact billions of devices and enterprises around the world.
+In this post, we’ll break down the core 4G LTE architecture, examine its key interfaces and protocols, and explore the security assumptions (and misconceptions) that make it both revolutionary—and risky.
+What is 4G LTE?
+4G, or Long Term Evolution (LTE), represents a shift from circuit-switched mobile communications (used in 2G/3G) to fully packet-switched IP networks. The changeover introduced:
+All-IP architecture
+Higher throughput (up to 100 Mbps downlink, 50 Mbps uplink)
+Lower latency (&lt;10 ms)
+Native support for IMS (IP Multimedia Subsystem) and VoLTE (Voice over LTE)
+This new model streamlined operations for mobile network operators but also introduced new attack surfaces across the core network, signaling infrastructure, and subscriber interfaces.
+Inside the 4G LTE Core: EPC Breakdown
+The Evolved Packet Core (EPC) is the heart of the 4G system. It’s built on five main components:
+1. MME (Mobility Management Entity)
+Handles signaling related to mobility, authentication, and bearer establishment.
+Interfaces: S1-MME, S6a, S10, S11.
+Attack surface: susceptible to signaling storms, brute-force IMSI paging, and malformed NAS messages.
+2. SGW (Serving Gateway)
+Routes and forwards user data packets.
+Acts as the local mobility anchor during handovers.
+Can be attacked via malformed GTP-U packets or spoofed tunnel endpoints.
+3. PGW (Packet Data Network Gateway)
+Interface to external packet data networks (i.e., the internet).
+Applies policy enforcement and packet filtering.
+Key target for DoS and IP spoofing attacks.
+4. HSS (Home Subscriber Server)
+Central database for user profiles and authentication vectors.
+Speaks Diameter over S6a.
+At risk from Diameter-based enumeration and manipulation.
+5. PCRF (Policy and Charging Rules Function)
+Manages QoS, throttling, and charging.
+Manipulable via unverified AVPs in Gx or Rx messages.
+Key Interfaces and Protocols in 4G
+While the shift to IP was meant to simplify network operations, it also meant many legacy security assumptions were thrown out the window. Let’s look at the most critical protocols powering LTE:
+✔️ Diameter Protocol
+Replaces SS7 for signaling between core network elements.
+Used for roaming (S6a, S9), policy (Gx), and charging (Gy).
+Security concerns: Lack of encryption (TLS rarely implemented). Weak peer authentication. Susceptibility to replay attacks and AVP injection.
+Lack of encryption (TLS rarely implemented).
+Weak peer authentication.
+Susceptibility to 
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

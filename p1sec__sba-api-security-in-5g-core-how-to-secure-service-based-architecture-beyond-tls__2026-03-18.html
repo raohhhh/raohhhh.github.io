@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G 核心网中的 SBA API 安全：如何在 TLS 之外保障基于服务的架构安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>5G 核心网中的 SBA API 安全：如何在 TLS 之外保障基于服务的架构安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：SBA API Security in 5G Core: How to Secure Service Based Architecture Beyond TLS</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-03-18
+ · <a href="https://www.p1sec.com/blog/sba-api-security-in-5g-core-how-to-secure-service-based-architecture-beyond-tls" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景
+5G 核心网引入了服务化架构（SBA），将传统的封闭网络元素转变为基于 API 交互的内部生态系统。这一架构转变虽然提升了灵活性，但也改变了安全模型，使得内部通信成为一个动态的信任系统，引入了新的攻击面。传统的边界信任和协议安全已不足以应对现代核心网的风险。
+
+- 时间线
+文章发布于 2026 年 3 月 18 日，属于对 5G 核心网 SBA 架构安全演进的深度研究与总结。
+
+- 攻击原理
+在 SBA 架构中，攻击者无需破解强加密或攻破整个核心网，而是利用松散的信任关系和授权逻辑。通过寻找过度宽松的服务权限、薄弱的证书工作流、令牌滥用或缺乏监控的服务路径，攻击者可以利用合法的网络功能身份执行超出其业务范围的调用，从而在控制面内进行横向移动和权限提升。TLS 仅能保障传输层安全，无法解决“请求是否应该被允许”的授权问题。
+
+- 攻击详情
+文章列举了 SBA API 安全的六大常见风险与攻击路径：
+1. 过度信任的服务通信：网络功能被认证但拥有过多自由，单点妥协即可导致控制面内部横向移动，且流量看起来结构合法。
+2. 弱授权粒度：宽泛的服务权限虽然便于工程集成，但违背最小权限原则，扩大了攻击爆炸半径。
+3. 糟糕的服务注册和发现：注册验证不严格或治理不一致，导致不良信任决策在系统中蔓延。
+4. 令牌滥用和弱绑定：令牌范围过大或生命周期管理松散，成为攻击者反复利用的捷径。
+5. 证书生命周期问题：证书轮换困难导致运维团队创建临时例外，长期积累形成稳定的攻击路径。
+6. 不可见的东西向滥用：内部服务行为监控不足，异常 API 调用链隐藏在正常的内部通信中，难以察觉。
+
+- 攻击特征
+攻击具有高度的隐蔽性和伪装性。攻击者利用有效的内部身份执行操作，使得恶意流量看起来像正常的内部业务流程。架构本身的服务间通信预期为攻击提供了天然掩护。传统的南北向边界安全设备无法有效检测此类东西向滥用，安全团队难以区分“健康的信任”与“危险的信任”，导致权限漂移和异常服务调用长期潜伏。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:24:03</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>SBA API Security in 5G Core: How to Secure Service Based Architecture Beyond TLS</p>
+    <div class="analysis" style="white-space:pre-wrap;">5G Core did not just modernize telecom architecture. It changed the security model.
+In legacy mobile networks, a lot of security thinking revolved around protocol exposure, perimeter trust, and whether specific network elements were reachable from places they should not be. In 5G Core, that is still relevant, but it is no longer enough. The move to Service Based Architecture means the control plane increasingly behaves like an internal API ecosystem. Network functions expose services. Other network functions consume them. Trust is no longer just about where traffic comes from. It is about who is calling what, why they are allowed to call it, how that access is scoped, and whether the behavior still makes sense once the system is live.
+That is exactly why SBA API security matters.
+A lot of 5G security content still treats this topic too lightly. It says 5G uses APIs, mentions TLS, and moves on. That is not how real risk works in production. In an actual operator environment, the harder problems are never just about encrypted traffic. They are about service identity, token handling, registration trust, authorization logic, certificate lifecycle, east west visibility, and how quickly a small trust mistake can spread across the core.
+SBA changed telecom security from a pure signaling problem into a signaling plus API trust problem. That shift is one of the most important realities in modern mobile network security.
+What is SBA in 5G Core?
+Service Based Architecture, or SBA, is the architectural model used by the 5G Core where network functions expose their capabilities as services to other authorized network functions.
+That may sound clean and elegant on paper, and it is. But it also changes the attack surface.
+Instead of isolated functions exchanging only narrow, tightly expected protocol messages, the 5G Core introduces service discovery, API requests, authorization decisions, certificates, service registration, and increasingly cloud native operational patterns. In plain English, the core starts behaving less like a collection of fixed telecom boxes and more like a distributed system built on trust relationships.
+That makes the architecture more flexible. It also makes mistakes more scalable.
+If one function is too broadly trusted, the impact is no longer limited to a single control path. If service permissions are too wide, one weak point can expose multiple functions. If visibility is poor, malicious or unsafe service calls may look like normal internal traffic until the damage is already done.
+That is why SBA API security is not a side topic inside 5G security. It is central to the way the 5G Core actually works.
+Why SBA changed telecom security
+The traditional telecom mindset was shaped by relatively fixed trust zones. There were interconnect risks, external signaling threats, protocol weaknesses, and management plane exposures, but the internal core was often treated as a more predictable environment.
+SBA breaks that comfort.
+Once core functi
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

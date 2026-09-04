@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络消息欺诈：灰路由与 SIM 卡池 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>网络消息欺诈：灰路由与 SIM 卡池</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Network Messaging Fraud: Grey Routes &amp; SIM Banks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2026-08-16
+ · 作者：Enea · <a href="https://www.enea.com/insights/network-messaging-fraud-grey-routes-sim-banks/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Messaging Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Fraud</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">MNO</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Monetization</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">White Paper Excerpt</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：A2P（应用到个人）短信服务是运营商的高利润业务，每条终端短信都应产生批发终端费用。然而，灰色路由和SIM Banks欺诈通过非官方、低价或免费路径发送A2P短信，以逃避运营商的终端费用，导致运营商合法收入大量流失。近年来A2P短信成本急剧上升，使得灰色路由欺诈对欺诈者而言更加有利可图。
+时间线：文章发布于2026年8月16日，作为防欺诈手册的白皮书摘录。指出近年来A2P短信成本上升导致欺诈加剧，且随着消费者行为变化，流量向其他消息应用转移，促使交付链中的更多实体为维持利润而使用灰色路由。
+攻击原理：欺诈者利用复杂的A2P交付链（涉及CPaaS、聚合商等中间人），通过未经授权的路径发送短信。核心原理是将A2P流量伪装成P2P（个人到个人）流量，因为P2P短信通常不限量且运营商间不收费或费用极低，从而绕过A2P短信的定价和控制机制。
+攻击详情：1. SIM Box攻击：使用包含大量预付费P2P SIM卡的服务器，将入站的A2P流量作为本地移动发起的会话重新发送；现代变种包括通过手机App将用户手机变为单SIM盒，或通过API让用户手机成为自有的CPaaS基础设施。2. 伪装A2P为P2P：恶意聚合商将A2P消息混入P2P流量，利用电信间漫游协议（通常具有1:1不平衡容忍度且无运营商间费用）发送，或将国际发送者ID替换为本地ID通过国内网络路由。3. 非官方路径路由：聚合商使用间接、非合同路径绕过目标运营商的互联或直接A2P路由，利用最低成本路由（LCR）策略经过多跳或跨国路由以逃避费用。
+攻击特征：1. 流量混合：灰色流量常与白色（合法）流量混合，难以仅凭流量模式区分。2. 无单一真实标记：可模仿正常交付行为和发送者模式，无法通过单一标识符可靠检测。3. 隐藏或变化路径：通过多个中间人路由并掩盖真实路径，相同收发方的消息可能使用不同路由。4. 快速适应：一旦某路由被封锁，欺诈者会迅速切换路由或基础设施，导致静态规则很快失效。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:04:18</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Network Messaging Fraud: Grey Routes &amp; SIM Banks</p>
+    <div class="analysis" style="white-space:pre-wrap;">Excerpt 3 from Fraud Handbook
+Network Messaging Fraud: Grey Routes &amp; SIM Banks
+Application-to-person (A2P) messaging (one-time passwords, banking alerts, delivery notifications, marketing, and other text messages that enterprises send to subscribers) is among the most profitable services an operator runs because each message terminating on the network should command a wholesale termination fee. When A2P messages are delivered via unofficial, lower-priced or free routes to avoid the operator’s termination fees, it is known as grey-route traffic.
+Why Grey Route Fraud Exists
+The A2P delivery chain can be intricate, involving several intermediaries between the brand and the operator. Typically, brands rely on a CPaaS to manage messaging, which then passes messages to aggregators that route them to the final destination. Multiple aggregators might relay the message before it reaches an aggregator with a direct connection to the operator. Unlike P2P SMS, which is usually unlimited on most plans, A2P SMS is billed per message. Billing occurs in the opposite direction of message delivery, with the operator charging a termination fee and each intermediary adding their margin. The complexity and diversity of the delivery chain allow malicious actors to send A2P SMS through unauthorized routes, such as disguising them as P2P SMS, depriving MNOs of legitimate revenue.
+In recent years, the cost of sending A2P SMS has risen sharply, making gray-route fraud more profitable for fraudsters. Rising prices, together with shifting consumer behavior, have also led brands to move to other messaging channels, including messaging apps that send messages outside the A2P value chain. Both operators and aggregators are unable to monetize this messaging traffic, leading aggregators to see their volumes (and revenue) shrink. In combination with intense competition, this has led more entities in the delivery chain to use gray routes to maintain margins. This has put more stress on operators’ defenses.
+How Grey Route Fraud Actually Works
+Various types of grey route fraud exist, each with multiple versions and variants. Fraudsters have long used grey routes to avoid A2P SMS termination fees. As operators become more aware and implement controls to redirect unmonetized traffic to legitimate, monetized routes, these methods have evolved and become more sophisticated. Below are some of the most harmful and well-known techniques currently used by rogue actors.
+SIM Boxes (Highest Harm)
+SIM box bypass is most likely the form of SMS grey-route fraud that causes the greatest revenue losses for MNOs. These devices contain multiple prepaid P2P SIM cards connected to a server that acts as a “grey route traffic machine.” Incoming A2P traffic from brands is diverted to the SIM box, which then sends the traffic out again as if it were a local mobile-originated session. As one SIM box can support hundreds of SIM cards, and SIM boxes can be combined to build even bigger pools, traditional hard
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

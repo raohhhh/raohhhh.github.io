@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI的规模与复杂性增加了安全风险 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>AI的规模与复杂性增加了安全风险</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：AI’s Scale and Complexity Increases Security Risks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2026-07-02
+ · 作者：Laura Wilber · <a href="https://www.enea.com/insights/ai-scale-and-complexity/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Common</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">DPI &amp;amp; Traffic Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">AI</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Deep Packet Inspection</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">DPI</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">LLM</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Network Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">White Paper Excerpt</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">提示词注入</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI Agent安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：文章摘自 Enea 的白皮书《Understanding &amp; Managing AI in Network Security》，主要探讨大型语言模型（LLM）庞大的规模和复杂性如何引发安全漏洞并增加特定风险，包括供应链风险、代码注入和架构后门。
+- 时间线：2023年11月，研究人员发现通过让模型重复单个词元可提取训练数据；2025年3月，研究人员将其解释为对“注意力汇聚”现象的行为响应；2026年初的研究指出 AI Agent 依赖更新存在安全风险，并指出 AI 库下载量激增导致供应链风险加剧。
+- 攻击原理：1. 提示词注入与数据泄露：利用模型对序列前几个词元分配过高注意力分数的“注意力汇聚”现象，通过提示词注入（如指示模型永远重复一个词）诱导模型输出训练数据中的敏感信息。2. 供应链/依赖风险：AI 包比传统软件具有更多依赖项（如 Hugging Face 的 transformers 包有 305 个依赖），且 AI 生成的库泛滥，难以彻底审查，极大增加了供应链攻击面。3. 架构后门：攻击者在模型计算图中嵌入恶意逻辑，通过隐藏触发器激活恶意行为，由于模型复杂性极高而难以被发现。
+- 攻击详情：文章详细描述了架构后门的特点，指出其具有持久性（能存活于模型完全重新训练）和数据集无关性，可通过受损的编译器、硬件加速器或 AutoML 管道注入。例如，在图像分类模型中嵌入 3x3 白色像素块作为触发器，导致青蛙图像被误分类为汽车。此外，文章强调了 AI Agent 依赖更新过程中的安全风险，以及当前供应链风险因恶意/错误代码生成速率高而成为最紧迫的挑战。
+- 攻击特征：利用 LLM 规模和复杂性作为掩护，攻击手段极其隐蔽；架构后门难以通过重新训练消除；供应链攻击面呈指数级扩大；攻击不仅针对模型本身，还延伸至 AI Agent 的依赖链和底层架构。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:05:32</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>AI’s Scale and Complexity Increases Security Risks</p>
+    <div class="analysis" style="white-space:pre-wrap;">AI Security Challenges &amp; Associated Risks – No. 2
+AI’s Scale and Complexity Increases Security Risks
+Primary Vulnerabilities: Dependencies/Supply Chain Risks, Code Injection, Architectural Backdoors
+Introduction
+3Blue1Brown (Grant Sanderson): Large Language Models explained briefly . Excellent longer video: Transformers, the tech behind LLMs
+With complex calculations executed over billions and even trillions of parameters embedded across thousands of layered matrices built upon multi-directional vectors, the scale and complexity of large language models (LLMs) is simply astounding. Therefore, to truly and precisely understand why or how an LLM did or did not do a specific thing, i.e., to move beyond a conceptual level, remains a mystery.
+The following excerpt is from Enea’s white paper “ Understanding &amp; Managing AI in Network Security “. It looks at how the scale and complexity of LLMs creates vulnerabilities and can increase certain risks.
+The Scale and Complexity of LLMs is Mind-boggling
+Add signature randomness to the scale and complexity of LLMs, and it is understandable why their functionality is frequently compared to alchemy (the mythical medieval process of transforming common materials into gold).
+For example, in November 2023, researchers revealed that simple techniques could inexplicably succeed in extracting the training data from the day’s best language models. They showed that prompting a model to repeat a single word token (“poem”) forever caused the model to soon begin spitting out nonsensical information interspersed with verbatim content from the model’s training data.
+How and why an attack like this worked remained a mystery until March 2025, when researchers offered an explanation : it was a behavioral response to an “attention sink” phenomenon wherein a model assigns disproportionately high attention scores typically to the first few tokens in a sequence. The authors proposed a targeted patch to control the undesired behavior linked to attention sinks, but they acknowledged questions remain around the mechanisms by which training data leaks via sinks, and about the deviations in model-specific behaviors in response to such attacks.
+This is not just an academic issue: the behavior observed represents an exploitable security vulnerability. Such leakages can expose
+PII (Personal Identifiable Information),
+NSFW content (i.e., “Not Suitable for Work” material that is violent, sexually explicit, morally offensive, etc.), and
+copyrighted materials or proprietary data.
+While this undesirable behavior could be triggered via prompt injection (like the instruction to repeat a token forever), it succeeds due to an architectural security vulnerability the researchers sought to understand and mitigate. Developing even a partial defense against the threat took time due to the immense scale and complexity of LLMs, and there are many (countless?) other odd threats and strange, unexpected behaviors yet to be discovered.
+Supply Chain / Dependen
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

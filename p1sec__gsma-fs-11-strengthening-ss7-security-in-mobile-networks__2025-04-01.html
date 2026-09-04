@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSMA FS.11：强化移动网络中的 SS7 安全 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>GSMA FS.11：强化移动网络中的 SS7 安全</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：GSMA FS.11: Strengthening SS7 Security in Mobile Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-04-01
+ · <a href="https://www.p1sec.com/blog/gsma-fs-11-strengthening-ss7-security-in-mobile-networks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对某一具体的攻击事件进行报道，而是介绍了GSMA FS.11框架在移动网络中加强SS7（七号信令系统）安全的作用。SS7信令互连长期面临各种安全威胁，如欺诈、用户跟踪和未经授权的访问，GSMA FS.11为此提供了结构化的防护指南，旨在确保电信生态系统的弹性与安全。
+- 时间线：文章发布于2025年4月1日。
+- 攻击原理：文章未深入探讨具体的SS7攻击技术原理，但指出攻击者通常利用SS7信令互连的漏洞进行恶意流量传输、实施欺诈或获取对网络资源的未授权访问。
+- 攻击详情：文章侧重于防御方案而非攻击细节。主要介绍了P1 Security提供的三种增强FS.11实施的解决方案：P1 Telecom Auditor (PTA)用于主动SS7安全审计和模拟真实攻击场景；P1 Telecom Monitor (PTM)用于实时SS7流量监控和威胁检测告警；P1 Vulnerability Knowledge Base (VKB)提供最新的威胁情报以更新防火墙规则。
+- 攻击特征：文章指出SS7安全威胁的特征主要体现在信令流量中的异常模式、恶意流量以及不同级别的安全风险，这些威胁需要通过实时流量分析、防火墙规则过滤和威胁情报来进行识别与缓解。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:30:24</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>GSMA FS.11: Strengthening SS7 Security in Mobile Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">As mobile networks continue to evolve, securing Signalling System No. 7 (SS7) interconnects remains a top priority. The GSMA FS.11 framework provides essential guidelines for protecting SS7 signaling traffic from security threats, ensuring a more resilient telecom ecosystem.
+As a GSMA member and security leader , P1 Security fully supports FS.11 and provides advanced solutions that help operators implement, enhance, and maintain strong SS7 security .
+What is GSMA FS.11?
+GSMA’s FS.11 guidelines offer a structured approach to monitoring, filtering, and securing SS7 interconnects , helping operators protect against threats such as fraud, tracking, and unauthorized access. The framework includes:
+✅ Traffic Monitoring: Analyzing SS7 signaling in real time to detect anomalies. ✅ Firewall Implementation: Defining and enforcing security rules to filter malicious traffic. ✅ Threat Categorization: Identifying and mitigating different levels of security risks.
+By following FS.11, operators can improve their security posture and minimize risks across global telecom networks.
+Enhancing FS.11 Implementation with Advanced Security Solutions
+While FS.11 lays a strong foundation for SS7 security , operators can benefit from advanced threat detection, real-time monitoring, and proactive intelligence to stay ahead of evolving threats.
+🔍 P1 Telecom Auditor (PTA) : Proactive SS7 Security Audits
+Conduct in-depth security assessments to uncover vulnerabilities.
+Ensure full FS.11 compliance while identifying potential security gaps.
+Simulate real-world attack scenarios .
+🚨 P1 Telecom Monitor (PTM) : Real-Time SS7 Threat Detection
+Continuously analyze SS7 traffic for suspicious patterns.
+Detect and classify threats in accordance with FS.11 guidelines.
+Provide real-time alerts to help operators respond immediately to security events.
+🛡️ P1 Vulnerability Knowledge Base (VKB) : Up-to-Date Threat Intelligence
+Stay ahead of emerging SS7 attack techniques with industry-leading threat intelligence.
+Continuously update security rules to counter evolving threats.
+Strengthen firewall defenses with insights from global telecom threat monitoring.
+Future-Proofing SS7 Security with P1 Security
+FS.11 plays a critical role in ensuring secure SS7 interconnects , and P1 Security helps operators implement and enhance these protections. With a combination of security audits, real-time monitoring, and threat intelligence , operators can reinforce their defenses and stay ahead of attackers.
+📩 Contact P1 Security today to strengthen your SS7 security and ensure compliance with FS.11!</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

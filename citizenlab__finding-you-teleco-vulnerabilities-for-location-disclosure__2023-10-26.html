@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻找你 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>寻找你</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Finding You</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">citizenlab</span>
+        发布日期：2023-10-26
+ · 作者：Authors Gary Miller and Christopher Parsons · <a href="https://citizenlab.ca/research/finding-you-teleco-vulnerabilities-for-location-disclosure/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：移动通信网络中存储了极其全面的用户生活数据，其中用户位置信息在漫游时极易受到监控参与者的攻击。外国情报机构、私人情报公司及执法部门等利用移动网络间的互操作性漏洞，通过信令消息获取目标地理位置，对用户隐私构成严重威胁。
+- 时间线：报告发布于2023年10月26日。文中引用了2021年底关于全球仅四分之一移动网络运营商部署了信令防火墙的统计数据，并提到了2023年检测到的攻击威胁情报数据。
+- 攻击原理：攻击利用了移动网络为了实现国际漫游而开放的信令连接（如3G的SS7协议和4G的Diameter协议）。运营商间的信令消息用于认证和管理用户移动性，但安全最佳实践（如拒绝非漫游伙伴消息）并非强制执行，这为攻击者提供了入口。攻击者通过目标标识符（如IMSI或5G的SUPI）向核心网发送恶意信令消息，获取目标基站的Cell ID，再通过数据库服务映射出物理地理位置。
+- 攻击详情：攻击者首先获取目标的IMSI（3G/4G）或SUPI（5G）。3G和4G网络中，IMSI是关键目标标识；5G网络中定义了SUPI，并引入了SUCI加密方案以防止明文传输用户网络身份。然而，由于4G基础设施支撑了大部分5G国际漫游，兼容性需求导致5G网络仍面临底层信令漏洞风险。攻击直接涉及核心网网元，如3G/4G的归属位置寄存器/归属用户服务器（HSS/HLR）和5G的统一数据管理（UDM）。
+- 攻击特征：具有极高的隐蔽性，利用合法的信令通道进行监控；全球可达，攻击者可从全球任意接入点发起攻击，攻击向量多；目标不受限制；财务和法律风险极低；同时涉及主动监控（主动发送恶意信令查询）和被动监控技术。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-27T09:17:35</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Finding You</p>
+    <div class="analysis" style="white-space:pre-wrap;">Introduction
+1. Roaming, SIMs, and Services 101
+2. Geolocation Attacks Against Telecommunications Networks
+3. Case Studies and Statistics
+4. Incentives Enabling Geolocation Attacks
+5. Geolocation Tracking in 5G Networks and Unimplemented Defensive Measures
+6. Conclusion
+Acknowledgements
+Introduction
+The information collected by, and stored within, mobile networks can represent one of the most current and comprehensive dossiers of our life. Our mobile phones are connected to these networks and reveal our behaviours, demographic details, social communities, shopping habits, sleeping patterns, and where we live and work, as well as provide a view into our travel history. This information, in aggregate, is jeopardized, however, by technical vulnerabilities in mobile communications networks. Such vulnerabilities can be used to expose intimate information to many diverse actors and are tightly linked to how mobile phones roam across mobile operators’ networks when we travel. Specifically, these vulnerabilities are most often tied to the signaling messages that are sent between telecommunications networks which expose the phones to different modes of location disclosure.
+Telecommunications networks have been designed to rely on private, though open, signaling connections. These connections enable domestic and international roaming, where a mobile phone can seamlessly pass from one company’s network to another. The signaling protocols used for this purpose also allow networks to retrieve information about the user, such as whether a number is active, which services are available to them, to which country network they are registered, and where they are located. These connections and associated signaling protocols, however, are constantly being targeted and exploited by surveillance actors with the effect of exposing our phones to numerous methods of location disclosure.
+Most unlawful network-based location disclosure is made possible because of how mobile telecommunications networks interoperate. Foreign intelligence and security services, as well as private intelligence firms, often attempt to obtain location information, as do domestic state actors such as law enforcement. Notably, the methods available to law enforcement and intelligence services are similar to those used by the unlawful actors and enable them to obtain individuals’ geolocation information with high degrees of secrecy. Over the course of this report we will generally refer to all of these actors as ‘surveillance actors’ to refer to their interest in undertaking mobile geolocation surveillance.
+Despite the ubiquity of global 4G network penetration and the rapidly expanding 5G network footprint there are many mobile devices, and their owners, who rely on older 3G networks. This is particularly the case in the regions of Eastern Europe, the Middle East, and Sub-Saharan Africa where 3G subscriber penetration is 55% according to the GSMA 1 , an organization that provides information, servic
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

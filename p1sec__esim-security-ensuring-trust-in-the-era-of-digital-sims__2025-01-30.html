@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eSIM 安全：在数字 SIM 时代确保信任 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>eSIM 安全：在数字 SIM 时代确保信任</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：eSIM Security: Ensuring Trust in the Era of Digital SIMs</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-01-30
+ · <a href="https://www.p1sec.com/blog/esim-security-ensuring-trust-in-the-era-of-digital-sims" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">后量子</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文主要探讨了 eSIM 技术在数字 SIM 时代的安全保障、潜在风险及应对措施。文章虽非针对某一具体攻击事件的复盘，但详细剖析了 eSIM 面临的多种安全威胁与防御机制，具体分析如下：
+
+- 攻击事件背景与概述
+随着移动通信技术的演进，eSIM 逐渐取代传统物理 SIM 卡，提供了远程配置、多网络支持及物联网赋能等便利。然而，eSIM 的远程配置和 5G/IoT 生态系统的深度融合也引入了新的安全挑战。文章指出，尽管 eSIM 具备 GSMA 标准合规性、硬件级防篡改和 PKI 强身份验证等安全特性，但仍面临多种网络攻击风险。
+
+- 攻击原理与详情
+文章详细列举了针对 eSIM 技术的几种主要攻击手段与风险：
+1. 中间人攻击 (MITM)：在 OTA 远程配置过程中，若通信通道未妥善加密，攻击者可拦截并篡改传输数据。
+2. 未授权配置文件激活：攻击者可能尝试在 eSIM 上激活未经授权的配置文件，从而实施欺诈或未授权网络访问。
+3. 数据拦截：不安全的 OTA 传输可能暴露敏感的订阅者数据，如加密密钥或配置文件详情。
+4. 安全元件 (SE) 受损：虽然 SE 具备高级防篡改能力，但高级攻击者仍可能利用硬件漏洞提取存储的配置文件或认证数据。
+5. IoT 漏洞利用：在物理安全薄弱环境中运行的 eSIM IoT 设备，易受信号拦截、欺骗或恶意软件感染等攻击。
+
+- 攻击特征
+eSIM 相关攻击的核心特征在于利用远程配置和生态系统复杂性。攻击者通常瞄准 OTA 配置过程中的通信链路、多配置文件管理中的错误配置，以及 IoT 设备的脆弱性。这些攻击可能导致服务中断、未授权访问及敏感凭证泄露。
+
+- 5G安全与后量子安全演进
+文章明确指出，随着 eSIM 在 5G 生态系统和物联网中的普及，安全实践必须演进以应对新兴威胁。此外，文章特别提到了“抗量子加密”作为未来的关键安全方向之一，强调需要实施能够抵抗量子计算攻击的加密算法，这与后量子密码学的发展趋势高度契合。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:31:30</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>eSIM Security: Ensuring Trust in the Era of Digital SIMs</p>
+    <div class="analysis" style="white-space:pre-wrap;">As mobile technology continues to evolve, the embedded SIM (eSIM) has emerged as a transformative solution, gradually replacing traditional physical SIM cards with a digital alternative. Designed to offer enhanced flexibility and convenience, eSIM technology eliminates the need for physical SIM card swapping, enabling remote activation and management of mobile network subscriptions. While eSIMs provide numerous advantages—such as seamless connectivity and device miniaturization —they also introduce unique security challenges that require attention from telecom operators, device manufacturers, and users alike. This article delves into the security aspects of eSIM technology, its associated risks, and how stakeholders can ensure its secure adoption.
+What is an eSIM?
+An eSIM (embedded SIM) is a programmable SIM card embedded directly into a device. Unlike traditional SIM cards, which are removable and require manual insertion, eSIMs are soldered onto a device’s motherboard and can be programmed or reprogrammed remotely. This fundamental shift offers both opportunities and challenges in terms of security and device management.
+Key Benefits of eSIM Technology
+Remote Provisioning: Users can easily switch carriers or activate new plans without the need for a physical SIM card, streamlining the process and offering enhanced flexibility .
+Device Miniaturization: By eliminating the physical SIM tray, manufacturers can design smaller, more compact devices, paving the way for sleeker designs, particularly in mobile phones and wearables.
+Multi-Network Support: eSIMs can store profiles from multiple carriers, allowing users to easily switch between networks, an advantage for international travelers and businesses that require network flexibility.
+IoT Enablement: eSIM technology is particularly beneficial for Internet of Things (IoT) devices, such as smartwatches , cars , and industrial sensors , where physical access to devices may be restricted. It allows seamless connectivity without needing to insert or swap SIM cards, enhancing operational efficiency in sectors like automotive and manufacturing .
+eSIM Industry, Ecosystem, and Market
+The eSIM ecosystem is rapidly expanding, driven by the increasing demand for more flexible, secure, and scalable mobile connectivity solutions. Telecom operators , device manufacturers , and IoT providers are at the forefront of this transformation, collaborating to standardize eSIM technology and enable seamless integration across a wide range of devices and industries. As the adoption of 5G networks continues to grow, the eSIM market is expected to experience exponential growth, with the need for more efficient and dynamic connectivity becoming paramount.
+Major stakeholders, including the GSMA , are actively working to establish frameworks for global interoperability. This ensures that eSIM-enabled devices can function seamlessly across different carriers and geographies, further accelerating adoption. Additionally, eSIM tech
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

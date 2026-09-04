@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核心网：移动通信的骨干 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">292</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">292</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">800</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>核心网：移动通信的骨干</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Core Network: The Backbone of Mobile Communications</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2025-08-25
+ · <a href="https://www.p1sec.com/blog/core-network-the-backbone-of-mobile-communications" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：本文并非针对单一攻击事件的报告，而是对移动核心网安全态势的全面概述。文章指出核心网作为移动生态系统的“大脑”和中枢，承载着认证、计费和会话管理等关键功能，历来是攻击者（包括国家级APT组织）的重点目标。随着网络从硬件化向虚拟化、云原生演进，攻击面也在不断扩大。
+- 时间线：文章梳理了核心网从2G到5G的演进时间线及其安全特征：2G时代以电路交换和语音为主；3G引入分组交换节点处理移动数据；4G实现全IP化（EPC）并引入Diameter协议；5G走向云原生和基于服务的架构（SBA），引入HTTP/2和API驱动，灵活性提升但攻击面显著增加。
+- 攻击原理：核心网的安全威胁主要源于陈旧协议缺乏安全设计、互连信任链被滥用以及云原生配置不当。例如，SS7和Diameter协议在设计之初缺乏安全考量，易被利用进行信令攻击；GTP协议常被用于绕过计费或发起DoS攻击；5G的API接口若配置不当，会面临类似企业IT的API滥用风险。
+- 攻击详情：文章详细列举了针对核心网各层面的攻击详情：1) 遗留协议攻击：2G/3G的SS7和4G的Diameter漏洞在现代网络中依然活跃，可被用于位置追踪和短信拦截；2) 互连威胁：来自漫游伙伴或被攻破运营商的恶意信令；3) GTP漏洞利用：用于绕过计费、注入流量或拒绝服务；4) 5G API滥用：基于服务的接口若安全防护不足，极易被攻击者利用；5) 配置与暴露：防火墙配置错误、测试节点暴露或Kubernetes集群配置不当导致核心网元素暴露于公网。
+- 攻击特征：核心网攻击具有极高的破坏性和影响力。攻击者不仅限于窃听通话，还能劫持用户会话、窃取身份信息、篡改计费系统，甚至破坏国家级关键基础设施服务。此外，由于核心网涉及海量用户数据，国家级APT组织常将其作为战略目标，以实现对大规模人口的监控和影响。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:26:00</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Core Network: The Backbone of Mobile Communications</p>
+    <div class="analysis" style="white-space:pre-wrap;">Introduction: Why the Core Network Matters
+If the Radio Access Network (RAN) is the handshake between your phone and the tower, then the Core Network is the brain, nervous system, and beating heart of the mobile ecosystem. It’s the part of the network where decisions are made, subscribers are authenticated, services are delivered, and—unfortunately—where attackers often find their way in.
+In 2G it was mostly about voice switching, in 3G about mobile data, in 4G about all-IP convergence, and in 5G the Core is now software-defined, cloud-native, and more exposed than ever. Whether you’re streaming Netflix, placing a VoLTE call, or connecting a private 5G factory robot, the Core Network makes it happen.
+Core Network Functions: What It Does
+At its simplest, the Core Network handles four fundamental tasks:
+Authentication &amp; Security – Verifying that you are a legitimate subscriber (and that your phone isn’t cloned).
+Mobility Management – Keeping your session alive as you move between cells, cities, or even countries.
+Session &amp; Service Management – Allocating IP addresses, creating bearers, and ensuring your traffic gets to the right place with the right quality of service.
+Interconnection &amp; Charging – Linking mobile subscribers to the internet, other operators, and legacy systems, while keeping track of billing.
+Evolution of the Core Network
+2G (GSM Core Network): Based on circuit switching (MSC, HLR, VLR, AuC). Focused on voice calls and SMS.
+3G (UMTS Core): Introduced packet-switched nodes (SGSN, GGSN) to handle mobile internet.
+4G (Evolved Packet Core, EPC): Fully IP-based, with key nodes like the MME, SGW, PGW, HSS. Enabled LTE’s high-speed data and VoLTE.
+5G Core (5GC): Cloud-native, service-based architecture (SBA) built on APIs and microservices. Introduces the AMF, SMF, UPF, and NRF. Much more flexible, but also significantly increases the attack surface.
+Protocols in the Core Network
+The glue holding everything together is a mix of telecom protocols —many of which were designed decades ago without security in mind:
+SS7 (2G/3G): Still widely used for signaling, but notoriously insecure and exploited for location tracking and SMS interception.
+Diameter (4G): Introduced with LTE, supports encryption, but optional—leaving many deployments exposed.
+HTTP/2 + SBI (5G): API-driven signaling between Network Functions, offering flexibility but also API-level vulnerabilities.
+GTP (GPRS Tunneling Protocol): Still crucial for user data transport, often targeted for fraud and DoS attacks.
+Key Components of the Core
+Authentication &amp; Subscriber Databases: HLR (2G/3G), HSS (4G), UDM/AUSF (5G).
+Mobility Anchors: MSC/SGSN in 2G/3G, MME in 4G, AMF in 5G.
+Data Gateways: GGSN in 3G, PGW/SGW in 4G, UPF in 5G.
+Policy &amp; Charging Functions: PCRF (4G), PCF (5G).
+Interconnection Elements: STP for SS7, DRA for Diameter, SEPP for 5G interconnect security.
+Security Challenges in the Core
+The Core Network has always been a prime target for attackers because it’s where subscr
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>
