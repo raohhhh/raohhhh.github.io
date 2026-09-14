@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">293</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">293</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">804</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">295</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">295</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">809</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -180,17 +180,17 @@
         <input type="text" id="searchBox" placeholder="搜索文章标题/摘要...">
         <select id="siteFilter">
             <option value="">全部来源</option>
-            <option value="enea">enea (97)</option>
-            <option value="p1sec">p1sec (166)</option>
+            <option value="enea">enea (98)</option>
+            <option value="p1sec">p1sec (167)</option>
             <option value="citizenlab">citizenlab (10)</option>
             <option value="crowdstrike">crowdstrike (20)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (158)</option>
-            <option value="核心网网元">核心网网元 (149)</option>
+            <option value="5G安全">5G安全 (159)</option>
+            <option value="核心网网元">核心网网元 (150)</option>
             <option value="信令攻击">信令攻击 (148)</option>
-            <option value="4G安全">4G安全 (93)</option>
+            <option value="4G安全">4G安全 (94)</option>
             <option value="3G安全">3G安全 (58)</option>
             <option value="2G安全">2G安全 (51)</option>
             <option value="AI攻击">AI攻击 (43)</option>
@@ -202,10 +202,10 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(158)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(149)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(159)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(150)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(148)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(93)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(94)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(58)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(51)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(43)</span></a>
@@ -232,6 +232,61 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-09-13"
+             data-tags="核心网网元"
+             data-search="to counter mobile network fraud: visibility, enforcement &amp; scale  攻击事件背景：本文并非针对某一具体的突发攻击事件，而是enea公司发布的一份关于移动网络反欺诈的白皮书摘要。背景是移动网络运营商在数据、语音和消息（a2p）领域长期面临收入泄露和网络欺诈问题，欺诈行为利用了网络流量监控的盲点。
+时间线：文章发布于2026年9月13日，无具体攻击时间线。
+攻击原理：文章指出，欺诈的核心原理在于利用运营商网络中“可见性”的缺失。当运营商无法清晰看到流量的来源、去向及真实内容时（部分受限于加密和故意混淆），欺诈者便趁机制造虚假流量或绕过计费系统，导致运营商支付欺诈流量成本的同时，损失真实服务的收入。
+攻击详情：虽然未深入技术细节，但文章提到欺诈跨越数据、语音和消息三个领域。为了应对这些问题，需要将执行能力（如重新评级、阻止、警告、限流等）集成到策略和计费系统（pcrf/pcf、aaa）以及网络防火墙中。这里提到的pcrf/pcf（策略控制规则功能）和aaa（认证、授权和计费）属于典型的移动核心网网元。
+攻击特征：1. 持续性：收入泄露通常不是单一突发事件，而是持续的、渐进的侵蚀过程；2. 隐蔽性：利用加密和故意混淆技术隐藏欺诈流量，增加检测难度；3. 多样性：欺诈行为同时存在于数据、语音和消息等多个通信域中。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-09-13
+ · Enea                </div>
+                <div class="card-title">
+                    <a href="enea__to-counter-mobile-network-fraud-visibility-enforcement-scale__2026-09-13.html">应对移动网络欺诈：可见性、执行力与规模化</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：本文并非针对某一具体的突发攻击事件，而是Enea公司发布的一份关于移动网络反欺诈的白皮书摘要。背景是移动网络运营商在数据、语音和消息（A2P）领域长期面临收入泄露和网络欺诈问题，欺诈行为利用了网络流量监控的盲点。
+时间线：文章发布于2026年9月13日，无具体攻击时间线。
+攻击原理：文...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__to-counter-mobile-network-fraud-visibility-enforcement-scale__2026-09-13.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/to-counter-mobile-network-fraud-visibility-enforcement-scale/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-09-10"
+             data-tags="5G安全,4G安全"
+             data-search="gsma fs.34 explained: key management and pki for 4g and 5g inter-plmn security gsma fs.34 defines how operators and ipx providers exchange certificates for inter-plmn security. trust anchors, raex, n32 keys and what to verify. 本文深入解析了 gsma fs.34 规范，该规范旨在解决 4g 和 5g inter-plmn（网间）安全中的密钥管理和公钥基础设施（pki）问题。由于运营商间的信令交互依赖于 plmn 标识符而非域名，传统的 web pki 模型无法直接应用。fs.34 定义了运营商之间交换证书和密钥材料的流程，以保护 sepp（安全边缘保护代理）间的 n32 接口信令安全。
+
+核心机制：fs.34 的信任模型基于证书颁发机构（ca）和信任锚。信任锚将受信任的根证书与授权的移动网络标识符（plmn-id）列表绑定，确保 ca 仅能为特定运营商签发证书。信任分发通过 gsma raex 证书数据库实现，利用了运营商现有的漫游数据交换渠道。
+
+潜在风险与特征：文章指出，该领域的安全失败多为操作性问题而非密码学缺陷。主要风险包括：证书过期会导致漫游服务直接中断；密钥轮换缺乏演练导致恢复缓慢；吊销机制未经验证；信任锚集陈旧导致继续接受已撤销的证书。此外，若部署时仅验证证书链而忽略 plmn 授权映射，攻击者可能利用受信任的 ca 为未授权的 plmn 签发证书，进而注入或窃听其他运营商用户的信令。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-09-10
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__gsma-fs-34-key-management-inter-plmn-security-pki-certificates__2026-09-10.html">GSMA FS.34 解读：4G 与 5G inter-PLMN 安全的密钥管理与 PKI</a>
+                </div>
+                <div class="card-summary">
+                        本文深入解析了 GSMA FS.34 规范，该规范旨在解决 4G 和 5G inter-PLMN（网间）安全中的密钥管理和公钥基础设施（PKI）问题。由于运营商间的信令交互依赖于 PLMN 标识符而非域名，传统的 Web PKI 模型无法直接应用。FS.34 定义了运营商之间交换证书和密钥材料的流程...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__gsma-fs-34-key-management-inter-plmn-security-pki-certificates__2026-09-10.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/gsma-fs-34-key-management-inter-plmn-security-pki-certificates" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="enea" data-matched="True"
              data-date="2026-09-06"
              data-tags="核心网网元"

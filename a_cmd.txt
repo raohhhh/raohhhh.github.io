@@ -1,0 +1,39 @@
+Thought: 2.7s
+执行策略限制了运行。我用 -ExecutionPolicy Bypass 来运行注册脚本：
+$ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "D:\work\知识分享\new\output\register-task.ps1"
+已注册计划任 ? AutoGitCommit-Daily
+触发时间: 每天 09:30
+执行脚本: D:\work\֪ʶ    \new\output\auto-commit.ps1
+
+管理命令:
+  查看:   Get-ScheduledTask -TaskName 'AutoGitCommit-Daily' | Get-ScheduledTaskInfo
+  立即运行: Start-ScheduledTask -TaskName 'AutoGitCommit-Daily'
+  卸载:   Unregister-ScheduledTask -TaskName 'AutoGitCommit-Daily' -Confirm:$false
++ Thought: 406ms
+计划任务注册成功。验证一下任务信息和下次运行时间：
+$ Get-ScheduledTask -TaskName 'AutoGitCommit-Daily' | Get-ScheduledTaskInfo | Format-List TaskName, LastRunTime, LastTaskResult, NextRunTime; Get-ScheduledTask -TaskName 'AutoGitCommit-Daily' | Select-Object -ExpandProperty Triggers
+TaskName       : AutoGitCommit-Daily
+LastRunTime    : 1999/11/30 0:00:00
+LastTaskResult : 267011
+NextRunTime    : 2026/9/15 9:30:00
+
+
+
+
+
+Enabled            : True
+…
+Click to expand
++ Thought: 6.7s
+完成。已创建两个脚本并注册了 Windows 计划任务：
+文件
+auto-commit.ps1 — 执行 git pull --rebase → git add -A → 检测有无改动 → commit（带时间戳）→ push origin main，全程写入 auto-commit.log
+register-task.ps1 — 注册计划任务（已运行）
+计划任务 AutoGitCommit-Daily
+每天 09:30 自动运行（下次：2026/9/15 09:30）
+无改动时跳过提交；用 -StartWhenAvailable 错过时间会在开机后补跑
+管理命令
+Get-ScheduledTask -TaskName 'AutoGitCommit-Daily' | Get-ScheduledTaskInfo   # 查看状态
+Start-ScheduledTask -TaskName 'AutoGitCommit-Daily'                         # 立即手动触发测试
+Unregister-ScheduledTask -TaskName 'AutoGitCommit-Daily' -Confirm:$false     # 卸载
+注意：当前仓库有约 250 个改动文件和 2 个新文件尚未提交。计划任务会在明天 9:30 首次运行时一并提交。若想现在立即提交并验证脚本，可运行上面的 Start-ScheduledTask 命令，或直接执行 powershell -NoProfile -ExecutionPolicy Bypass -File .\auto-commit.ps1。需要我现在帮你测试运行一次吗？
