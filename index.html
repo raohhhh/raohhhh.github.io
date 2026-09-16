@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">295</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">295</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">809</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">298</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">298</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">812</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,19 +181,19 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (98)</option>
-            <option value="p1sec">p1sec (167)</option>
+            <option value="p1sec">p1sec (169)</option>
             <option value="citizenlab">citizenlab (10)</option>
-            <option value="crowdstrike">crowdstrike (20)</option>
+            <option value="crowdstrike">crowdstrike (21)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (159)</option>
-            <option value="核心网网元">核心网网元 (150)</option>
-            <option value="信令攻击">信令攻击 (148)</option>
-            <option value="4G安全">4G安全 (94)</option>
-            <option value="3G安全">3G安全 (58)</option>
-            <option value="2G安全">2G安全 (51)</option>
-            <option value="AI攻击">AI攻击 (43)</option>
+            <option value="5G安全">5G安全 (161)</option>
+            <option value="核心网网元">核心网网元 (152)</option>
+            <option value="信令攻击">信令攻击 (150)</option>
+            <option value="4G安全">4G安全 (96)</option>
+            <option value="3G安全">3G安全 (59)</option>
+            <option value="2G安全">2G安全 (52)</option>
+            <option value="AI攻击">AI攻击 (44)</option>
             <option value="AI Agent安全">AI Agent安全 (35)</option>
             <option value="后量子">后量子 (10)</option>
             <option value="提示词注入">提示词注入 (7)</option>
@@ -202,13 +202,13 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(159)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(150)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(148)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(94)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(58)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(51)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(43)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(161)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(152)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(150)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(96)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(59)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(52)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(44)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(35)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(7)</span></a>
@@ -232,6 +232,102 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-09-15"
+             data-tags="5G安全,4G安全,3G安全,2G安全,信令攻击,核心网网元"
+             data-search="continuous telecom security testing: why a point-in-time pentest is not enough a mobile network never stands still, so a point-in-time pentest ages fast. how to build a continuous telecom security testing programme. 本文并非针对单一攻击事件的报告，而是探讨移动网络安全测试方法论的研究文章。
+- 攻击事件背景：移动网络是一个动态变化的“生命系统”，随着新节点上线、漫游伙伴增减、3gpp特性演进、厂商补丁更新以及运维配置漂移，网络架构会迅速偏离上一次安全评估时的状态。单次渗透测试报告只能代表测试当天的快照，无法反映网络后续的安全态势。
+- 时间线：文章发布于2026年9月15日，属于面向未来的行业趋势与方法论研究。
+- 攻击原理：文章指出了网络“漂移”导致安全漏洞产生的机制，包括：1. 部署变更（多代网络如2g/3g/4g/5g叠加，新网元引入默认配置）；2. 互连变更（漫游伙伴变化导致信令防火墙策略失效）；3. 标准演进（3gpp新安全特性未正确启用）；4. 补丁应用（重置配置或改变接口行为）；5. 运维漂移（临时规则永久化、测试接口暴露）。
+- 攻击详情：文章重点指出了三个最易产生新漏洞的高风险区域：1. 信令边界（ss7、diameter、gtp防火墙策略因频繁调整而衰减）；2. 漫游与互连边界（受外部组织变更影响）；3. 管理平面（oam/oss接口积累访问路径，易被攻破且影响决定性）。
+- 攻击特征：文章未描述特定攻击特征，而是强调了持续测试、持续监控和持续可见性的区别。指出持续测试能够回答“如果攻击者尝试，是否会成功”的问题，弥补了监控只能发现已发生攻击的不足。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-09-15
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__continuous-telecom-security-testing-why-point-in-time-pentest-is-not-enough__2026-09-15.html">持续的电信安全测试：为什么单次渗透测试是不够的</a>
+                </div>
+                <div class="card-summary">
+                        本文并非针对单一攻击事件的报告，而是探讨移动网络安全测试方法论的研究文章。
+- 攻击事件背景：移动网络是一个动态变化的“生命系统”，随着新节点上线、漫游伙伴增减、3GPP特性演进、厂商补丁更新以及运维配置漂移，网络架构会迅速偏离上一次安全评估时的状态。单次渗透测试报告只能代表测试当天的快照，无法反映...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">3G安全</span>
+                        <span class="card-tag">2G安全</span>
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__continuous-telecom-security-testing-why-point-in-time-pentest-is-not-enough__2026-09-15.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/continuous-telecom-security-testing-why-point-in-time-pentest-is-not-enough" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-09-15"
+             data-tags="5G安全,4G安全,核心网网元,信令攻击"
+             data-search="dns security in mobile networks: node selection, roaming resolution and the 3gppnetwork.org namespace dns decides which gateway carries a subscriber session in the epc and 5g core. how resolution works across grx and ipx, what breaks, and what to test. - 攻击事件背景：移动核心网严重依赖 dns 进行网元发现和节点选择，但 dns 通常被排除在运营商的安全评估范围之外。由于 3gppnetwork.org 命名空间被设计为可从外部解析，且漫游功能依赖 grx/ipx dns 层次结构，导致 dns 成为移动网络中一个未经验证的关键风险输入点。
+- 时间线：文章发布于 2026 年 9 月，是对移动网络 dns 安全评估经验的总结性分析。
+- 攻击原理：dns 是决定网关承载用户流量的未经验证的输入。在移动核心网中，被污染的 dns 响应可以影响终止用户会话的用户面功能（upf）或 pdn 网关（pgw）。由于后续的信令协议（如 gtp-c 和 pfcp）缺乏基于证书的身份验证，且网络被假设为封闭环境，因此错误的 dns 解析无法被下游机制发现和拦截。
+- 攻击详情：
+  1. 侦察：攻击者利用公开的 plmn 标识符和 3gpp 标准化的命名格式（如 5gc.mnc&lt;mnc&gt;.mcc&lt;mcc&gt;.3gppnetwork.org），无需猜测即可构造网关、smf、upf 等网元的域名，从而绘制核心网拓扑，发现测试和预生产节点。
+  2. 缓存投毒/劫持：针对 ipx 提供商的缓存进行攻击，该缓存代表数百个运营商响应查询，单个过时或错误的记录会广泛传播。
+  3. 配置漏洞利用：利用常见的 dns 配置和生命周期问题，如递归转发开放、split-horizon 缺陷导致内部记录泄露、退役节点委派过时、区域传输（axfr）权限过大、缺乏 dnssec 以及解析器容量不足等。
+- 攻击特征：
+  1. 隐蔽性强：不需要新颖的攻击技术，主要利用配置漂移和组织管理缝隙（ip团队与核心网团队之间的盲区）。
+  2. 破坏力大：可导致会话建立失败或被重定向，甚至引发信令面风暴。
+  3. 跨代际影响：在 5g 核心网中，即使引入了 nrf 进行网元发现，dns 仍是底层依赖。错误的 dns 解析会破坏 tls 证书验证的有效性；同时 5g 漫游安全（如 sepp 的 n32-c 握手）也依赖 dns，使其处于加密保护之前的关键路径上。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-09-15
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__dns-security-mobile-networks-node-selection-roaming-3gppnetwork-org__2026-09-15.html">移动网络中的 DNS 安全：节点选择、漫游解析与 3gppnetwork.org 命名空间</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：移动核心网严重依赖 DNS 进行网元发现和节点选择，但 DNS 通常被排除在运营商的安全评估范围之外。由于 3gppnetwork.org 命名空间被设计为可从外部解析，且漫游功能依赖 GRX/IPX DNS 层次结构，导致 DNS 成为移动网络中一个未经验证的关键风险输入点。
+-...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                        <span class="card-tag">信令攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__dns-security-mobile-networks-node-selection-roaming-3gppnetwork-org__2026-09-15.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/dns-security-mobile-networks-node-selection-roaming-3gppnetwork-org" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-09-15"
+             data-tags="AI攻击"
+             data-search="phantomraven: an llm-generated information stealer developed for bug bounty hunting crowdstrike identified a financially motivated threat actor who works as a bug bounty hunter and who developed and distributed the javascript-based information stealer phantomraven. - 攻击事件背景：crowdstrike counter adversary operations 发现了一名以经济动机为目的的威胁行为者。该行为者拥有漏洞赏金猎人的身份，却利用此身份作为掩护，开发并分发了名为 phantomraven 的基于 javascript 的信息窃取恶意软件。
+- 时间线：该文章及事件披露发布于 2026 年 9 月 15 日。
+- 攻击原理：攻击者利用大型语言模型（llm）生成了 phantomraven 恶意软件。这表明生成式 ai 技术正在被威胁行为者武器化，用于降低恶意软件编写的门槛并加速攻击工具的开发周期。
+- 攻击详情：phantomraven 是一款基于 javascript (js) 的信息窃取器。威胁行为者利用其漏洞赏金猎人的背景，可能通过相关的合法渠道或活动作为伪装，进行该恶意软件的开发与分发。
+- 攻击特征：该攻击最显著的特征是“llm 生成”，即利用 ai 模型自动生成恶意代码；其次，攻击者结合了“漏洞赏金猎人”的合法身份进行活动，使得攻击具有较强的隐蔽性和欺骗性。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-09-15
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__phantomraven-llm-generated-information-stealer-for-bug-bounty-hunting__2026-09-15.html">PhantomRaven：为漏洞赏金狩猎开发的LLM生成型信息窃取器</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：CrowdStrike Counter Adversary Operations 发现了一名以经济动机为目的的威胁行为者。该行为者拥有漏洞赏金猎人的身份，却利用此身份作为掩护，开发并分发了名为 PhantomRaven 的基于 JavaScript 的信息窃取恶意软件。
+- 时间线...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__phantomraven-llm-generated-information-stealer-for-bug-bounty-hunting__2026-09-15.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/phantomraven-llm-generated-information-stealer-for-bug-bounty-hunting/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="enea" data-matched="True"
              data-date="2026-09-13"
              data-tags="核心网网元"

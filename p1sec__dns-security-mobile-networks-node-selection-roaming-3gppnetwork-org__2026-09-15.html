@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>爱立信分组核心控制器 (PCC) 2026年7月安全公告详解 - 安全知识库</title>
+    <title>移动网络中的 DNS 安全：节点选择、漫游解析与 3gppnetwork.org 命名空间 - 安全知识库</title>
     <style>
         :root {
             --primary: #2196f3;
@@ -137,12 +137,12 @@
     </div>
 <div class="detail">
     <a class="back-link" href="index.html">← 返回列表</a>
-    <h1>爱立信分组核心控制器 (PCC) 2026年7月安全公告详解</h1>
-    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：A Walkthrough of the Ericsson Packet Core Controller (PCC) July 2026 Security Bulletin</p>
+    <h1>移动网络中的 DNS 安全：节点选择、漫游解析与 3gppnetwork.org 命名空间</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：DNS security in mobile networks: node selection, roaming resolution and the 3gppnetwork.org namespace</p>
     <div class="meta">
         <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
-        发布日期：2026-08-03
- · <a href="https://www.p1sec.com/blog/ericsson-pcc-july-2026-security-bulletin-cve-walkthrough" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+        发布日期：2026-09-15
+ · <a href="https://www.p1sec.com/blog/dns-security-mobile-networks-node-selection-roaming-3gppnetwork-org" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
 
     <div style="margin-bottom:16px;">
         <strong>原始标签：</strong>
@@ -154,48 +154,33 @@
         <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
         <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
         <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
     </div>
 
     <h2 class="section-title">📋 AI 分析报告</h2>
-    <div class="analysis">- 攻击事件背景：2026年7月，爱立信发布了针对其 Packet Core Controller (PCC) 的安全公告。PCC 是爱立信双模 5G Core 产品中的云原生控制面信令处理功能，提供接入、会话、移动性和网关控制功能。这些漏洞由 P1 Security 发现并在约一年前报告给爱立信，修复补丁现已发布。漏洞一旦被利用，可能导致 4G/5G 网络拒绝服务、远程代码执行 (RCE) 和严重的信息泄露。
-- 时间线：漏洞由 P1 Security 发现并约在一年前报告给爱立信；2026年7月爱立信正式发布安全公告及修复版本；建议用户升级至 PCC v1.39 或至少 v1.38 以缓解高危漏洞。
-- 攻击原理：攻击者通过相邻网络获得高权限访问后，利用 PCC 软件配置管理模块和告警系统中的输入验证不严、错误处理不当、硬编码凭据及路径遍历等缺陷，执行恶意构造的命令或访问越权路径，从而获取系统控制权或敏感信息。
+    <div class="analysis">- 攻击事件背景：移动核心网严重依赖 DNS 进行网元发现和节点选择，但 DNS 通常被排除在运营商的安全评估范围之外。由于 3gppnetwork.org 命名空间被设计为可从外部解析，且漫游功能依赖 GRX/IPX DNS 层次结构，导致 DNS 成为移动网络中一个未经验证的关键风险输入点。
+- 时间线：文章发布于 2026 年 9 月，是对移动网络 DNS 安全评估经验的总结性分析。
+- 攻击原理：DNS 是决定网关承载用户流量的未经验证的输入。在移动核心网中，被污染的 DNS 响应可以影响终止用户会话的用户面功能（UPF）或 PDN 网关（PGW）。由于后续的信令协议（如 GTP-C 和 PFCP）缺乏基于证书的身份验证，且网络被假设为封闭环境，因此错误的 DNS 解析无法被下游机制发现和拦截。
 - 攻击详情：
-  1. CVE-2025-59172 (高危, CVSS 8.5)：OS 命令注入漏洞，攻击者可执行任意命令并获取 Root 权限，导致完全控制主机节点、数据暴露或拒绝服务。
-  2. CVE-2025-59177 (中危, CVSS 6.8)：配置管理组件中错误消息泄露系统机密，攻击者可触发异常获取敏感信息以破坏加密保护机制。
-  3. CVE-2025-59178 (中危, CVSS 4.8)：系统信息暴露导致用户枚举，为暴力破解、提权或社会工程学攻击提供条件。
-  4. CVE-2025-59180 (中危, CVSS 5.1)：告警系统中存在硬编码凭据，获取集群级访问权限的攻击者可读取系统健康和告警数据以逃避检测。
-  5. CVE-2025-59181 (中危, CVSS 4.8)：配置管理中的路径遍历漏洞，攻击者可修改文件/目录权限，导致合法管理员或服务被锁定，造成本地拒绝服务。
-- 攻击特征：攻击目标为 5G/4G 核心网的关键网元（控制面信令处理功能）。攻击者通常需要具备相邻网络的高权限，攻击手法侧重于利用系统配置和运维层面的通用软件漏洞（如命令注入、路径遍历、硬编码凭据），而非直接针对空口或信令协议栈本身的漏洞。攻击影响面广，可导致核心网控制面失控及 4G/5G 服务中断。</div>
-    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:15:33</p>
+  1. 侦察：攻击者利用公开的 PLMN 标识符和 3GPP 标准化的命名格式（如 5gc.mnc&lt;MNC&gt;.mcc&lt;MCC&gt;.3gppnetwork.org），无需猜测即可构造网关、SMF、UPF 等网元的域名，从而绘制核心网拓扑，发现测试和预生产节点。
+  2. 缓存投毒/劫持：针对 IPX 提供商的缓存进行攻击，该缓存代表数百个运营商响应查询，单个过时或错误的记录会广泛传播。
+  3. 配置漏洞利用：利用常见的 DNS 配置和生命周期问题，如递归转发开放、Split-horizon 缺陷导致内部记录泄露、退役节点委派过时、区域传输（AXFR）权限过大、缺乏 DNSSEC 以及解析器容量不足等。
+- 攻击特征：
+  1. 隐蔽性强：不需要新颖的攻击技术，主要利用配置漂移和组织管理缝隙（IP团队与核心网团队之间的盲区）。
+  2. 破坏力大：可导致会话建立失败或被重定向，甚至引发信令面风暴。
+  3. 跨代际影响：在 5G 核心网中，即使引入了 NRF 进行网元发现，DNS 仍是底层依赖。错误的 DNS 解析会破坏 TLS 证书验证的有效性；同时 5G 漫游安全（如 SEPP 的 N32-c 握手）也依赖 DNS，使其处于加密保护之前的关键路径上。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-09-16T09:03:22</p>
 
     <h2 class="section-title">📄 文章正文</h2>
-    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>A Walkthrough of the Ericsson Packet Core Controller (PCC) July 2026 Security Bulletin</p>
-    <div class="analysis" style="white-space:pre-wrap;">As telecommunications infrastructure increasingly shifts toward cloud-native architectures and 5G, the security of core network components has never been more critical. In July 2026, Ericsson released a security bulletin addressing multiple vulnerabilities in its Packet Core Controller (PCC) .
-Important Disclosure Note: The vulnerabilities addressed in this bulletin were originally identified by P1 Security and reported in accordance with our customers approximately one year ago. Ericsson has successfully patched these flaws, given that they could have potentially led to serious issues like 4G/5G Denial of Service (DoS), Remote Code Execution (RCE), and severe information leaks. P1 Security remains committed and happy to continue working collaboratively with Ericsson to make their products and the broader telecommunications ecosystem—more secure.
-The Packet Core Controller (PCC) is the cloud native control plane signaling processing function in the Ericsson dual-mode 5G Core offering. It provides the access, session, mobility and gateway control functions to support the new 5G use-cases.
-Below is a one-by-one walkthrough of each CVE detailed in the July 2026 advisory.
-Breakdown of Published CVEs
-1. CVE-2025-59172: Command Injection / Remote Code Execution as Root
-CVSS Score: 8.5 (High)
-CVSS Vector: CVSS:4.0/AV:A/AC:L/AT:N/PR:H/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N
-CWE Type: CWE-78 (Improper Neutralization of Special Elements used in an OS Command)
-Affected Versions: Versions prior to 1.38
-Fixed Version: 1.38
-How it works &amp; Impact: This is the most severe vulnerability highlighted in the bulletin. An attacker with high privileges on an adjacent network can exploit an OS command injection vulnerability in the PCC software. Because input is improperly sanitized before execution, an attacker can execute arbitrary OS commands with full root privileges. This grants complete control over the host node, allowing arbitrary code execution, total data exposure, or complete denial of service.
-2. CVE-2025-59177: System Secret Leakage via Error Messages
-CVSS Score: 6.8 (Medium)
-CVSS Vector: CVSS:4.0/AV:A/AC:L/AT:N/PR:H/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N
-CWE Type: CWE-209 (Generation of Error Message Containing Sensitive Information)
-Affected Versions: Versions prior to 1.39
-Fixed Version: 1.39
-How it works &amp; Impact: Located within the Configuration Management component, this vulnerability stems from verbose error handling. An attacker with high privileges can send specifically crafted commands designed to trigger exceptions. The resulting error responses reveal sensitive system secrets, which can be leveraged to craft further attacks or break cryptographic protection mechanisms.
-3. CVE-2025-59178: Sensitive System Info Exposure (User Enumeration)
-CVSS Score: 4.8 (Medium)
-CVSS Vector: CVSS:4.0/AV:A/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N
-CWE Type: CWE-497 (Exposure of Sensitive System Information)
-Affected Versions: Versions prior to 1.39
-Fixed Version: 
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>DNS security in mobile networks: node selection, roaming resolution and the 3gppnetwork.org namespace</p>
+    <div class="analysis" style="white-space:pre-wrap;">DNS is a load-bearing part of every mobile core, and it is almost never in scope when an operator commissions a security assessment. Node selection in the EPC and in the 5G core depends on it, home-routed roaming depends on it, IMS and interconnect depend on it, and the whole thing runs on a namespace, 3gppnetwork.org , that is deliberately resolvable from outside the operator. The short answer to why this matters: DNS is an unauthenticated input to decisions about which gateway carries a subscriber&#39;s traffic, and in most networks nothing downstream re-verifies the answer it returned.
+This post walks through what DNS actually decides inside a mobile network, how resolution flows across GRX and IPX, the failure modes that show up repeatedly in assessments, and the testing and detection work that closes them. It is written for core network engineers, roaming teams and security teams who already know their network topology and want to understand where the resolution layer sits in their risk picture. The relevant specifications are 3GPP TS 29.303 for the DNS procedures themselves, TS 23.003 for the naming formats, and GSMA IR.67 for the operational guidelines that govern GRX and IPX resolution.
+What DNS actually decides inside a mobile core
+Inside a mobile core, DNS is not a convenience for humans. It is the mechanism by which one network function discovers the address of another, and in the EPC it is the mechanism by which a session is bound to a specific gateway. 3GPP TS 29.303, titled Domain Name System Procedures, Stage 3, defines this formally: it specifies how an MME, SGSN or SGW resolves an APN into a set of candidate gateways, and how a 5G SMF resolves the user plane functions it can select for a given data network.
+The mechanism is Straightforward NAPTR, or S-NAPTR, defined in IETF RFC 3958. A node queries for NAPTR records under a constructed name, filters the results by service parameters that encode the interface and protocol it wants, follows the chain to SRV or A and AAAA records, and ends up with an ordered candidate list. The order matters: the NAPTR order and preference fields determine which gateway is tried first. Whoever controls the answer controls the selection.
+That is the part worth sitting with. In a conventional enterprise network, a poisoned DNS answer sends a user to the wrong web server and TLS usually catches it. In a mobile core, a wrong answer can influence which user plane function or PDN gateway terminates a subscriber session, and the protocols that follow, GTP-C and PFCP among them, carry no certificate-based identity check that would notice. The transport is trusted because the network is assumed to be closed. It is not closed, and it has not been for a long time.
+The 3gppnetwork.org namespace and why it is public by design
+The naming used for mobile core resolution is standardised and predictable, which is a feature for interoperability and a gift for reconnaissance. TS 23.003 defines the formats. An APN fully qu
 ...(正文已截断，完整内容请查看原文)</div>
 </div>
     <footer>
