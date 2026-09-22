@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">299</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">299</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">816</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">300</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">300</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">817</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -180,16 +180,16 @@
         <input type="text" id="searchBox" placeholder="搜索文章标题/摘要...">
         <select id="siteFilter">
             <option value="">全部来源</option>
-            <option value="enea">enea (98)</option>
+            <option value="enea">enea (99)</option>
             <option value="p1sec">p1sec (169)</option>
             <option value="citizenlab">citizenlab (10)</option>
             <option value="crowdstrike">crowdstrike (22)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (161)</option>
+            <option value="5G安全">5G安全 (162)</option>
             <option value="核心网网元">核心网网元 (152)</option>
-            <option value="信令攻击">信令攻击 (150)</option>
+            <option value="信令攻击">信令攻击 (151)</option>
             <option value="4G安全">4G安全 (96)</option>
             <option value="3G安全">3G安全 (59)</option>
             <option value="2G安全">2G安全 (52)</option>
@@ -202,9 +202,9 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(161)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(162)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(152)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(150)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(151)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(96)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(59)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(52)</span></a>
@@ -232,6 +232,48 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-09-21"
+             data-tags="信令攻击,5G安全"
+             data-search="old technology, modern abuse: why ss7 security is not prepared for 5g  - 攻击事件背景
+随着移动通信演进到5g时代，老旧的ss7（七号信令系统）技术并未被完全淘汰，而是由于网络互操作需求与4g/3g/2g共存。5g虽然引入了“设计即安全”的机制，但其分布式、虚拟化架构以及与遗留网络复杂的共存环境，扩大了信令攻击面。攻击者利用合法的ss7功能及网络复杂性，针对移动运营商发起攻击，用于otp拦截、政治人物追踪、通信拦截等。
+
+- 时间线
+文章提到了一个具体的大规模攻击探测时间点：2022年，enea检测到由高级威胁行为者发起的跨国信令探测活动。此外，整体背景指出自ss7协议诞生以来的数十年间，其攻击手法一直在持续演进。
+
+- 攻击原理
+攻击主要利用信令标准实现与实际部署之间的安全缺口。移动信令标准（如3gpp、itu）极其详尽，但运营商通常只优先实现具有商业价值的功能，导致部分不常见的信令特征不被支持或仅部分实现。攻击者利用信令防火墙无法识别或解码异常、罕见信令命令的弱点，将恶意流量伪装或使用非标准编码，使其绕过常规安全检查直达核心网。
+
+- 攻击详情
+文章详细描述了一起ss7旁路攻击：攻击者向网络发送欺诈性的ss7 providesubscriberinfo (psi) 请求，其中包含目标用户的imsi，目的是获取用户位置信息。关键在于，攻击者对该请求使用了异常的编码方式。由于目标运营商的ss7安全系统缺乏解码这种异常结构的功能，无法进行安全检查，直接将请求放行至核心网并返回了位置信息。而具备完整解码能力的运营商则成功拦截了该攻击。
+
+- 攻击特征
+1. 全球化探测与持续侦察：攻击不再是孤立事件，攻击者会跨国界、跨运营商进行系统性的全局探测，寻找网络安全防线的薄弱点。
+2. 利用复杂性制造盲区：利用5g与遗留网络共存的复杂性、标准实现的不完整性，寻找防火墙规则之外的异常信令行为。
+3. 异常构造与编码绕过：通过使用非标准的信令消息结构或异常编码，绕过依赖已知规则和特征的传统信令防火墙。
+4. 高级持续性威胁（apt）属性：高影响力的攻击多由资金充足、技术精湛的专业监视机构或国家级对手发起，具有明确的政治目的和长期侦察特征。">
+            <img class="card-banner" src="https://www.enea.com/wp-content/uploads/2026/09/SS7-Security-Old-Mobile-Technology.jpeg" alt="" loading="lazy"
+                 onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-09-21
+ · Caitriona Grant                </div>
+                <div class="card-title">
+                    <a href="enea__old-technology-modern-abuse-why-ss7-security-is-not-prepared-for-5g__2026-09-21.html">旧技术，新滥用：为什么SS7安全未对5G做好准备</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景
+随着移动通信演进到5G时代，老旧的SS7（七号信令系统）技术并未被完全淘汰，而是由于网络互操作需求与4G/3G/2G共存。5G虽然引入了“设计即安全”的机制，但其分布式、虚拟化架构以及与遗留网络复杂的共存环境，扩大了信令攻击面。攻击者利用合法的SS7功能及网络复杂性，针对移动运营商...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">5G安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__old-technology-modern-abuse-why-ss7-security-is-not-prepared-for-5g__2026-09-21.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/old-technology-modern-abuse-why-ss7-security-is-not-prepared-for-5g/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="crowdstrike" data-matched="True"
              data-date="2026-09-17"
              data-tags="AI Agent安全"
