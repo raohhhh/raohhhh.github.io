@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">300</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">300</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">819</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">301</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">301</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">821</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,18 +181,18 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (99)</option>
-            <option value="p1sec">p1sec (169)</option>
+            <option value="p1sec">p1sec (170)</option>
             <option value="citizenlab">citizenlab (10)</option>
             <option value="crowdstrike">crowdstrike (22)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (162)</option>
-            <option value="核心网网元">核心网网元 (152)</option>
-            <option value="信令攻击">信令攻击 (151)</option>
+            <option value="5G安全">5G安全 (163)</option>
+            <option value="核心网网元">核心网网元 (153)</option>
+            <option value="信令攻击">信令攻击 (152)</option>
             <option value="4G安全">4G安全 (96)</option>
-            <option value="3G安全">3G安全 (59)</option>
-            <option value="2G安全">2G安全 (52)</option>
+            <option value="3G安全">3G安全 (60)</option>
+            <option value="2G安全">2G安全 (53)</option>
             <option value="AI攻击">AI攻击 (44)</option>
             <option value="AI Agent安全">AI Agent安全 (36)</option>
             <option value="后量子">后量子 (10)</option>
@@ -202,12 +202,12 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(162)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(152)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(151)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(163)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(153)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(152)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(96)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(59)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(52)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(60)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(53)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(44)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(36)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
@@ -232,6 +232,52 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-09-24"
+             data-tags="信令攻击,2G安全,3G安全,5G安全,核心网网元"
+             data-search="camel security in mobile networks: what cap, csi and the gsmscf expose camel lets a home network control calls made abroad. what cap, the csi and the gsmscf expose, and what a signalling assessment should establish. 本文深入分析了移动网络中 camel（移动网络增强逻辑定制应用）机制的安全风险与信任边界，属于信令安全与核心网安全领域的深度技术剖析。
+
+- 攻击事件背景
+文章并非针对某次具体的突发攻击事件，而是针对移动通信网络中长期被忽视的 camel 服务层进行安全暴露面分析。背景在于随着 2g/3g 退网，camel 作为遗留服务层仍承载着预付费漫游、呼叫路由等收入业务，但其安全责任归属模糊，常游离于常规 5g 安全审查之外，形成了显著的安全盲区。
+
+- 时间线
+文章梳理了 camel 技术的演进与共存时间线：从 2g/3g 电路交换和 gprs 时代的核心应用，到 lte/ims 阶段通过 im-ssf 桥接维持旧逻辑，再到 5g 独立组网（5g安全）中架构虽无 camel 但因回落、漫游等场景导致旧路径依然存活的长期共存状态。
+
+- 攻击原理
+camel 的安全风险核心在于其基于信令的不对称信任模型，且完全继承底层 ss7/sigtran 网络的保障，自身不增加额外认证。拜访网络无条件信任通过 map 协议接收的订阅者配置（包含 gsmscf 地址），而归属网络则信任入站 cap 对话确实来自合法服务其用户的交换机。这种信任完全依赖 sccp 寻址（global titles）的完整性。攻击者可利用 global title 滥用或边界筛查策略的缺失，伪造信令地址与归属网络的 gsmscf 建立对话，从而干预呼叫控制或窃取数据。
+
+- 攻击详情
+1. 边界筛查盲区：网络通常依据 gsma fs.11 部署了完善的 map 操作筛查策略，但 cap 是不同的应用部分，拥有独立的子系统号和操作集。许多网络对哪些网元可以开启 cap 对话缺乏审查，导致攻击者可绕过 map 筛查直接攻击 gsmscf。
+2. 计费与欺诈控制绕过：camel 控制实时计费，若 gsmscf 不可达，默认呼叫处理参数决定行为。攻击或配置不当可能导致呼叫绕过计费逻辑，造成收入风险。
+3. 隐私泄露：camel 对话携带订阅者标识符及位置信息，常被误认为仅是计费流量而缺乏传输审查，存在基于信令的位置追踪风险。
+
+- 攻击特征
+此类安全暴露的特征表现为：利用遗留协议的信任假设；利用边界安全策略的覆盖盲区（重 map 轻 cap）；以及利用现代核心网团队与遗留服务层团队之间的管理断层。攻击无需高度复杂的技术手段，往往只需利用网络边界对 cap 信令缺乏认证和筛查的漏洞即可实施。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-09-24
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__camel-cap-security-mobile-networks-gsmscf-csi-signalling__2026-09-24.html">移动网络中的 CAMEL 安全：CAP、CSI 和 gsmSCF 暴露了什么</a>
+                </div>
+                <div class="card-summary">
+                        本文深入分析了移动网络中 CAMEL（移动网络增强逻辑定制应用）机制的安全风险与信任边界，属于信令安全与核心网安全领域的深度技术剖析。
+
+- 攻击事件背景
+文章并非针对某次具体的突发攻击事件，而是针对移动通信网络中长期被忽视的 CAMEL 服务层进行安全暴露面分析。背景在于随着 2G/3G 退网，C...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">2G安全</span>
+                        <span class="card-tag">3G安全</span>
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__camel-cap-security-mobile-networks-gsmscf-csi-signalling__2026-09-24.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/camel-cap-security-mobile-networks-gsmscf-csi-signalling" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="enea" data-matched="True"
              data-date="2026-09-21"
              data-tags="信令攻击,5G安全"
