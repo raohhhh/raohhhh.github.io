@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5G网络中的HTTP/2：电信的新语言及其安全风险 - 安全知识库</title>
+    <title>IPUPS与N9安全：保护5G漫游中的跨PLMN用户面 - 安全知识库</title>
     <style>
         :root {
             --primary: #2196f3;
@@ -137,12 +137,12 @@
     </div>
 <div class="detail">
     <a class="back-link" href="index.html">← 返回列表</a>
-    <h1>5G网络中的HTTP/2：电信的新语言及其安全风险</h1>
-    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：HTTP/2 in 5G Networks: The New Language of Telecom — and Its Security Risks</p>
+    <h1>IPUPS与N9安全：保护5G漫游中的跨PLMN用户面</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：IPUPS and N9 security: protecting the inter-PLMN user plane in 5G roaming</p>
     <div class="meta">
         <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
-        发布日期：2025-08-29
- · <a href="https://www.p1sec.com/blog/http-2-in-5g-networks-the-new-language-of-telecom----and-its-security-risks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+        发布日期：2026-09-29
+ · <a href="https://www.p1sec.com/blog/ipups-n9-inter-plmn-user-plane-security-5g-roaming" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
 
     <div style="margin-bottom:16px;">
         <strong>原始标签：</strong>
@@ -152,66 +152,28 @@
     <div style="margin-bottom:20px;">
         <strong>AI 匹配标签：</strong>
         <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
-        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
         <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
     </div>
 
     <h2 class="section-title">📋 AI 分析报告</h2>
-    <div class="analysis">该文章深入探讨了5G核心网中采用HTTP/2协议作为服务化接口（SBI）所带来的安全风险，匹配“5G安全”、“信令攻击”和“核心网网元”标签。
-
-- 攻击事件背景
-5G核心网架构发生了根本性变革，从依赖传统的电信特定协议（如Diameter或SS7）转向基于IT原生的基础设施（云、微服务、容器和API）。HTTP/2因其多路复用、头部压缩（HPACK）及与IT生态兼容等优势，被选为5G服务化架构（SBA）中网络功能（NF）间通信的协议。这一转变虽然提升了网络的灵活性和可扩展性，但也使得电信网络直接暴露于Web和API攻击的威胁之下。
-
-- 时间线
-文章发布于2026年8月20日，属于前瞻性或阶段性研究总结。它标志着5G网络全面云原生化和IT化后，安全威胁态势已经从传统的电信协议漏洞演变为IT与电信融合威胁的成熟阶段。
-
-- 攻击原理
-攻击原理主要基于HTTP/2协议特性及Web API安全缺陷。由于5G核心网网元（如AMF、SMF、NRF、PCF）之间通过HTTP/2 REST风格消息进行通信，攻击者无需掌握深度的传统SS7/Diameter信令知识，只需利用常见的Web黑客技术即可对电信API发起攻击。攻击者利用协议实现差异、多路复用机制、API认证缺失及云原生基础设施漏洞，实现对核心网信令的拦截、阻断或滥用。
-
-- 攻击详情
-1. API漏洞：网络功能间的API若存在认证薄弱、访问控制失效或输入验证不足，攻击者可借此中断会话、提取用户数据或操纵网络切片。
-2. HTTP/2特定漏洞：包括HPACK炸弹（通过头部压缩耗尽CPU/内存）、请求洪泛与流滥用（利用多路复用发起DoS攻击）、畸形帧（利用不同实现对帧解析的差异进行利用）。
-3. 互连风险：在漫游场景中，跨运营商的HTTP/2消息流若缺乏过滤和认证，将重演早期SS7/Diameter时代的信令攻击。
-4. TLS配置错误：弱密码套件、过期证书或密钥管理不善会直接暴露网络功能。
-5. 扩大攻击面：云原生模型使得攻击者不仅能攻击HTTP/2流量，还能针对底层容器、服务网格和Kubernetes集群发起攻击。
-
-- 攻击特征
-本次分析揭示的攻击特征表现为“电信与IT威胁的融合”。攻击者不再受限于传统电信协议门槛，而是结合了经典信令攻击（会话劫持、冒充）、Web式攻击（API滥用、模糊测试、注入、DoS）以及云原生威胁（供应链攻击、容器逃逸）。这使得5G核心网面临的攻击面大幅扩展，呈现出攻击门槛降低、手段多样化、影响面深远（可危及整个移动连接的信任基础）的典型特征。</div>
-    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-08-24T10:19:19</p>
+    <div class="analysis">- 安全背景：5G漫游中跨PLMN用户面（N9接口）的安全长期被忽视，大多数研究集中在控制面（如SEPP和N32接口）。4G漫游中S8接口缺乏标准化的边界防护，导致行业依赖外挂设备（如GTP防火墙）。3GPP Release 16引入了IPUPS（Inter-PLMN User Plane Security）来填补这一架构空白。
+- 时间线：3GPP Release 16引入IPUPS功能；文章发布于2026年9月29日，旨在评估当前运营商网络中IPUPS的实际部署情况和N9边界安全现状。
+- 安全风险与攻击原理：在未部署IPUPS的情况下，N9接口会接受任何格式良好的GTP-U隧道数据包。这意味着恶意构造的GTP-U包，或使用属于已拆除/未建立会话的TEID（隧道端点标识符）的流量，可能会直接到达位于核心网深处的锚点UPF，导致资源耗尽或解析器漏洞被利用。此外，如果N9传输层的IPsec密钥管理（如证书、预共享密钥）过期或配置不当，跨网传输的流量将面临被窃听或篡改的风险。
+- 防护详情：IPUPS作为UPF在边界处的功能，终止GTP-U隧道并执行两项核心检查：1) 会话有效性（仅转发控制面已授权且当前活跃的PDU会话数据包，丢弃其余所有）；2) 结构检查（丢弃格式错误的GTP-U消息，防止解析器异常）。对于N9流量本身的保护，3GPP要求使用IPsec ESP隧道模式提供机密性、完整性和重放保护。
+- 安全特征与评估要点：IPUPS与SEPP（保护控制面）分工明确但常被混淆；IPUPS是标准化能力而非强制部署，其缺失不会导致漫游业务中断，因此容易被运营商忽略而未实际开启；部署架构上，专用边界UPF比与锚点UPF共存提供更清晰的强制执行边界；此外，运营商在从4G向5G演进时，可能面临4G GTP防火墙与5G IPUPS规则重叠、责任不清的问题。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-09-30T09:03:09</p>
 
     <h2 class="section-title">📄 文章正文</h2>
-    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>HTTP/2 in 5G Networks: The New Language of Telecom — and Its Security Risks</p>
-    <div class="analysis" style="white-space:pre-wrap;">Introduction: Telecom Meets IT Protocols
-5G didn’t just change the radio—it fundamentally redefined the core network architecture . Instead of relying on telecom-specific protocols like Diameter or SS7 , the 5G Core is built on an IT-native foundation : cloud, microservices, containers, and APIs.
-At the heart of this shift lies HTTP/2 , the protocol chosen for Service-Based Interfaces (SBI) in the 5G Service-Based Architecture (SBA). For the first time, the mobile core speaks the same language as web applications and enterprise APIs.
-This makes 5G more flexible, scalable, and developer-friendly—but also exposes telecom networks to new classes of attacks that operators never had to worry about before.
-Why HTTP/2 in 5G?
-The decision to adopt HTTP/2 in 5G was deliberate. Compared to Diameter and SS7, HTTP/2 provides:
-Multiplexing: Multiple streams over a single TCP connection, improving efficiency.
-Header Compression (HPACK): Reduced signaling overhead, critical in dense 5G traffic.
-Server Push &amp; Stream Prioritization: Faster, more responsive communication between Network Functions (NFs).
-Compatibility with IT Ecosystem: Easy integration with cloud-native infrastructures (Kubernetes, Docker, service meshes).
-API-Driven Communication: Enables network slicing, MEC (Multi-access Edge Computing), and new 5G services via open APIs.
-In short: HTTP/2 is the enabler of 5G’s “network-as-a-service” vision.
-Where HTTP/2 Lives in the 5G Core
-HTTP/2 is used for Service-Based Interfaces (SBI) between Network Functions, replacing the point-to-point signaling of older generations. Some key players include:
-AMF (Access &amp; Mobility Management Function) – communicates with the SMF, UDM, AUSF via HTTP/2 APIs.
-SMF (Session Management Function) – establishes data sessions, again over HTTP/2.
-NRF (Network Repository Function) – service registry for all NFs, API-driven.
-PCF (Policy Control Function) – applies QoS and charging rules via APIs.
-All of these talk to each other via HTTP/2 REST-style messages rather than proprietary telecom protocols.
-Security Challenges of HTTP/2 in 5G
-While HTTP/2 enables innovation, it also introduces a massive shift in the threat landscape . Unlike SS7 or Diameter—which had their own flaws—HTTP/2 brings telecom into the world of web and API attacks .
-Here are the most pressing security issues:
-1. API Vulnerabilities
-Poor authentication, broken access controls, and unvalidated inputs expose Network Functions.
-Attackers can exploit weak APIs to disrupt sessions, extract subscriber data, or manipulate network slices.
-2. HTTP/2-Specific Exploits
-HPACK Bombs (Header Compression Attacks): Can cause CPU/memory exhaustion.
-Request Flooding &amp; Stream Abuse: Multiplexing can be abused for DoS.
-Malformed Frames: Exploiting differences in how implementations parse frames.
-3. Interconnection Risks
-In roaming scenarios, HTTP/2 messages flow across inter-operator connections . If not filtered and authenticated, attackers can abuse them just like SS7/Diameter
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>IPUPS and N9 security: protecting the inter-PLMN user plane in 5G roaming</p>
+    <div class="analysis" style="white-space:pre-wrap;">IPUPS, inter-PLMN user plane security, is a function of the 5G user plane function that sits at the border of an operator network and polices GTP-U traffic arriving on N9 from a roaming partner. It forwards packets that belong to an active PDU session and discards the rest, it drops malformed GTP-U, and in inter-PLMN deployments the traffic it terminates is expected to be confidentiality, integrity and replay protected. In short, it is the user plane counterpart to what the SEPP does for the control plane, and it was introduced in 3GPP Release 16 to close a gap that 4G roaming had always left to bolt-on equipment.
+Most published work on 5G roaming security stops at the control plane. The SEPP , the N32 interface and the choice between PRINS and TLS get the attention, because that is where subscriber identifiers, authentication vectors and policy decisions travel. The user plane crosses exactly the same operator boundary, carries several orders of magnitude more bytes, and in a home routed session terminates on an anchor that sits deep inside the home network. This article covers what IPUPS does, where it sits, how it differs from the control plane protections around it, and what a security assessment should establish about an operator&#39;s N9 border.
+What IPUPS is
+IPUPS is not a separate network function with its own service-based interface. It is a functionality that a UPF can support, described in 3GPP TS 23.501 among the user plane management clauses, and its security requirements are set out in 3GPP TS 33.501. A UPF supporting IPUPS terminates the GTP-U tunnels of the N9 inter-PLMN reference point, which means it is a real tunnel endpoint rather than a transparent middlebox. That distinction matters: because it terminates rather than observes, it can enforce, and because it enforces, a packet that fails its checks never reaches the network functions behind it.
+The function is controlled through the normal 5G split between control and user plane. In the visited network the IPUPS-capable UPF is controlled by the V-SMF, and in the home network by the H-SMF, each over its own N4 interface using PFCP. That is how the function knows which PDU sessions are active and which tunnel endpoint identifiers are legitimate at any moment: the session state is pushed to it by the SMF that owns the session, not inferred from the traffic itself.
+The deployment intent in the specification is explicit. Operators may place UPFs supporting IPUPS at the border of their network so that invalid inter-PLMN N9 traffic is rejected before it reaches the rest of the user plane. The word to notice is &#34;may&#34;. IPUPS is a standardised capability, not a mandated deployment, and that gap between what the specification defines and what an operator has actually rolled out is the single most useful thing to establish when reviewing a network.
+Where IPUPS sits in a home routed roaming session
+5G roaming supports two traffic models, and only one of them puts user plane traffic on the int
 ...(正文已截断，完整内容请查看原文)</div>
 </div>
     <footer>

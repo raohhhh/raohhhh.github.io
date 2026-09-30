@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">301</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">301</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">823</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">303</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">303</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">827</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,18 +181,18 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (99)</option>
-            <option value="p1sec">p1sec (170)</option>
+            <option value="p1sec">p1sec (172)</option>
             <option value="citizenlab">citizenlab (10)</option>
             <option value="crowdstrike">crowdstrike (22)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (163)</option>
-            <option value="核心网网元">核心网网元 (153)</option>
-            <option value="信令攻击">信令攻击 (152)</option>
-            <option value="4G安全">4G安全 (96)</option>
-            <option value="3G安全">3G安全 (60)</option>
-            <option value="2G安全">2G安全 (53)</option>
+            <option value="5G安全">5G安全 (165)</option>
+            <option value="核心网网元">核心网网元 (155)</option>
+            <option value="信令攻击">信令攻击 (153)</option>
+            <option value="4G安全">4G安全 (98)</option>
+            <option value="3G安全">3G安全 (61)</option>
+            <option value="2G安全">2G安全 (54)</option>
             <option value="AI攻击">AI攻击 (44)</option>
             <option value="AI Agent安全">AI Agent安全 (36)</option>
             <option value="后量子">后量子 (10)</option>
@@ -202,12 +202,12 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(163)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(153)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(152)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(96)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(60)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(53)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(165)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(155)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(153)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(98)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(61)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(54)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(44)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(36)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
@@ -232,6 +232,75 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-09-29"
+             data-tags="5G安全,4G安全,核心网网元"
+             data-search="ipups and n9 security: protecting the inter-plmn user plane in 5g roaming ipups polices gtp-u on the n9 roaming interface in 5g. what the function checks, how it differs from the sepp, and what to verify at your own border. - 安全背景：5g漫游中跨plmn用户面（n9接口）的安全长期被忽视，大多数研究集中在控制面（如sepp和n32接口）。4g漫游中s8接口缺乏标准化的边界防护，导致行业依赖外挂设备（如gtp防火墙）。3gpp release 16引入了ipups（inter-plmn user plane security）来填补这一架构空白。
+- 时间线：3gpp release 16引入ipups功能；文章发布于2026年9月29日，旨在评估当前运营商网络中ipups的实际部署情况和n9边界安全现状。
+- 安全风险与攻击原理：在未部署ipups的情况下，n9接口会接受任何格式良好的gtp-u隧道数据包。这意味着恶意构造的gtp-u包，或使用属于已拆除/未建立会话的teid（隧道端点标识符）的流量，可能会直接到达位于核心网深处的锚点upf，导致资源耗尽或解析器漏洞被利用。此外，如果n9传输层的ipsec密钥管理（如证书、预共享密钥）过期或配置不当，跨网传输的流量将面临被窃听或篡改的风险。
+- 防护详情：ipups作为upf在边界处的功能，终止gtp-u隧道并执行两项核心检查：1) 会话有效性（仅转发控制面已授权且当前活跃的pdu会话数据包，丢弃其余所有）；2) 结构检查（丢弃格式错误的gtp-u消息，防止解析器异常）。对于n9流量本身的保护，3gpp要求使用ipsec esp隧道模式提供机密性、完整性和重放保护。
+- 安全特征与评估要点：ipups与sepp（保护控制面）分工明确但常被混淆；ipups是标准化能力而非强制部署，其缺失不会导致漫游业务中断，因此容易被运营商忽略而未实际开启；部署架构上，专用边界upf比与锚点upf共存提供更清晰的强制执行边界；此外，运营商在从4g向5g演进时，可能面临4g gtp防火墙与5g ipups规则重叠、责任不清的问题。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-09-29
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__ipups-n9-inter-plmn-user-plane-security-5g-roaming__2026-09-29.html">IPUPS与N9安全：保护5G漫游中的跨PLMN用户面</a>
+                </div>
+                <div class="card-summary">
+                        - 安全背景：5G漫游中跨PLMN用户面（N9接口）的安全长期被忽视，大多数研究集中在控制面（如SEPP和N32接口）。4G漫游中S8接口缺乏标准化的边界防护，导致行业依赖外挂设备（如GTP防火墙）。3GPP Release 16引入了IPUPS（Inter-PLMN User Plane Secu...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__ipups-n9-inter-plmn-user-plane-security-5g-roaming__2026-09-29.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/ipups-n9-inter-plmn-user-plane-security-5g-roaming" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-09-29"
+             data-tags="信令攻击,5G安全,4G安全,3G安全,2G安全,核心网网元"
+             data-search="public warning system security: how cell broadcast alerts are spoofed and what operators control cell broadcast alerts reach phones without authentication. how etws, cmas and eu-alert work in 4g and 5g, where spoofing happens and what operators control. 本文深入分析了移动通信网络中公共预警系统（pws）的安全隐患，详细阐述了从警报发起到终端接收全链路的攻击面。具体分析如下：
+
+- **攻击事件背景**：公共预警系统（pws）设计初衷是为了在地震、海啸等灾害发生时，向区域内所有手机（包括未认证、未插卡或漫游设备）广播警报。由于这种“先接收后认证”的设计选择，导致终端在空口侧无法通过标准加密手段区分真实警报与伪造警报，从而为伪基站伪造警报提供了可能。
+
+- **时间线**：文章提及了多个关键时间节点与研究：2019年acm mobisys会议上展示了在lte测试床中伪造总统级警报；2022年纽约大学阿布扎比分校发表了关于5g cmas和etws的两种伪造和三种抑制攻击的研究；2026年kaust发布了开源5g测试床，用于生成sib8警告并评估终端行为及防御候选方案。
+
+- **攻击原理**：攻击主要利用空口广播系统信息明文传输且无完整性保护的弱点。由于nas和as安全机制不适用于必须在安全上下文建立前可读的广播内容，攻击者可通过伪基站发射比合法基站更强的信号，在小区重选期间吸引空闲设备，使其直接接受伪造的系统信息块（如lte的sib10/11/12，5g的sib6/7/8）。此外，还可通过“overshadowing”（覆盖注入）技术，在无需运行完整小区的情况下向合法信号注入子帧。
+
+- **攻击详情**：
+  1. **空口侧攻击**：攻击者伪装基站广播虚假警告通知，或篡改、抑制真实警告。虚假警报可携带url和电话号码，使终端渲染为可点击链接，成为极具欺骗性的钓鱼攻击载体。抑制攻击则阻止特定区域内真实警告的显示。
+  2. **核心网侧攻击**：除了空口，运营商控制的核心网链路也是重要攻击面。包括未由3gpp标准定义的cbe-cbc接口（易受重放和注入攻击）、cbc/cbcf管理接口、4g的sbc接口和5g的n50接口。若n50或sbc端点被未授权主机访问并完成关联，攻击者无需无线电设备即可在全国范围内的每个小区发送合法外观的警报。
+
+- **攻击特征**：攻击利用了系统设计中“安全让位于安全/可用性”的权衡原则。3gpp sa3虽定义了安全要求，但将保护机制（如数字签名）设为可选，导致商用终端通常显示未经验证的警报。攻击不仅限于制造恐慌，还可结合社会工程学进行高可信度钓鱼攻击，或在关键时刻局部抑制真实灾害预警，影响严重。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-09-29
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__public-warning-system-security-cell-broadcast-etws-cmas-eu-alert__2026-09-29.html">公共预警系统安全：小区广播警报如何被伪造及运营商的控制手段</a>
+                </div>
+                <div class="card-summary">
+                        本文深入分析了移动通信网络中公共预警系统（PWS）的安全隐患，详细阐述了从警报发起到终端接收全链路的攻击面。具体分析如下：
+
+- **攻击事件背景**：公共预警系统（PWS）设计初衷是为了在地震、海啸等灾害发生时，向区域内所有手机（包括未认证、未插卡或漫游设备）广播警报。由于这种“先接收后认证”的设...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">3G安全</span>
+                        <span class="card-tag">2G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__public-warning-system-security-cell-broadcast-etws-cmas-eu-alert__2026-09-29.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/public-warning-system-security-cell-broadcast-etws-cmas-eu-alert" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="p1sec" data-matched="True"
              data-date="2026-09-24"
              data-tags="信令攻击,2G安全,3G安全,5G安全,核心网网元"
