@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">303</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">303</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">827</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">310</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">310</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">840</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -180,38 +180,38 @@
         <input type="text" id="searchBox" placeholder="搜索文章标题/摘要...">
         <select id="siteFilter">
             <option value="">全部来源</option>
-            <option value="enea">enea (99)</option>
-            <option value="p1sec">p1sec (172)</option>
+            <option value="enea">enea (100)</option>
+            <option value="p1sec">p1sec (175)</option>
             <option value="citizenlab">citizenlab (10)</option>
-            <option value="crowdstrike">crowdstrike (22)</option>
+            <option value="crowdstrike">crowdstrike (25)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (165)</option>
-            <option value="核心网网元">核心网网元 (155)</option>
-            <option value="信令攻击">信令攻击 (153)</option>
-            <option value="4G安全">4G安全 (98)</option>
-            <option value="3G安全">3G安全 (61)</option>
-            <option value="2G安全">2G安全 (54)</option>
-            <option value="AI攻击">AI攻击 (44)</option>
-            <option value="AI Agent安全">AI Agent安全 (36)</option>
+            <option value="5G安全">5G安全 (168)</option>
+            <option value="核心网网元">核心网网元 (158)</option>
+            <option value="信令攻击">信令攻击 (155)</option>
+            <option value="4G安全">4G安全 (101)</option>
+            <option value="3G安全">3G安全 (63)</option>
+            <option value="2G安全">2G安全 (57)</option>
+            <option value="AI攻击">AI攻击 (47)</option>
+            <option value="AI Agent安全">AI Agent安全 (37)</option>
             <option value="后量子">后量子 (10)</option>
-            <option value="提示词注入">提示词注入 (7)</option>
+            <option value="提示词注入">提示词注入 (9)</option>
         </select>
     </div>
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(165)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(155)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(153)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(98)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(61)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(54)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(44)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(36)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(168)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(158)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(155)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(101)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(47)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(37)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(7)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(9)</span></a>
 </div>
 
 <div class="pagination-bar">
@@ -232,6 +232,221 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-07"
+             data-tags="AI攻击"
+             data-search="unknown threat actor uses ai-driven artex to target south korean finance crowdstrike intelligence identified infrastructure associated with a targeted campaign against south korean financial institutions that resulted in exfiltrated data.  - 攻击事件背景：未知威胁行为者针对韩国金融行业发起了网络攻击，攻击活动中使用了名为artex的ai驱动工具或框架。
+- 时间线：该威胁情报文章发布于2026年10月7日。
+- 攻击原理：攻击者利用ai技术（artex）来增强攻击能力，可能涉及自动化攻击流程、恶意代码生成或规避传统安全检测。同时，相关文章列表中提到的“请求、聚合、绕过：攻击者如何规避llm安全分类器”表明，攻击者正在研究并应用特定方法绕过大语言模型的安全防线，体现了ai技术在网络攻击中的武器化应用。
+- 攻击详情：由于提供内容为文章列表与摘要，具体技术细节有限。已知artex为ai驱动的攻击手段，专门针对韩国金融领域。此外，攻击者通过“请求、聚合、绕过”的策略来规避llm安全分类器，说明ai安全机制本身也成为了攻击目标。
+- 攻击特征：攻击具有明确的行业针对性（韩国金融业），并具备显著的ai驱动特征。威胁行为者利用ai工具提升了攻击的自动化程度和复杂性，同时展示了对抗和绕过ai安全防御机制的能力。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-07
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__unknown-threat-actor-uses-artex-to-target-south-korean-finance__2026-10-07.html">未知威胁行为者使用AI驱动的ARTEX针对韩国金融业</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：未知威胁行为者针对韩国金融行业发起了网络攻击，攻击活动中使用了名为ARTEX的AI驱动工具或框架。
+- 时间线：该威胁情报文章发布于2026年10月7日。
+- 攻击原理：攻击者利用AI技术（ARTEX）来增强攻击能力，可能涉及自动化攻击流程、恶意代码生成或规避传统安全检测。同时，相...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__unknown-threat-actor-uses-artex-to-target-south-korean-finance__2026-10-07.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/unknown-threat-actor-uses-artex-to-target-south-korean-finance/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-06"
+             data-tags="信令攻击,2G安全,4G安全,5G安全,核心网网元"
+             data-search="sms blasters explained: how fake base stations deliver smishing outside the network how sms blasters use rogue 2g cells to inject phishing sms over the air, why sms firewalls miss them, and how operators can detect and mitigate the attack. - 攻击事件背景：短信轰炸器是一种便携式伪造基站，专门用于通过无线电接口直接向附近手机发送大量钓鱼短信，而不经过运营商的短信基础设施。由于消息不经过核心网，运营商部署的防钓鱼机制（如短信防火墙）完全失效。2025至2026年间，该攻击的规模和地理范围显著扩大，从东南亚蔓延至欧洲和北美。
+- 时间线：2025年11月在加拿大多伦多开始发起攻击活动；2026年5月，多伦多警方宣布逮捕了加拿大首批已知的短信轰炸器嫌疑人；同月，奥地利警方在维也纳一辆汽车后备箱内查获类似设备。
+- 攻击原理：攻击利用了 gsm（2g）网络只验证用户对网络的认证，而网络不对用户进行单向认证的缺陷。由于手机在认证前必须决定信任哪个基站，攻击者通过伪造强信号基站吸引手机，并利用 4g/5g 预认证消息未受完整性保护的弱点实施降级攻击，迫使手机接入伪造的 2g 小区，随后直接通过空口下发短信。
+- 攻击详情：攻击分为五个步骤：1. 吸引：发射比合法基站更强的信号，伪装成当地运营商网络标识；2. 降级：配合伪造 lte 组件或干扰设备，利用未受完整性保护的拒绝原因将 4g/5g 手机降级至 2g；3. 注册：手机向伪造小区发起位置更新，攻击者直接接受注册并获取 imsi/imei；4. 投递：使用 a5/0（无加密）配置，以任意伪造发件人身份通过空口发送短信；5. 释放：手机在数秒至数分钟内重新选择合法小区，用户收到的短信看似普通且与真实短信并排显示。
+- 攻击特征：1. 绕过核心网：流量不经过 smsc、短信路由器或短信防火墙等核心网网元，运营商网络日志中无任何记录；2. 降级攻击：利用 4g/5g 早期信令未受完整性保护的漏洞实施信令攻击；3. 附带网络干扰：导致被捕获手机短暂断网、无法接收合法呼叫或拨打紧急电话（如911）；4. 网络侧异常指标：表现为移动性异常（集中区域异常的位置区/跟踪区更新）、寻呼失败、异常邻区报告以及无网络记录的客户钓鱼短信举报。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-06
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__sms-blaster-fake-base-station-smishing-2g-downgrade__2026-10-06.html">短信轰炸器解析：伪造基站如何在网络外投递钓鱼短信</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：短信轰炸器是一种便携式伪造基站，专门用于通过无线电接口直接向附近手机发送大量钓鱼短信，而不经过运营商的短信基础设施。由于消息不经过核心网，运营商部署的防钓鱼机制（如短信防火墙）完全失效。2025至2026年间，该攻击的规模和地理范围显著扩大，从东南亚蔓延至欧洲和北美。
+- 时间线：...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">2G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__sms-blaster-fake-base-station-smishing-2g-downgrade__2026-10-06.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/sms-blaster-fake-base-station-smishing-2g-downgrade" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-06"
+             data-tags="AI攻击,提示词注入"
+             data-search="request, aggregate, bypass: how attackers can evade llm safety classifiers the crowdstrike cyber superintelligence lab evaluated the most advanced publicly deployed content safety classifier and found it can be systematically circumvented. - 攻击事件背景：随着大语言模型（llm）在各领域的广泛部署，其内置的安全分类器成为防止模型生成有害、违规或恶意内容的关键防线。攻击者正不断研究新的方法来规避这些安全机制，以滥用llm的能力。
+- 时间线：该文章发布于2026年10月6日。
+- 攻击原理：根据标题“request, aggregate, bypass”（请求、聚合、绕过），攻击原理可能涉及通过多轮交互或分步请求，逐步聚合上下文信息，最终突破llm安全分类器的检测阈值或逻辑限制，实现恶意意图的越狱或绕过。
+- 攻击详情：由于提供的正文为博客文章列表索引，未包含该文章的具体技术细节。但从标题推断，这是一种针对llm安全防护机制的规避策略，属于ai攻击范畴，且其多步请求和聚合的特征高度符合高级提示词注入或多轮越狱攻击的模式。
+- 攻击特征：多步骤请求、上下文信息聚合、隐蔽规避安全分类器检测。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-06
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__how-attackers-can-bypass-llm-safety-classifiers__2026-10-06.html">请求、聚合、绕过：攻击者如何绕过LLM安全分类器</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：随着大语言模型（LLM）在各领域的广泛部署，其内置的安全分类器成为防止模型生成有害、违规或恶意内容的关键防线。攻击者正不断研究新的方法来规避这些安全机制，以滥用LLM的能力。
+- 时间线：该文章发布于2026年10月6日。
+- 攻击原理：根据标题“Request, Aggregat...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                        <span class="card-tag">提示词注入</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__how-attackers-can-bypass-llm-safety-classifiers__2026-10-06.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/how-attackers-can-bypass-llm-safety-classifiers/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-05"
+             data-tags="5G安全,4G安全,3G安全,2G安全"
+             data-search="presenting diagng: after qcsuper, a new open-source initiative for freeing up mobile baseband diag protocols diagng, the open-source successor to qcsuper: a linux gui tool, now in beta, that produces 2g/3g/4g/5g pcap captures from qualcomm snapdragon basebands. 本文并非描述具体的攻击事件，而是介绍一款名为 diagng 的开源通信安全研究工具，它是 qcsuper 的继任者。
+- 工具背景与时间线：作者团队在2019年发布了 qcsuper，旨在简化2g/3g/4g/5g空中接口（ota rrc日志）的抓包并转换为pcap格式供wireshark分析。该工具在学术界和工业界获得了广泛认可。于2026年10月5日，团队推出了带有gui界面的新工具 diagng。
+- 工具原理与详情：diagng 主要通过读取移动设备基带（目前支持高通骁龙，未来计划支持 exynos、联发科、海思等）的 diag 协议接口，捕获空口信令数据。它利用 glib 事件循环实现异步架构，通过 d-bus/polkit 的 rust 守护进程执行特权操作（如串口读取），并集成 kaitai struct 库以提供标准化的基带协议诊断接口定义。
+- 通信安全特征：该工具支持 2g、3g、4g 和 5g（nr）的 rrc 日志捕获。特别是在 5g 安全方面，diagng 支持使用即将标准化的 gsmtap v3 协议封装格式生成 nr/5g rrc 日志，并提示用户安装自定义的 lua wireshark 插件以实现 5g 信令的解码，无需等待上游 wireshark 完整实现。这为移动通信安全研究、信令分析及设备测试提供了重要的技术支撑。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-05
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__presenting-diagng-open-source-qcsuper-successor__2026-10-05.html">介绍 DiagNG：继 QCSuper 之后，一项旨在开放移动基带 Diag 协议的新开源计划</a>
+                </div>
+                <div class="card-summary">
+                        本文并非描述具体的攻击事件，而是介绍一款名为 DiagNG 的开源通信安全研究工具，它是 QCSuper 的继任者。
+- 工具背景与时间线：作者团队在2019年发布了 QCSuper，旨在简化2G/3G/4G/5G空中接口（OTA RRC日志）的抓包并转换为PCAP格式供Wireshark分析。该工...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">3G安全</span>
+                        <span class="card-tag">2G安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__presenting-diagng-open-source-qcsuper-successor__2026-10-05.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/presenting-diagng-open-source-qcsuper-successor" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-05"
+             data-tags="AI攻击,提示词注入,AI Agent安全"
+             data-search="new in falcon cloud security: third-party app insights and ai-enhanced remediation falcon cloud security gains third-party application insights and ai-enhanced remediation to improve the context and ai capabilities available to customers. 本文虽然标题主要关注 falcon 云安全平台的第三方应用洞察与 ai 增强修复功能，但其正文内容包含了 crowdstrike 博客的文章列表，其中涉及多篇与 ai 安全和 ai agent 安全高度相关的文章，因此匹配相应标签。
+
+- 攻击事件背景：文章列表中提到了多个与 ai 相关的安全事件，如“未知威胁行为者使用 ai 驱动的 artex 攻击韩国金融业”，以及“phantomraven：为漏洞赏金狩猎开发的 llm 生成信息窃取程序”。这表明攻击者正在积极利用 ai 技术发起更复杂的攻击。
+- 时间线：相关文章发布日期集中在 2026 年下半年（如 10 月、9 月、8 月等），反映了 ai 安全威胁在近期的快速演进。
+- 攻击原理：在“请求、聚合、绕过：攻击者如何规避 llm 安全分类器”一文中，揭示了攻击者通过特定的请求和聚合手段绕过大语言模型（llm）安全分类器的原理，这通常涉及提示词注入或越狱技术，以诱导 llm 生成恶意内容或绕过安全限制。
+- 攻击详情：列表中提到的“ai agent 部署中隐藏的身份问题”指出了 ai agent 在部署时面临的身份验证和授权漏洞。此外，“phantomraven”展示了 llm 被用于生成信息窃取恶意软件的具体案例。
+- 攻击特征：这些攻击的特征在于利用 ai 模型本身的能力（如生成代码、文本）来实施攻击，或者针对 ai 系统的弱点（如安全分类器、agent 身份管理）进行规避和利用。攻击手段呈现出智能化、自动化和针对 ai 基础设施本身的特点。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-05
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__falcon-cloud-security-third-party-app-insights-ai-enhanced-remedation__2026-10-05.html">Falcon 云安全新功能：第三方应用洞察与 AI 增强修复</a>
+                </div>
+                <div class="card-summary">
+                        本文虽然标题主要关注 Falcon 云安全平台的第三方应用洞察与 AI 增强修复功能，但其正文内容包含了 CrowdStrike 博客的文章列表，其中涉及多篇与 AI 安全和 AI Agent 安全高度相关的文章，因此匹配相应标签。
+
+- 攻击事件背景：文章列表中提到了多个与 AI 相关的安全事件，...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                        <span class="card-tag">提示词注入</span>
+                        <span class="card-tag">AI Agent安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__falcon-cloud-security-third-party-app-insights-ai-enhanced-remedation__2026-10-05.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/falcon-cloud-security-third-party-app-insights-ai-enhanced-remedation/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-01"
+             data-tags="5G安全,4G安全,3G安全,2G安全,核心网网元,信令攻击"
+             data-search="5g location services security: protecting the lmf, gmlc and the location privacy chain how 5g location services work across the lmf, gmlc, amf and nef, where location abuse happens, and what operators should harden, monitor and test. 攻击事件背景：5g定位服务（lcs）能够提供米级精度的设备位置信息，这比以往基于cell-id查询的ss7位置追踪更加精确，但也带来了极高的隐私泄露风险。文章探讨了5g lcs架构中的信任边界、现实滥用路径以及遗留网络接口带来的安全风险。
+时间线：文章发布于2026年10月1日，是对当前及未来5g网络定位服务安全状态的深度剖析。
+攻击原理：攻击并非主要依靠破坏密码学，而是利用合法、格式正确的请求，通过绕过授权或利用配置错误来获取未授权的位置数据。这与历史上ss7和diameter协议中利用网络间信任关系进行滥用（如anytimeinterrogation和providesubscriberlocation）的原理一致。
+攻击详情：
+1. 权限过高的sba消费者：若nrf颁发的oauth 2.0范围过宽，被攻陷或配置错误的网络功能可能非法调用ngmlc或namf_location操作。
+2. 通过nef的外部暴露：向第三方应用开放的定位监控事件若配置宽松，可被滥用为商业追踪服务。
+3. 跨n32的漫游请求：漫游网络或互连实体可能尝试对入站或出站漫游用户进行位置查询。
+4. 滥用隐私绕过请求类型：攻击者可能伪造紧急服务或合法拦截请求类型，在无需用户同意的情况下绕过隐私检查。
+5. 延迟和周期性定位：单个授权的延迟请求可生成持续数小时或数天的周期性位置报告。
+6. 遗留接口暴露：5g gmlc通常同时服务于4g（diameter slg/slh）和2g/3g（map操作），攻击者会寻找防护最弱的路径进行攻击。
+攻击特征：利用网络内部信任机制而非密码学漏洞；跨多代网络（2g/3g/4g/5g）的遗留信令接口成为攻击跳板；滥用合法api和信令操作（如sba api、diameter、map）；针对特定高价值目标进行长期周期性追踪；伪造紧急服务请求以绕过隐私验证。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-01
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__5g-location-services-security-lmf-gmlc-location-privacy__2026-10-01.html">5G定位服务安全：保护LMF、GMLC与位置隐私链</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：5G定位服务（LCS）能够提供米级精度的设备位置信息，这比以往基于Cell-ID查询的SS7位置追踪更加精确，但也带来了极高的隐私泄露风险。文章探讨了5G LCS架构中的信任边界、现实滥用路径以及遗留网络接口带来的安全风险。
+时间线：文章发布于2026年10月1日，是对当前及未来5G网...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">3G安全</span>
+                        <span class="card-tag">2G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                        <span class="card-tag">信令攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__5g-location-services-security-lmf-gmlc-location-privacy__2026-10-01.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/5g-location-services-security-lmf-gmlc-location-privacy" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-09-30"
+             data-tags="核心网网元"
+             data-search="enea enum: a next-generation mobile numberportability database for any “g”  本文是一篇关于核心网网元演进与解决方案的产品简报。文章详细介绍了 enea enum 作为一个下一代移动号码携带数据库（npdb）平台，如何帮助运营商在网络转型过程中平滑演进。
+
+文章指出，随着运营商将语音服务迁移至ims并引入5g独立组网，号码携带基础设施也必须随之演进。enea enum 平台结合了号码携带数据库功能与基于 enum/dns 的号码解析、api 集成、策略驱动路由以及用于旧有网络元素的 map 连接。该平台支持 volte、vowifi、vonr、ims 和不断发展的 5g 服务，同时保持与 2g/3g 电路交换网络的互操作性。
+
+从核心网安全与架构的角度来看，文章提到该平台能够帮助运营商“减少对以信令为中心的架构的依赖”，这在一定程度上隐含了降低传统 ss7/map 信令网络暴露面的安全收益，但文章的核心主题仍是核心网网元（enum数据库）的现代化、云原生转型及多代网络兼容性，并未涉及具体的信令攻击事件、后量子密码或ai安全内容。因此，本文匹配“核心网网元”标签。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-09-30
+ · Johan Terve                </div>
+                <div class="card-title">
+                    <a href="enea__enea-enum-a-next-generation-mobile-numberportability-database-for-any-g__2026-09-30.html">Enea ENUM：适用于任何“G”的下一代移动号码携带数据库</a>
+                </div>
+                <div class="card-summary">
+                        本文是一篇关于核心网网元演进与解决方案的产品简报。文章详细介绍了 Enea ENUM 作为一个下一代移动号码携带数据库（NPDB）平台，如何帮助运营商在网络转型过程中平滑演进。
+
+文章指出，随着运营商将语音服务迁移至IMS并引入5G独立组网，号码携带基础设施也必须随之演进。Enea ENUM 平台结...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__enea-enum-a-next-generation-mobile-numberportability-database-for-any-g__2026-09-30.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/enea-enum-a-next-generation-mobile-numberportability-database-for-any-g/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="p1sec" data-matched="True"
              data-date="2026-09-29"
              data-tags="5G安全,4G安全,核心网网元"
