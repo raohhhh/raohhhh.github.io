@@ -223,3 +223,21 @@
 [2026-10-08 09:30:01] 拉取远程更新 (git pull --rebase --autostash)...
 [2026-10-08 09:30:18] Already up to date.
 [2026-10-08 09:30:18] 暂存所有更改 (git add -A)...
+[2026-10-08 09:30:19] 提交更改: auto update: 2026-10-08 09:30:19
+[2026-10-08 09:30:19] [main 63623b4] auto update: 2026-10-08 09:30:19
+[2026-10-08 09:30:19]  312 files changed, 2470 insertions(+), 933 deletions(-)
+[2026-10-08 09:30:19]  create mode 100644 crowdstrike__falcon-cloud-security-third-party-app-insights-ai-enhanced-remedation__2026-10-05.html
+[2026-10-08 09:30:19]  create mode 100644 crowdstrike__how-attackers-can-bypass-llm-safety-classifiers__2026-10-06.html
+[2026-10-08 09:30:19]  create mode 100644 crowdstrike__unknown-threat-actor-uses-artex-to-target-south-korean-finance__2026-10-07.html
+[2026-10-08 09:30:19]  create mode 100644 enea__enea-enum-a-next-generation-mobile-numberportability-database-for-any-g__2026-09-30.html
+[2026-10-08 09:30:19]  create mode 100644 p1sec__5g-location-services-security-lmf-gmlc-location-privacy__2026-10-01.html
+[2026-10-08 09:30:19]  create mode 100644 p1sec__presenting-diagng-open-source-qcsuper-successor__2026-10-05.html
+[2026-10-08 09:30:19]  create mode 100644 p1sec__sms-blaster-fake-base-station-smishing-2g-downgrade__2026-10-06.html
+[2026-10-08 09:30:19] 推送到远程仓库 (git push origin main)...
+[2026-10-08 09:30:40] fatal: unable to access 'https://github.com/raohhhh/raohhhh.github.io.git/': Failed to connect to github.com:443 after 21089 ms: Could not connect to server
+[2026-10-08 09:30:40] 错误: 推送失败 (code=128)。
+[2026-10-08 09:30:40] ===== 失败 =====
+[2026-10-09 09:30:01] ===== 开始自动提交 =====
+[2026-10-09 09:30:01] 拉取远程更新 (git pull --rebase --autostash)...
+[2026-10-09 09:30:06] Already up to date.
+[2026-10-09 09:30:06] 暂存所有更改 (git add -A)...

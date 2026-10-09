@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N26接口安全：保护4G与5G核心网互操作 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">313</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">313</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">844</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>N26接口安全：保护4G与5G核心网互操作</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：N26 interface security: protecting 4G and 5G core interworking</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-10-08
+ · <a href="https://www.p1sec.com/blog/n26-interface-security-amf-mme-eps-5gs-interworking" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文深入探讨了4G与5G核心网互操作时N26接口的安全风险与防护策略。以下为详细分析：
+
+- 攻击事件背景
+文章并非针对某一具体安全事件，而是针对移动通信网络演进过程中的架构性安全风险进行深度剖析。随着5G独立组网（SA）的部署，网络仍需依赖LTE进行覆盖、语音回落（EPS Fallback）和漫游。N26接口作为4G MME与5G AMF之间的控制面桥梁，成为强化的5G核心与相对老旧的4G核心之间的安全边界，其安全性直接决定了用户在跨代移动过程中的安全状态。
+
+- 时间线
+文章发布于2026年10月8日，属于对当前及未来一段时间内5G与4G互操作安全阶段的总结性技术分析与审计指南。
+
+- 攻击原理
+N26接口使用GTPv2-C协议，该协议本身缺乏原生的对等节点认证和消息加密/完整性保护机制。攻击原理主要基于三个维度：1. 传输暴露：若缺乏网络域安全（NDS/IP）保护，信令在共享传输网络中明文传输；2. 对等信任缺陷：AMF或MME若配置宽松，未严格校验请求来源，会向未授权节点泄露用户上下文；3. 降级攻击：攻击者通过无线侧诱导用户从5G切换至4G，使用户失去5G特有保护（如SUCI身份隐藏、用户面完整性保护）。
+
+- 攻击详情
+1. 上下文窃取：攻击者若能接入N26接口所在传输网络，可嗅探GTPv2-C消息，直接获取用户永久身份、移动性上下文及安全上下文。或者，攻击者伪造IP地址向AMF/MME发送Context Request消息，若节点未严格实施完整性检查和源地址过滤，便会将敏感的用户上下文发送给攻击者。
+2. 降级攻击：攻击者在无线侧触发异常的重定向（如从NR强制回落到LTE），迫使UE通过N26接口迁移至EPS。由于4G网络通常安全基线较低，用户数据将面临被窃听或篡改的风险。
+3. 协议健壮性漏洞利用：攻击者向N26接口发送畸形或乱序的GTPv2-C消息，可能导致AMF或MME节点崩溃或出现非预期行为。
+
+- 攻击特征
+1. 跨代边界特征：攻击发生在4G与5G网络交接处，利用了两代网络安全配置的不对称性（通常4G侧MME防护较弱）。
+2. 信令异常特征：表现为来自未配置的IP地址的GTPv2-C Context Request请求；特定区域内异常的大量Forward Relocation Request消息（非正常切换高峰）；同一用户频繁的上下文转移失败；以及无线侧异常的NR到LTE重定向记录。
+3. 组织缝隙特征：由于4G和5G通常由不同团队运维，N26流量监控往往成为盲区，攻击行为容易在两支安全团队的职责缝隙中被忽视。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-10-09T09:03:04</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>N26 interface security: protecting 4G and 5G core interworking</p>
+    <div class="analysis" style="white-space:pre-wrap;">The N26 interface is the control-plane link between the 4G MME and the 5G AMF that lets a device move between EPS and the 5G System without dropping its sessions. It carries mobility management and session context, including security context, between two core generations, and it is defined in 3GPP TS 23.501 and TS 23.502 with GTPv2-C as the protocol on the wire. From a security standpoint, N26 is where a hardened 5G standalone core meets an older 4G core, and the weaker side of that boundary defines how much protection a subscriber really has when they move.
+Most 5G standalone deployments still depend on LTE for coverage, voice fallback and roaming, so N26 is far from a niche interface. This article explains what N26 does, how security context is mapped between 5G and 4G under TS 33.501, which risks are specific to interworking, and how operators can assess and monitor the interface. It is a deep-dive companion to our broader comparison of 5G standalone and non-standalone security .
+What is the N26 interface?
+N26 is an optional inter-core-network reference point between the MME in the Evolved Packet Core and the AMF in the 5G Core, used to transfer mobility management and session management state when a single-registration UE moves between EPS and 5GS. It reuses GTPv2-C, the same protocol the MME uses on S10 towards other MMEs, as specified in TS 29.274.
+TS 23.501 describes two families of interworking. With N26, the network keeps one valid mobility management state for the UE, either in the AMF or the MME, and transfers context between them during idle mode mobility and connected mode handover. Without N26, the UE either operates in dual registration mode or relies on the combined HSS and UDM and the combined SMF and PGW-C to re-establish its sessions after a fresh attach or registration. The N26 option gives seamless handover and keeps IP addresses and sessions stable, which is why operators running voice over NR with EPS fallback, or any service sensitive to interruption, usually deploy it.
+N26 does not stand alone. Interworking relies on combined network functions that span both generations: the SMF+PGW-C, the UPF+PGW-U, the PCF+PCRF and the HSS+UDM. N26 is the piece that lets the two mobility anchors, the AMF and the MME, hand a subscriber across to each other. In practice that makes the MME and the AMF peers in a trust relationship, which is the key point for security.
+What N26 carries and why it matters
+N26 carries the information a core network needs to take over a subscriber from the other generation: identity, mobility context, PDN or PDU session information and, crucially, security context. Any party able to read or influence that exchange can learn about the subscriber or affect how the subscriber is protected after the move.
+The procedures are those familiar from GTP-C mobility signalling. During idle mode mobility from 5GS to EPS, the MME sends a Context Request to the AMF and receives a Context Response containing the UE&#39;s mobility
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

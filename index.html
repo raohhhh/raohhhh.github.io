@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">310</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">310</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">840</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">313</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">313</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">844</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,37 +181,37 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (100)</option>
-            <option value="p1sec">p1sec (175)</option>
+            <option value="p1sec">p1sec (176)</option>
             <option value="citizenlab">citizenlab (10)</option>
-            <option value="crowdstrike">crowdstrike (25)</option>
+            <option value="crowdstrike">crowdstrike (27)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (168)</option>
-            <option value="核心网网元">核心网网元 (158)</option>
-            <option value="信令攻击">信令攻击 (155)</option>
-            <option value="4G安全">4G安全 (101)</option>
+            <option value="5G安全">5G安全 (169)</option>
+            <option value="核心网网元">核心网网元 (159)</option>
+            <option value="信令攻击">信令攻击 (156)</option>
+            <option value="4G安全">4G安全 (102)</option>
             <option value="3G安全">3G安全 (63)</option>
             <option value="2G安全">2G安全 (57)</option>
-            <option value="AI攻击">AI攻击 (47)</option>
-            <option value="AI Agent安全">AI Agent安全 (37)</option>
+            <option value="AI攻击">AI攻击 (48)</option>
+            <option value="AI Agent安全">AI Agent安全 (39)</option>
+            <option value="提示词注入">提示词注入 (10)</option>
             <option value="后量子">后量子 (10)</option>
-            <option value="提示词注入">提示词注入 (9)</option>
         </select>
     </div>
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(168)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(158)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(155)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(101)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(169)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(159)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(156)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(102)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(47)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(37)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(48)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(39)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(10)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(9)</span></a>
 </div>
 
 <div class="pagination-bar">
@@ -232,6 +232,110 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-08"
+             data-tags="5G安全,4G安全,核心网网元,信令攻击"
+             data-search="n26 interface security: protecting 4g and 5g core interworking how the n26 interface links the amf and mme, how ts 33.501 maps security context between 5g and 4g, and how to assess and monitor interworking risk. 本文深入探讨了4g与5g核心网互操作时n26接口的安全风险与防护策略。以下为详细分析：
+
+- 攻击事件背景
+文章并非针对某一具体安全事件，而是针对移动通信网络演进过程中的架构性安全风险进行深度剖析。随着5g独立组网（sa）的部署，网络仍需依赖lte进行覆盖、语音回落（eps fallback）和漫游。n26接口作为4g mme与5g amf之间的控制面桥梁，成为强化的5g核心与相对老旧的4g核心之间的安全边界，其安全性直接决定了用户在跨代移动过程中的安全状态。
+
+- 时间线
+文章发布于2026年10月8日，属于对当前及未来一段时间内5g与4g互操作安全阶段的总结性技术分析与审计指南。
+
+- 攻击原理
+n26接口使用gtpv2-c协议，该协议本身缺乏原生的对等节点认证和消息加密/完整性保护机制。攻击原理主要基于三个维度：1. 传输暴露：若缺乏网络域安全（nds/ip）保护，信令在共享传输网络中明文传输；2. 对等信任缺陷：amf或mme若配置宽松，未严格校验请求来源，会向未授权节点泄露用户上下文；3. 降级攻击：攻击者通过无线侧诱导用户从5g切换至4g，使用户失去5g特有保护（如suci身份隐藏、用户面完整性保护）。
+
+- 攻击详情
+1. 上下文窃取：攻击者若能接入n26接口所在传输网络，可嗅探gtpv2-c消息，直接获取用户永久身份、移动性上下文及安全上下文。或者，攻击者伪造ip地址向amf/mme发送context request消息，若节点未严格实施完整性检查和源地址过滤，便会将敏感的用户上下文发送给攻击者。
+2. 降级攻击：攻击者在无线侧触发异常的重定向（如从nr强制回落到lte），迫使ue通过n26接口迁移至eps。由于4g网络通常安全基线较低，用户数据将面临被窃听或篡改的风险。
+3. 协议健壮性漏洞利用：攻击者向n26接口发送畸形或乱序的gtpv2-c消息，可能导致amf或mme节点崩溃或出现非预期行为。
+
+- 攻击特征
+1. 跨代边界特征：攻击发生在4g与5g网络交接处，利用了两代网络安全配置的不对称性（通常4g侧mme防护较弱）。
+2. 信令异常特征：表现为来自未配置的ip地址的gtpv2-c context request请求；特定区域内异常的大量forward relocation request消息（非正常切换高峰）；同一用户频繁的上下文转移失败；以及无线侧异常的nr到lte重定向记录。
+3. 组织缝隙特征：由于4g和5g通常由不同团队运维，n26流量监控往往成为盲区，攻击行为容易在两支安全团队的职责缝隙中被忽视。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-08
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__n26-interface-security-amf-mme-eps-5gs-interworking__2026-10-08.html">N26接口安全：保护4G与5G核心网互操作</a>
+                </div>
+                <div class="card-summary">
+                        本文深入探讨了4G与5G核心网互操作时N26接口的安全风险与防护策略。以下为详细分析：
+
+- 攻击事件背景
+文章并非针对某一具体安全事件，而是针对移动通信网络演进过程中的架构性安全风险进行深度剖析。随着5G独立组网（SA）的部署，网络仍需依赖LTE进行覆盖、语音回落（EPS Fallback）和漫游...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                        <span class="card-tag">信令攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__n26-interface-security-amf-mme-eps-5gs-interworking__2026-10-08.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/n26-interface-security-amf-mme-eps-5gs-interworking" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-08"
+             data-tags="AI Agent安全"
+             data-search="solving the continuous authorization conundrum organizations continue to face myriad issues related to zero trust. we take a closer look at these problems and discuss what can help address them. 本文主要探讨了在 ai agent 广泛部署背景下的持续授权与身份安全问题。
+- 攻击事件背景：随着 ai agent 在企业环境中的普及，传统的静态身份验证和授权机制已无法满足需求。ai agent 需要自主执行任务，其身份和权限需要动态、持续的管理，否则可能导致越权访问或身份盗用等安全风险。
+- 时间线：文章发布于 2026年10月8日，属于 next-gen identity security（下一代身份安全）分类。同分类下还有关于 ai agent 身份问题的文章（如 2026年6月的 &#39;the identity problem hiding in ai agent deployments&#39; 和 &#39;crowdstrike announces continuous identity for ai agents&#39;）。
+- 攻击原理与详情：虽然提供的正文内容主要为博客目录列表，未包含该文章的具体技术细节，但从标题和上下文可以推断，文章旨在解决 ai agent 部署中持续授权的难题，探讨如何为 ai agent 建立持续的身份验证机制，以防范因授权中断或不当导致的潜在安全威胁。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-08
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__solving-the-continuous-authorization-conundrum__2026-10-08.html">解决持续授权难题</a>
+                </div>
+                <div class="card-summary">
+                        本文主要探讨了在 AI Agent 广泛部署背景下的持续授权与身份安全问题。
+- 攻击事件背景：随着 AI Agent 在企业环境中的普及，传统的静态身份验证和授权机制已无法满足需求。AI Agent 需要自主执行任务，其身份和权限需要动态、持续的管理，否则可能导致越权访问或身份盗用等安全风险。
+-...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI Agent安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__solving-the-continuous-authorization-conundrum__2026-10-08.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/solving-the-continuous-authorization-conundrum/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-08"
+             data-tags="AI攻击,提示词注入,AI Agent安全"
+             data-search="crowdstrike and anthropic give critical infrastructure defenders the ai advantage crowdstrike joins anthropic’s critical infrastructure defense program, bringing expertise in protecting it and ot environments to help advance ai-powered defense. 本文为 crowdstrike 博客的新闻汇总与目录列表，虽然主标题聚焦于利用 ai 技术进行关键基础设施防御，但其包含的多篇子文章和列表项明确涉及了 ai 安全攻击与防御、ai agent 安全等主题。
+- 攻击事件背景：文章列表中提到了多个与 ai 相关的安全事件，如未知威胁行为者使用 ai 驱动的 artex 攻击韩国金融业；攻击者通过特定手段规避大语言模型（llm）安全分类器；以及 ai agent 部署中隐藏的身份验证问题。
+- 时间线：列表中的文章发布时间集中在 2025 年至 2026 年 10 月之间，主文章发布于 2026 年 10 月 8 日。
+- 攻击原理：在“request, aggregate, bypass: how attackers can evade llm safety classifiers”一文中，揭示了攻击者如何通过请求、聚合和绕过等技术手段规避 llm 的安全机制，这属于典型的提示词注入或越狱攻击原理。同时，ai 驱动的威胁行为（如 artex）展示了利用 ai 增强攻击能力的原理。
+- 攻击详情：列表提及“unknown threat actor uses ai-driven artex to target south korean finance”，详细说明了针对特定行业（金融）的 ai 驱动攻击；在 ai agent 安全方面，提到了“the identity problem hiding in ai agent deployments”，指出了 ai agent 在部署和身份认证（如 continuous identity for ai agents）方面面临的安全风险。
+- 攻击特征：此类攻击的特征表现为利用 ai 技术自动化和增强攻击链（如 ai 驱动的恶意软件 artex），针对 llm 模型本身的安全漏洞进行提示词注入和分类器绕过，以及针对新兴 ai agent 架构中的身份与访问控制缺陷进行利用。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-08
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__crowdstrike-anthropic-critical-infrastructure-defense-program__2026-10-08.html">CrowdStrike 和 Anthropic 赋予关键基础设施防御者 AI 优势</a>
+                </div>
+                <div class="card-summary">
+                        本文为 CrowdStrike 博客的新闻汇总与目录列表，虽然主标题聚焦于利用 AI 技术进行关键基础设施防御，但其包含的多篇子文章和列表项明确涉及了 AI 安全攻击与防御、AI Agent 安全等主题。
+- 攻击事件背景：文章列表中提到了多个与 AI 相关的安全事件，如未知威胁行为者使用 AI 驱...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                        <span class="card-tag">提示词注入</span>
+                        <span class="card-tag">AI Agent安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__crowdstrike-anthropic-critical-infrastructure-defense-program__2026-10-08.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/crowdstrike-anthropic-critical-infrastructure-defense-program/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="crowdstrike" data-matched="True"
              data-date="2026-10-07"
              data-tags="AI攻击"
