@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">313</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">313</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">845</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">315</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">315</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">850</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -180,7 +180,7 @@
         <input type="text" id="searchBox" placeholder="搜索文章标题/摘要...">
         <select id="siteFilter">
             <option value="">全部来源</option>
-            <option value="enea">enea (100)</option>
+            <option value="enea">enea (102)</option>
             <option value="p1sec">p1sec (176)</option>
             <option value="citizenlab">citizenlab (10)</option>
             <option value="crowdstrike">crowdstrike (27)</option>
@@ -193,8 +193,8 @@
             <option value="4G安全">4G安全 (102)</option>
             <option value="3G安全">3G安全 (63)</option>
             <option value="2G安全">2G安全 (57)</option>
-            <option value="AI攻击">AI攻击 (48)</option>
-            <option value="AI Agent安全">AI Agent安全 (39)</option>
+            <option value="AI攻击">AI攻击 (50)</option>
+            <option value="AI Agent安全">AI Agent安全 (41)</option>
             <option value="提示词注入">提示词注入 (10)</option>
             <option value="后量子">后量子 (10)</option>
         </select>
@@ -208,8 +208,8 @@
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(102)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(48)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(39)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(50)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(41)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(10)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
 </div>
@@ -232,6 +232,74 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-10-15"
+             data-tags="AI攻击,AI Agent安全"
+             data-search="cybersecurity awareness month 2026: securing the next 250 requires visibility into ai traffic  攻击事件背景：
+文章以2026年网络安全意识月为背景，探讨了关键基础设施（如电力、水处理、通信、交通等）在面临ai技术广泛应用时所遭遇的长期安全挑战。文章指出，随着ai能力嵌入各种企业软件和工业流程，ai通信流量呈爆炸式增长，而关键基础设施运营商对这些ai活动的可见性远低于传统应用，从而形成巨大的安全盲区。
+
+时间线：
+文章发布于2026年10月，时值美国网络安全意识月及美国建国250周年纪念前夕，提出了“保障下一个250年”的长期安全韧性主题。
+
+攻击原理：
+文章指出，ai安全不仅仅是保护模型本身，更在于ai系统所依赖的庞大通信生态系统。大语言模型、推理平台、ai代理、检索系统、编排框架以及基于云的ai服务等都依赖网络流量运行。这些新的协议和流量模式引入了新的被滥用机会。如果网络流量不可见，攻击者就可以利用“影子ai”工具或未授权的ai服务进行数据窃取或建立隐蔽通信通道。
+
+攻击详情：
+文章列举了与ai流量和ai攻击相关的具体安全威胁场景：
+1. 未授权的生成式ai服务访问并窃取运营数据。
+2. 攻击者利用ai驱动的命令与控制（c2）活动与外部恶意基础设施进行通信，且这种恶意ai流量混在合法ai流量中难以区分。
+3. 员工或内部系统使用未经批准的ai工具，导致敏感信息在离开网络前发生泄露。
+4. 新出现的ai应用和ai代理在与关键系统交互时引入未知风险。
+
+攻击特征：
+此类安全威胁的核心特征在于“隐蔽性”和“协议多样化”。随着ai代理之间以及ai代理与关键系统之间的交互日益频繁，攻击往往隐藏在新兴的、非标准的ai协议和通信框架中。传统的静态控制和手动盘点无法有效识别这些动态变化的ai流量，使得恶意ai活动（如ai c2通信、未授权数据外发）能够轻易绕过传统安全防线。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-10-15
+ · John Stevenson                </div>
+                <div class="card-title">
+                    <a href="enea__cybersecurity-awareness-month-2026-securing-the-next-250-requires-visibility-int__2026-10-15.html">2026年网络安全意识月：保障未来250年需要对AI流量具有可见性</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：
+文章以2026年网络安全意识月为背景，探讨了关键基础设施（如电力、水处理、通信、交通等）在面临AI技术广泛应用时所遭遇的长期安全挑战。文章指出，随着AI能力嵌入各种企业软件和工业流程，AI通信流量呈爆炸式增长，而关键基础设施运营商对这些AI活动的可见性远低于传统应用，从而形成巨大的安...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                        <span class="card-tag">AI Agent安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__cybersecurity-awareness-month-2026-securing-the-next-250-requires-visibility-int__2026-10-15.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/cybersecurity-awareness-month-2026-securing-the-next-250-requires-visibility-into-ai-traffic/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-10-14"
+             data-tags="AI攻击,AI Agent安全"
+             data-search="managing new network security risks in the era of ai  - 攻击事件背景：随着企业对ai技术的广泛采用以及智能体ai的快速普及，ai正被深度整合到it网络的各个角落（从端点到浏览器、企业生产力套件再到云基础设施）。然而，当前的安全防护仍采用孤岛式管理，将it安全与ai安全割裂。文章指出，由于ai采用率呈指数级增长、ai攻击激增且主要针对传统it，以及智能体ai在ai与it系统交汇处倍增了风险，打破这种安全孤岛迫在眉睫。
+- 时间线：文章发布于2026年10月14日，属于对当时ai与it融合背景下网络安全威胁趋势的前瞻性或现状分析。
+- 攻击原理：文章未深入探讨具体的底层漏洞利用代码，而是从宏观安全架构层面指出攻击原理：攻击者利用了ai系统与it系统之间的“可见性缺口”。由于ai自我报告机制往往不可靠且与it生态不相关，攻击者可以借助未受监控的ai流量或加密流量进行隐藏，实施针对传统it资产的攻击。
+- 攻击详情：攻击详情主要体现在ai与it系统交汇处的风险倍增。随着智能体ai的扩展，攻击面大幅增加。攻击形式包括利用加密流量隐藏的恶意活动、逃避检测的异常流量，以及企业内部未经批准的“影子ai”使用带来的未知风险。这些攻击利用了安全系统无法实时关联ai和it情报的盲区。
+- 攻击特征：1. 隐蔽性强：攻击流量可能隐藏在加密通信中，难以被传统检测手段发现；2. 逃避检测：表现为异常和逃避性流量；3. 滥用合法工具：涉及未授权的“影子ai”使用，绕过常规it安全策略；4. 跨域交织：攻击发生在ai与传统it系统的交互边界，单纯依赖单一领域的安全防护无法有效识别。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-10-14
+ · Laura Wilber                </div>
+                <div class="card-title">
+                    <a href="enea__managing-new-network-security-risks-in-the-era-of-ai__2026-10-14.html">在AI时代管理新的网络安全风险</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：随着企业对AI技术的广泛采用以及智能体AI的快速普及，AI正被深度整合到IT网络的各个角落（从端点到浏览器、企业生产力套件再到云基础设施）。然而，当前的安全防护仍采用孤岛式管理，将IT安全与AI安全割裂。文章指出，由于AI采用率呈指数级增长、AI攻击激增且主要针对传统IT，以及智能...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                        <span class="card-tag">AI Agent安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__managing-new-network-security-risks-in-the-era-of-ai__2026-10-14.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/managing-new-network-security-risks-in-the-era-of-ai/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="p1sec" data-matched="True"
              data-date="2026-10-08"
              data-tags="5G安全,4G安全,核心网网元,信令攻击"

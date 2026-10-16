@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在AI时代管理新的网络安全风险 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">315</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">315</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">850</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>在AI时代管理新的网络安全风险</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Managing New Network Security Risks in the Era of AI</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2026-10-14
+ · 作者：Laura Wilber · <a href="https://www.enea.com/insights/managing-new-network-security-risks-in-the-era-of-ai/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">DPI &amp;amp; Traffic Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">AI</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Cybersecurity</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Deep Packet Inspection</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">White Paper</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI Agent安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">- 攻击事件背景：随着企业对AI技术的广泛采用以及智能体AI的快速普及，AI正被深度整合到IT网络的各个角落（从端点到浏览器、企业生产力套件再到云基础设施）。然而，当前的安全防护仍采用孤岛式管理，将IT安全与AI安全割裂。文章指出，由于AI采用率呈指数级增长、AI攻击激增且主要针对传统IT，以及智能体AI在AI与IT系统交汇处倍增了风险，打破这种安全孤岛迫在眉睫。
+- 时间线：文章发布于2026年10月14日，属于对当时AI与IT融合背景下网络安全威胁趋势的前瞻性或现状分析。
+- 攻击原理：文章未深入探讨具体的底层漏洞利用代码，而是从宏观安全架构层面指出攻击原理：攻击者利用了AI系统与IT系统之间的“可见性缺口”。由于AI自我报告机制往往不可靠且与IT生态不相关，攻击者可以借助未受监控的AI流量或加密流量进行隐藏，实施针对传统IT资产的攻击。
+- 攻击详情：攻击详情主要体现在AI与IT系统交汇处的风险倍增。随着智能体AI的扩展，攻击面大幅增加。攻击形式包括利用加密流量隐藏的恶意活动、逃避检测的异常流量，以及企业内部未经批准的“影子AI”使用带来的未知风险。这些攻击利用了安全系统无法实时关联AI和IT情报的盲区。
+- 攻击特征：1. 隐蔽性强：攻击流量可能隐藏在加密通信中，难以被传统检测手段发现；2. 逃避检测：表现为异常和逃避性流量；3. 滥用合法工具：涉及未授权的“影子AI”使用，绕过常规IT安全策略；4. 跨域交织：攻击发生在AI与传统IT系统的交互边界，单纯依赖单一领域的安全防护无法有效识别。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-10-16T16:09:06</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Managing New Network Security Risks in the Era of AI</p>
+    <div class="analysis" style="white-space:pre-wrap;">Managing New Network Security Risks in the Era of AI
+How Deep Packet Inspection can close critical AI-IT visibility gaps and be used to build a solid foundation for advanced threat detection.
+Securing the Network &amp; Securing AI are One and the Same
+Fueled by enterprise adoption of AI in general and the proliferation of agentic AI in particular, AI is being integrated into every connection and resource within IT networks, from endpoints to browsers to enterprise productivity suites to cloud infrastructure. This means that the mission of “securing the network” and “securing AI” are now one and the same.
+Security, however, is still based on a siloed approach, treating IT and AI security as separate domains. The need to break these IT and AI security silos is urgent for three primary reasons:
+AI adoption and enterprise penetration are increasing exponentially,
+AI attacks are surging and evolving BUT the prime target remains conventional IT,
+Agentic AI is expanding, multiplying the risks wherever AI and IT systems intersect.
+The way to break the silos is through holistic, global visibility across AI and IT systems. This requires correlated AI and IT intelligence in real-time. And the technology capable of delivering this is deep packet inspection (DPI).
+DPI Provides Global Network Visibility
+As its name suggests, deep packet inspection analyzes network traffic to identify and classify the flows. DPI has long been used to gain in-depth insights into IT-based network entities and activities. It is now necessary for solution providers to also integrate it with AI products and components to gain the same in-depth, actionable insights and provide holistic network visibility. In addition, DPI can provide a highly scalable reality check on AI self-reporting that is too often unreliable, or uncorrelated with the IT ecosystems.
+DPI is the Foundation for Advanced Threat Detection
+In addition to network visibility, DPI also provides essential intelligence for threat detection. Using the correlated AI and IT intelligence, it can help identify suspicious network activity, deliver context for exploits and provide indicators of anomalous and evasive traffic, helping to reveal encrypted attacks. It can also play an invaluable role in the discovery of unsanctioned shadow AI usage.
+Find Out More in Enea’s New White Paper
+“Closing the Gap Between AI and IT Security with Deep Packet Inspection”, aims to give you a solid understanding of how AI is changing network security and how DPI can be used to gain the network visibility and the data intelligence required to protect today’s networks effectively.
+What You Will Discover
+Why it is essential to break AI-IT network security silos,
+AI’s top challenges and the impact on network security,
+How to use network data to close critical AI-IT visibility gaps,
+Real world examples of AI risks and how DPI can be used to address them.</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>
