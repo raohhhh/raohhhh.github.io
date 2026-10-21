@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">315</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">315</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">853</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">316</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">316</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">855</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,15 +181,15 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (102)</option>
-            <option value="p1sec">p1sec (176)</option>
+            <option value="p1sec">p1sec (177)</option>
             <option value="citizenlab">citizenlab (10)</option>
             <option value="crowdstrike">crowdstrike (27)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (169)</option>
-            <option value="核心网网元">核心网网元 (159)</option>
-            <option value="信令攻击">信令攻击 (156)</option>
+            <option value="5G安全">5G安全 (170)</option>
+            <option value="核心网网元">核心网网元 (160)</option>
+            <option value="信令攻击">信令攻击 (157)</option>
             <option value="4G安全">4G安全 (102)</option>
             <option value="3G安全">3G安全 (63)</option>
             <option value="2G安全">2G安全 (57)</option>
@@ -202,9 +202,9 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(169)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(159)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(156)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(170)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(160)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(157)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(102)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
@@ -232,6 +232,39 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-20"
+             data-tags="信令攻击,5G安全,核心网网元"
+             data-search="sms over nas in 5g: how the smsf works and where its security risks sit how sms over nas works in 5g, what the smsf exposes on n20 and n21, and how operators should assess routing, registration and smishing risk. 本文深入分析了5g核心网中sms over nas（nas上短信）的工作原理及其面临的安全风险。
+- **背景**：在5g独立组网中，短信通过nas信令在终端和核心网之间传输，由smsf（短消息服务功能）负责处理。虽然sms over nas将短信服务转移到了服务化架构（sba）上，但并未消除遗留的互连风险，因此5g短信同时继承了sba的新风险和ss7/diameter的旧风险。
+- **攻击原理与详情**：
+  1. **移动终结路由风险**：sms-gmsc需查询服务节点以投递短信，若来自互连的路由查询未被过滤，用户的当前服务节点信息（如smsf地址）会像5g之前一样发生泄露（身份和位置暴露）。
+  2. **smsf注册完整性风险**：移动终结短信依赖udm中保存的正确smsf注册信息。这类似于遗留网络中的位置更新过程，在ss7中常被滥用。若sba认证和授权未严格执行，不受信任的网络功能可能会篡改或替换smsf注册。
+  3. **策略不一致风险**：用户可能通过nas、ims或遗留路径接收短信。若垃圾短信控制、发件人验证、速率限制和钓鱼短信过滤在不同路径上执行不一致，攻击者会寻找最弱的路径进行滥用。
+  4. **无线电边缘风险**：sms over nas无法阻止伪基站将设备降级到旧无线电技术并推送短信，从而绕过核心网控制。
+  5. **可用性与计费风险**：smsf是计费点和可用性依赖点。n20接口过载（如来自受损设备的上行消息洪泛或来自互连的下行流量洪泛）可能导致服务降级；计费不一致可能导致收入流失或成为滥用指标。
+- **攻击特征**：攻击并非针对nas协议本身的全新攻击，而是通过新接口触发的传统sms信令问题。攻击者利用5g核心网与遗留互连（ss7/diameter）之间的信任边界缝隙，通过路由查询泄露隐私，或利用sba授权不严篡改注册信息，以及利用多路径策略不一致绕过安全过滤。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-20
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__sms-over-nas-5g-smsf-security__2026-10-20.html">5G中的NAS上短信：SMSF的工作原理及其安全风险所在</a>
+                </div>
+                <div class="card-summary">
+                        本文深入分析了5G核心网中SMS over NAS（NAS上短信）的工作原理及其面临的安全风险。
+- **背景**：在5G独立组网中，短信通过NAS信令在终端和核心网之间传输，由SMSF（短消息服务功能）负责处理。虽然SMS over NAS将短信服务转移到了服务化架构（SBA）上，但并未消除遗留的...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__sms-over-nas-5g-smsf-security__2026-10-20.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/sms-over-nas-5g-smsf-security" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="enea" data-matched="True"
              data-date="2026-10-15"
              data-tags="AI攻击,AI Agent安全"
