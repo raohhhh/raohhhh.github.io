@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">317</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">317</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">858</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">319</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">319</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">860</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,19 +181,19 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (102)</option>
-            <option value="p1sec">p1sec (177)</option>
-            <option value="citizenlab">citizenlab (10)</option>
+            <option value="p1sec">p1sec (178)</option>
+            <option value="citizenlab">citizenlab (11)</option>
             <option value="crowdstrike">crowdstrike (28)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (170)</option>
-            <option value="核心网网元">核心网网元 (160)</option>
+            <option value="5G安全">5G安全 (171)</option>
+            <option value="核心网网元">核心网网元 (161)</option>
             <option value="信令攻击">信令攻击 (157)</option>
             <option value="4G安全">4G安全 (102)</option>
             <option value="3G安全">3G安全 (63)</option>
             <option value="2G安全">2G安全 (57)</option>
-            <option value="AI攻击">AI攻击 (51)</option>
+            <option value="AI攻击">AI攻击 (52)</option>
             <option value="AI Agent安全">AI Agent安全 (42)</option>
             <option value="提示词注入">提示词注入 (10)</option>
             <option value="后量子">后量子 (10)</option>
@@ -202,13 +202,13 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(170)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(160)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(171)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(161)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(157)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(102)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(51)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(52)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(42)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(10)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
@@ -232,6 +232,73 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-22"
+             data-tags="5G安全,核心网网元"
+             data-search="nssaa in 5g: securing network slice-specific authentication and the nssaaf how 5g nssaa lets slice owners authorise devices with their own aaa server, what the nssaaf exposes, and the risks to test before offering slices. 该文章深入探讨了5g网络中的网络切片特定认证和授权（nssaa）机制及其相关核心网网元（nssaaf）的安全问题。虽然文章并非针对某一具体攻击事件的报道，但详细剖析了该机制中存在的安全风险和潜在攻击面，具体分析如下：
+
+- 攻击事件背景
+5g网络引入了网络切片即服务模型，允许第三方（如企业、政府机构）使用自己的凭证和aaa服务器控制设备对其切片的访问。nssaa机制（3gpp release 16引入）通过在主认证后增加一步切片级认证来实现这一需求。这导致运营商的信任边界扩展到了第三方aaa基础设施，引入了新的安全风险。
+
+- 攻击原理与风险详情
+1. 弱eap方法攻击：3gpp未强制规定nssaa使用的eap方法。若切片所有者选择缺乏双向认证或凭据保护较弱的eap方法，攻击者可能轻易冒充合法设备接入切片，或窃取密码等敏感信息。
+2. 未受保护的aaa传输：nssaaf与第三方aaa服务器（aaa-s）或代理（aaa-p）之间通过radius或diameter协议通信。若未部署ipsec或tls等保护传输，攻击者可截获明文eap流量或篡改认证结果。
+3. 配置错误导致绕过：若udm（统一数据管理）中的订阅数据未正确将特定切片（s-nssai）标记为需要nssaa，amf将不会触发该认证。攻击者可能利用这种静默的配置失误，仅需通过主认证即可访问受限切片。
+4. 拒绝服务与信令风暴：当nssaaf或aaa-s不可达时，若采用“失败开放”策略，会导致未授权设备接入；若采用“失败关闭”，攻击者可能通过阻断aaa服务引发对合法用户的拒绝服务。此外，被攻陷的aaa-s可触发大量设备的重认证或撤销操作，向amf和ran产生海量nas信令和寻呼负载，引发核心网信令风暴。
+5. 解析器漏洞攻击：amf、nssaaf和aaa互操作组件需解析来自外部的eap和aaa消息。攻击者可构造畸形的eap或aaa消息，利用网元解析器的健壮性漏洞导致组件崩溃或状态去同步。
+6. 隐私关联风险：虽然nssaa对第三方隐藏了supi，但使用gpsi作为标识符。攻击者（若为恶意租户）可利用gpsi作为关联句柄，将设备在切片内的活动与外部信息进行关联，破坏用户隐私。
+
+- 攻击特征
+此类攻击主要针对5g核心网与外部第三方aaa服务器之间的信任边界和信令交互面。攻击特征包括：利用协议（如radius/eap）的固有弱点或未加密传输进行中间人攻击；利用核心网网元（如udm）的配置失误实现认证绕过；通过恶意或被攻陷的第三方aaa服务器向核心网发起信令洪泛拒绝服务攻击；以及针对网元解析外部不可信输入的漏洞进行模糊测试和攻击。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-22
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__nssaa-5g-network-slice-specific-authentication-nssaaf-security__2026-10-22.html">5G中的NSSAA：保障网络切片特定认证与NSSAAF的安全</a>
+                </div>
+                <div class="card-summary">
+                        该文章深入探讨了5G网络中的网络切片特定认证和授权（NSSAA）机制及其相关核心网网元（NSSAAF）的安全问题。虽然文章并非针对某一具体攻击事件的报道，但详细剖析了该机制中存在的安全风险和潜在攻击面，具体分析如下：
+
+- 攻击事件背景
+5G网络引入了网络切片即服务模型，允许第三方（如企业、政府机构...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__nssaa-5g-network-slice-specific-authentication-nssaaf-security__2026-10-22.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/nssaa-5g-network-slice-specific-authentication-nssaaf-security" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="citizenlab" data-matched="True"
+             data-date="2026-10-22"
+             data-tags="AI攻击"
+             data-search="how generative ai is scaling transnational repression &lt;p&gt;kate pundyk, siena anstis, and marcus michaelsen write about the rise of ai-enabled digital transnational repression in their piece for just security.&lt;/p&gt;
+&lt;p&gt;the post &lt;a href=&#34;https://citizenlab.ca/how-generative-ai-is-scaling-transnational-repression/&#34;&gt;how generative ai is scaling transnational repression&lt;/a&gt; appeared first on &lt;a href=&#34;https://citizenlab.ca&#34;&gt;the citizen lab&lt;/a&gt;.&lt;/p&gt; 攻击事件背景：文章由kate pundyk、siena anstis和marcus michaelsen撰写，探讨了生成式ai在数字跨国镇压中的兴起与滥用。文章指出，像anthropic等公司开发的ai模型被用于识别、监控和针对全球各地的海外活动人士和流亡异见人士，展示了技术滥用对人权的负面影响。
+时间线：文章发布于2026年10月22日。文中提到与国际调查记者联盟（icij）合作，识别出两个与中国相关的行为者，揭示了数字跨国镇压向由国家支持、私人承包商执行的攻击系统的转变。
+攻击原理：攻击者利用生成式ai模型进行目标人群的识别与监控，并利用ai技术冒充记者和民间社会成员以实施社会工程学攻击或信息操纵。
+攻击详情：攻击行为由国家支持的私人承包商实施，利用ai技术针对特定的流亡群体和异见人士，进行数字化的跨国镇压。
+攻击特征：滥用商业ai技术（如生成式ai模型），结合身份冒充手段，针对特定高价值人群（记者、活动人士），具有国家背景或私人承包商背景，对人权和数字安全构成严重威胁。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">citizenlab</span>
+                    2026-10-22
+ · Anna Mackay                </div>
+                <div class="card-title">
+                    <a href="citizenlab__how-generative-ai-is-scaling-transnational-repression__2026-10-22.html">生成式AI如何加剧跨国镇压</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：文章由Kate Pundyk、Siena Anstis和Marcus Michaelsen撰写，探讨了生成式AI在数字跨国镇压中的兴起与滥用。文章指出，像Anthropic等公司开发的AI模型被用于识别、监控和针对全球各地的海外活动人士和流亡异见人士，展示了技术滥用对人权的负面影响。...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="citizenlab__how-generative-ai-is-scaling-transnational-repression__2026-10-22.html">阅读分析 →</a>
+<a class="read" href="https://citizenlab.ca/how-generative-ai-is-scaling-transnational-repression/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="crowdstrike" data-matched="True"
              data-date="2026-10-21"
              data-tags="AI Agent安全,AI攻击"
