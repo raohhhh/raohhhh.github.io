@@ -391,3 +391,16 @@
 [2026-10-23 09:30:02] 拉取远程更新 (git pull --rebase --autostash)...
 [2026-10-23 09:30:07] Already up to date.
 [2026-10-23 09:30:07] 暂存所有更改 (git add -A)...
+[2026-10-23 09:30:07] 提交更改: auto update: 2026-10-23 09:30:07
+[2026-10-23 09:30:07] [main d714ffe] auto update: 2026-10-23 09:30:07
+[2026-10-23 09:30:07]  321 files changed, 1418 insertions(+), 962 deletions(-)
+[2026-10-23 09:30:07]  create mode 100644 citizenlab__how-generative-ai-is-scaling-transnational-repression__2026-10-22.html
+[2026-10-23 09:30:07]  create mode 100644 p1sec__nssaa-5g-network-slice-specific-authentication-nssaaf-security__2026-10-22.html
+[2026-10-23 09:30:07] 推送到远程仓库 (git push origin main)...
+[2026-10-23 09:30:13] To github.com:raohhhh/raohhhh.github.io.git
+[2026-10-23 09:30:13]    c94a64c..d714ffe  main -> main
+[2026-10-23 09:30:13] ===== 提交并推送完成 =====
+[2026-10-24 09:30:02] ===== 开始自动提交 =====
+[2026-10-24 09:30:02] 拉取远程更新 (git pull --rebase --autostash)...
+[2026-10-24 09:30:06] Already up to date.
+[2026-10-24 09:30:06] 暂存所有更改 (git add -A)...
