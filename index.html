@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">322</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">322</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">868</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">325</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">325</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">871</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,36 +181,36 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (103)</option>
-            <option value="p1sec">p1sec (178)</option>
+            <option value="p1sec">p1sec (179)</option>
             <option value="citizenlab">citizenlab (11)</option>
-            <option value="crowdstrike">crowdstrike (30)</option>
+            <option value="crowdstrike">crowdstrike (32)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (171)</option>
-            <option value="核心网网元">核心网网元 (161)</option>
-            <option value="信令攻击">信令攻击 (157)</option>
-            <option value="4G安全">4G安全 (102)</option>
+            <option value="5G安全">5G安全 (172)</option>
+            <option value="核心网网元">核心网网元 (162)</option>
+            <option value="信令攻击">信令攻击 (158)</option>
+            <option value="4G安全">4G安全 (103)</option>
             <option value="3G安全">3G安全 (63)</option>
             <option value="2G安全">2G安全 (57)</option>
-            <option value="AI攻击">AI攻击 (54)</option>
-            <option value="AI Agent安全">AI Agent安全 (43)</option>
-            <option value="提示词注入">提示词注入 (10)</option>
+            <option value="AI攻击">AI攻击 (56)</option>
+            <option value="AI Agent安全">AI Agent安全 (44)</option>
+            <option value="提示词注入">提示词注入 (11)</option>
             <option value="后量子">后量子 (10)</option>
         </select>
     </div>
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(171)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(161)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(157)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(102)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(172)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(162)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(158)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(103)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(54)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(43)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(10)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(56)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(44)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(11)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
 </div>
 
@@ -232,6 +232,96 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-10-29"
+             data-tags="信令攻击,5G安全,4G安全,核心网网元"
+             data-search="emergency call security in mobile networks: unauthenticated access, nia0 and caller location how emergency calls work in 4g and 5g, why unauthenticated access and nia0 exist, and where ims emergency sessions and caller location create risk. 攻击事件背景：移动网络中的紧急呼叫设计初衷是为了在用户身份未知、无有效订阅或无usim卡的情况下仍能接通。这导致3gpp标准在接入、核心网和ims层设计了绕过鉴权、限制和加密/完整性保护的例外机制。文章指出，这种不同的信任模型和优先级倒置（可用性优先于机密性和完整性）使得紧急呼叫路径成为了一个合法的、标准化的安全旁路，且通常被运营商排除在常规信令和ims安全评估之外。
+
+攻击原理：由于紧急呼叫允许未鉴权接入，攻击者可以利用无凭证的设备驱动核心网网元（如amf/mme）的信令过程，获取承载或pdu会话，并到达ims边缘功能（p-cscf）。此外，由于无凭证无法派生密钥，网络必须使用空算法（nia0和nea0），导致信令完整性保护失效（mac-i全零且无重放保护）和流量未加密。位置信息由未鉴权终端断言，作为不可信输入驱动路由决策。
+
+攻击详情：
+1. 未鉴权信令攻击：未验证的设备可触发紧急附着/注册，消耗网络资源，可能导致核心网状态耗尽和解析器鲁棒性问题。设备仅提供设备标识符（非鉴权因素）即可从未鉴权的无线对等端直达核心网信令和sip层。
+2. 空算法滥用风险：nia0（空完整性）和nea0（空加密）在紧急承载上使用。攻击面在于网络配置是否允许在非紧急会话中协商空算法，以及网络是否能准确监控每次空算法的使用是否对应真实的紧急注册。
+3. 位置欺骗与路由劫持：e-cscf信任终端提供的位置或通过网络查询。如果未经验证（lrf），攻击者可伪造位置信息，导致呼叫路由到错误的公共安全应答点（psap），造成安全与合规双重失败。
+
+攻击特征：结构性而非奇特的漏洞；利用合法的标准化绕过机制；针对可用性优先的信任模型；跨越无线接入、核心网网元（amf、mme、p-cscf、e-cscf、lrf等）和ims/sip多层架构；涉及lte和5g双代网络（甚至通过eps fallback跨代切换）。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-10-29
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__emergency-call-security-mobile-networks-unauthenticated-access-nia0-caller-locat__2026-10-29.html">移动网络中的紧急呼叫安全：未鉴权接入、NIA0与主叫位置</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：移动网络中的紧急呼叫设计初衷是为了在用户身份未知、无有效订阅或无USIM卡的情况下仍能接通。这导致3GPP标准在接入、核心网和IMS层设计了绕过鉴权、限制和加密/完整性保护的例外机制。文章指出，这种不同的信任模型和优先级倒置（可用性优先于机密性和完整性）使得紧急呼叫路径成为了一个合法的...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__emergency-call-security-mobile-networks-unauthenticated-access-nia0-caller-locat__2026-10-29.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/emergency-call-security-mobile-networks-unauthenticated-access-nia0-caller-location" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-29"
+             data-tags="提示词注入,AI Agent安全,AI攻击"
+             data-search="new prompt injection techniques cover agent-planning attacks crowdstrike introduces a new version of the prompt injection taxonomy,  adding newly discovered attack techniques on autonomous agents and how they plan. 攻击事件背景：提示词注入（prompt injection）在早期聊天机器人阶段表现为简单的指令覆盖，即诱导模型忽略原有安全指令并返回违规信息。随着ai技术向智能体演进，此类攻击已升级为针对ai agent规划阶段的复杂攻击。
+时间线：文章发布于2026年10月29日，反映了当前ai安全领域的最新威胁趋势。
+攻击原理：攻击者通过构造恶意输入（提示词），绕过或破坏ai模型的安全护栏，进而操纵ai agent的推理与任务规划逻辑，使其执行非预期的恶意操作。
+攻击详情：新型提示词注入技术不再局限于简单的信息泄露，而是直接针对ai agent的“规划”环节进行劫持。由于agent通常具备更高的权限和自主执行能力，此类攻击可能导致系统被完全控制或敏感数据被窃取。
+攻击特征：攻击手法从单一指令欺骗演变为深度的逻辑劫持；攻击面随着ai agent自主能力的增强而显著扩大；凸显了当前ai guardrails（安全护栏）在面对复杂注入时的脆弱性与暴露的漏洞风险。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-29
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__new-prompt-injection-techniques-cover-agent-planning-attacks__2026-10-29.html">新型提示词注入技术涵盖智能体规划攻击</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：提示词注入（Prompt Injection）在早期聊天机器人阶段表现为简单的指令覆盖，即诱导模型忽略原有安全指令并返回违规信息。随着AI技术向智能体演进，此类攻击已升级为针对AI Agent规划阶段的复杂攻击。
+时间线：文章发布于2026年10月29日，反映了当前AI安全领域的最新威...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">提示词注入</span>
+                        <span class="card-tag">AI Agent安全</span>
+                        <span class="card-tag">AI攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__new-prompt-injection-techniques-cover-agent-planning-attacks__2026-10-29.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/new-prompt-injection-techniques-cover-agent-planning-attacks/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-29"
+             data-tags="AI攻击"
+             data-search="vapor panda uses ai-driven artex to scale a global espionage campaign crowdstrike identified a vapor panda campaign using artex, along with deepseek and another commercial llm, to attack multiple high-value targets. - 攻击事件背景：crowdstrike overwatch 威胁狩猎团队识别出由 vapor panda 威胁组织发起的全球间谍活动。该组织将 ai 技术武器化，利用大语言模型（llm）来提升其攻击行动的规模和复杂性。
+- 时间线：该威胁情报报告于 2026 年 10 月 29 日由 crowdstrike 发布。
+- 攻击原理：攻击者使用了名为 artex 的工具，并结合了中国开发的 deepseek 大语言模型（llm）以及另一个商业 llm 来辅助实施网络入侵。这表明高级威胁组织正在将生成式 ai 整合到其攻击基础设施中，可能用于自动化攻击脚本生成、目标侦察、漏洞分析或攻击路径规划。
+- 攻击详情：vapor panda 利用 ai 驱动的 artex 平台，将开源或商业 llm 作为其攻击链的一部分，以此在全球范围内扩展其间谍活动。通过 llm 的辅助，攻击者能够以更低的成本和更高的效率执行复杂的入侵行动。
+- 攻击特征：具备明显的 ai 驱动特征，滥用大语言模型（如 deepseek 和商业 llm）增强攻击能力；属于高级持续性威胁（apt）级别的全球间谍活动；攻击规模和自动化程度因 ai 的引入而显著提升。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-29
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__vapor-panda-uses-artex-to-scale-global-campaign__2026-10-29.html">VAPOR PANDA 利用 AI 驱动的 ARTEX 扩大全球间谍活动规模</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：CrowdStrike OverWatch 威胁狩猎团队识别出由 VAPOR PANDA 威胁组织发起的全球间谍活动。该组织将 AI 技术武器化，利用大语言模型（LLM）来提升其攻击行动的规模和复杂性。
+- 时间线：该威胁情报报告于 2026 年 10 月 29 日由 CrowdS...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__vapor-panda-uses-artex-to-scale-global-campaign__2026-10-29.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/vapor-panda-uses-artex-to-scale-global-campaign/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="crowdstrike" data-matched="True"
              data-date="2026-10-28"
              data-tags="AI攻击"
