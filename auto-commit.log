@@ -473,3 +473,17 @@
 [2026-10-30 09:30:01] 拉取远程更新 (git pull --rebase --autostash)...
 [2026-10-30 09:30:06] Already up to date.
 [2026-10-30 09:30:06] 暂存所有更改 (git add -A)...
+[2026-10-30 09:30:06] 提交更改: auto update: 2026-10-30 09:30:06
+[2026-10-30 09:30:07] [main 02d7f80] auto update: 2026-10-30 09:30:06
+[2026-10-30 09:30:07]  327 files changed, 1643 insertions(+), 985 deletions(-)
+[2026-10-30 09:30:07]  create mode 100644 crowdstrike__new-prompt-injection-techniques-cover-agent-planning-attacks__2026-10-29.html
+[2026-10-30 09:30:07]  create mode 100644 crowdstrike__vapor-panda-uses-artex-to-scale-global-campaign__2026-10-29.html
+[2026-10-30 09:30:07]  create mode 100644 p1sec__emergency-call-security-mobile-networks-unauthenticated-access-nia0-caller-locat__2026-10-29.html
+[2026-10-30 09:30:07] 推送到远程仓库 (git push origin main)...
+[2026-10-30 09:30:12] To github.com:raohhhh/raohhhh.github.io.git
+[2026-10-30 09:30:12]    f0a3c63..02d7f80  main -> main
+[2026-10-30 09:30:12] ===== 提交并推送完成 =====
+[2026-10-31 09:30:01] ===== 开始自动提交 =====
+[2026-10-31 09:30:01] 拉取远程更新 (git pull --rebase --autostash)...
+[2026-10-31 09:30:06] Already up to date.
+[2026-10-31 09:30:06] 暂存所有更改 (git add -A)...

@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">325</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">325</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">871</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">328</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">328</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">875</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -180,22 +180,22 @@
         <input type="text" id="searchBox" placeholder="搜索文章标题/摘要...">
         <select id="siteFilter">
             <option value="">全部来源</option>
-            <option value="enea">enea (103)</option>
+            <option value="enea">enea (104)</option>
             <option value="p1sec">p1sec (179)</option>
             <option value="citizenlab">citizenlab (11)</option>
-            <option value="crowdstrike">crowdstrike (32)</option>
+            <option value="crowdstrike">crowdstrike (34)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
             <option value="5G安全">5G安全 (172)</option>
             <option value="核心网网元">核心网网元 (162)</option>
-            <option value="信令攻击">信令攻击 (158)</option>
+            <option value="信令攻击">信令攻击 (159)</option>
             <option value="4G安全">4G安全 (103)</option>
             <option value="3G安全">3G安全 (63)</option>
+            <option value="AI攻击">AI攻击 (58)</option>
             <option value="2G安全">2G安全 (57)</option>
-            <option value="AI攻击">AI攻击 (56)</option>
-            <option value="AI Agent安全">AI Agent安全 (44)</option>
-            <option value="提示词注入">提示词注入 (11)</option>
+            <option value="AI Agent安全">AI Agent安全 (46)</option>
+            <option value="提示词注入">提示词注入 (13)</option>
             <option value="后量子">后量子 (10)</option>
         </select>
     </div>
@@ -204,13 +204,13 @@
 <div class="tag-cloud">
     <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(172)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(162)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(158)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(159)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(103)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(58)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(57)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(56)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(44)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(11)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('AI Agent安全')">AI Agent安全 <span class="count">(46)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('提示词注入')">提示词注入 <span class="count">(13)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('后量子')">后量子 <span class="count">(10)</span></a>
 </div>
 
@@ -232,6 +232,61 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-30"
+             data-tags="AI攻击,提示词注入,AI Agent安全"
+             data-search="crowdstrike expands falcon adversary overwatch threat hunting across ai and google cloud falcon adversary overwatch now includes 24/7 managed hunting for ai applications and autonomous agent activity, and deeper, telemetry-driven hunting for google cloud. - 攻击事件背景：随着攻击者的操作范围扩大到云环境、身份、saas应用程序和ai系统，安全团队需要能够跟上步伐的威胁狩猎能力。crowdstrike 扩展了其 falcon adversary overwatch 威胁狩猎服务，以覆盖 ai 和 google cloud 中的威胁。文章列表中明确指出了针对 ai agent 的攻击、提示词注入技术以及 ai 驱动的恶意活动。
+- 时间线：文章发布于 2026年10月30日，提及的相关安全动态和技术发布主要集中在 2026 年下半年（如 10 月 29 日发布的“new prompt injection techniques cover agent-planning attacks”和 10 月 29 日的“vapor panda uses ai-driven artex to scale a global espionage campaign”）。
+- 攻击原理：攻击者利用大语言模型和 ai agent 的特性进行攻击。主要包括通过提示词注入技术操纵 ai agent 的规划过程，使其执行非预期的恶意操作；以及利用 ai 驱动的工具（如 artex）自动化和扩展全球间谍活动。
+- 攻击详情：文章提及了多项与 ai 安全相关的具体威胁：1) 新的提示词注入技术覆盖了针对 ai agent 规划的攻击；2) ai 防护栏本身可能暴露漏洞；3) ai agent 部署中隐藏的身份验证与授权问题；4) 威胁组织 vapor panda 使用 ai 驱动的 artex 扩展全球间谍活动。
+- 攻击特征：此类攻击具有高度的自动化和智能化特征，直接针对 ai 基础设施和 agent 的决策逻辑。攻击不再局限于传统网络边界，而是深入到 ai 模型的交互层（如提示词注入）和 agent 的执行层，同时攻击者自身也在利用 ai 技术提升攻击规模和隐蔽性。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-30
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__crowdstrike-expands-threat-hunting-across-ai-and-google-cloud__2026-10-30.html">CrowdStrike 将 Falcon Adversary OverWatch 威胁狩猎扩展至 AI 和 Google Cloud</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：随着攻击者的操作范围扩大到云环境、身份、SaaS应用程序和AI系统，安全团队需要能够跟上步伐的威胁狩猎能力。CrowdStrike 扩展了其 Falcon Adversary OverWatch 威胁狩猎服务，以覆盖 AI 和 Google Cloud 中的威胁。文章列表中明确指出...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI攻击</span>
+                        <span class="card-tag">提示词注入</span>
+                        <span class="card-tag">AI Agent安全</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__crowdstrike-expands-threat-hunting-across-ai-and-google-cloud__2026-10-30.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/crowdstrike-expands-threat-hunting-across-ai-and-google-cloud/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="crowdstrike" data-matched="True"
+             data-date="2026-10-30"
+             data-tags="AI Agent安全,提示词注入"
+             data-search="crowdstrike agent graph shows how agents act on the endpoint crowdstrike agent graph powers falcon guardian, connecting the ai layer to the execution layer to show not only what the agent was asked to do, but what it did. - 攻击事件背景：随着 ai agent 的能力从简单的问答扩展到在操作系统上执行复杂操作（如打开文件、使用凭证、运行代码、安装软件等），其带来的安全风险显著增加。crowdstrike 发布了 agent graph 功能，以监控和分析这些 agent 在端点上的实际行为，应对日益严峻的 ai agent 安全威胁。
+- 时间线：文章发布于 2026年10月30日。同分类下还提到了 2026年10月29日关于“new prompt injection techniques cover agent-planning attacks”的研究，表明针对 ai agent 的攻击技术正在快速演进。
+- 攻击原理：ai agent 在执行任务时，可能会受到恶意指令（如提示词注入）的影响，进而执行非预期的危险操作。由于这些操作直接发生在操作系统层面，且以机器速度运行，攻击者可以利用 agent 的权限进行横向移动、数据窃取或系统破坏。
+- 攻击详情：文章指出 ai agent 不再仅仅回答问题，而是能够使用凭证、运行代码和安装软件。crowdstrike 的 agent graph 旨在追踪这些行为，揭示 agent 在端点上的实际活动轨迹，从而发现潜在的安全威胁。此外，文章关联提到了针对 agent 规划阶段的提示词注入攻击。
+- 攻击特征：攻击具有自动化、高权限和机器速度执行的特征。结合提示词注入技术，攻击者可以劫持 agent 的规划过程，使其在无需用户干预的情况下执行恶意操作，隐蔽性强且破坏力大。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">crowdstrike</span>
+                    2026-10-30
+                </div>
+                <div class="card-title">
+                    <a href="crowdstrike__crowdstrike-agent-graph-shows-how-agents-act-on-endpoint__2026-10-30.html">CrowdStrike Agent Graph 展示 Agent 在端点上的行为方式</a>
+                </div>
+                <div class="card-summary">
+                        - 攻击事件背景：随着 AI Agent 的能力从简单的问答扩展到在操作系统上执行复杂操作（如打开文件、使用凭证、运行代码、安装软件等），其带来的安全风险显著增加。CrowdStrike 发布了 Agent Graph 功能，以监控和分析这些 Agent 在端点上的实际行为，应对日益严峻的 AI A...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">AI Agent安全</span>
+                        <span class="card-tag">提示词注入</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="crowdstrike__crowdstrike-agent-graph-shows-how-agents-act-on-endpoint__2026-10-30.html">阅读分析 →</a>
+<a class="read" href="https://www.crowdstrike.com/en-us/blog/crowdstrike-agent-graph-shows-how-agents-act-on-endpoint/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="p1sec" data-matched="True"
              data-date="2026-10-29"
              data-tags="信令攻击,5G安全,4G安全,核心网网元"
@@ -1098,6 +1153,34 @@ camel 的安全风险核心在于其基于信令的不对称信任模型，且�
                 <div class="card-footer">
                     <a class="read" href="crowdstrike__crowdstrike-safemind-best-offense-builds-best-defense__2026-09-17.html">阅读分析 →</a>
 <a class="read" href="https://www.crowdstrike.com/en-us/blog/crowdstrike-safemind-best-offense-builds-best-defense/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-09-16"
+             data-tags="信令攻击,AI攻击"
+             data-search="critical infrastructure defense in the era of ai  攻击事件背景：随着电信网络对社会的重要性日益增加，网络安全已成为国家韧性的重要组成部分。enea的cto osvaldo aldao在redeye网络安全活动上发表了演讲，探讨了ai时代下关键基础设施的防御策略。
+时间线：演讲于2026年9月16日举行。
+攻击原理与详情：演讲指出网络威胁正在不断演变，具体表现为ai赋能的对手行动（ai攻击）和信令攻击，以及涉及电信连接无人机的新型威胁。为了应对这些复杂的攻击，提出了利用实时保护、基于ai的检测和全球威胁情报来加强防御的应对方案。
+攻击特征：当前的攻击呈现出智能化（利用ai技术赋能攻击行动）和针对通信底层协议（信令攻击）的特征，并且攻击面正在向电信连接的无人机等新型物联网设备扩展。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-09-16
+ · Osvaldo Aldao                </div>
+                <div class="card-title">
+                    <a href="enea__critical-infrastructure-defense-in-the-era-of-ai__2026-09-16.html">AI时代的关键基础设施防御</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：随着电信网络对社会的重要性日益增加，网络安全已成为国家韧性的重要组成部分。Enea的CTO Osvaldo Aldao在Redeye网络安全活动上发表了演讲，探讨了AI时代下关键基础设施的防御策略。
+时间线：演讲于2026年9月16日举行。
+攻击原理与详情：演讲指出网络威胁正在不断演变...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                        <span class="card-tag">AI攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__critical-infrastructure-defense-in-the-era-of-ai__2026-09-16.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/critical-infrastructure-defense-in-the-era-of-ai/" target="_blank" rel="noopener">原文 ↗</a>                </div>
             </div>
         </div>
         <div class="card" data-site="p1sec" data-matched="True"
