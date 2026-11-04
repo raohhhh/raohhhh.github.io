@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM OTA安全：空中接口SIM管理的工作原理及其失效点 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">336</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">336</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">884</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>SIM OTA安全：空中接口SIM管理的工作原理及其失效点</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：SIM OTA security: how over-the-air SIM management works and where it fails</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-11-03
+ · <a href="https://www.p1sec.com/blog/sim-ota-security-over-the-air-sim-management-scp80-secured-packets" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+SIM OTA（Over-the-Air）是运营商用于远程管理用户SIM卡（UICC）的机制，可通过二进制短信（SMS）或IP承载（如SCP81）更新漫游列表、管理小程序及轮换密钥。由于该通道直接在SIM卡上执行指令，绕过了手机操作系统的安全防护，一旦被滥用，将严重威胁用户隐私和通信安全。
+
+时间线：
+文章提到了过去十年间公开的几次重大安全披露：
+- 2013年：公开研究表明部分SIM卡仍接受仅受单DES保护的OTA指令，且对错误签名的指令返回受完整性保护的错误响应，导致密钥可被离线恢复。
+- 2019年：Simjacker和WIBattack漏洞披露，暴露了部分SIM卡上的浏览器应用（S@T Browser和WIB）可接受无任何安全保护的OTA消息。
+
+攻击原理：
+SIM OTA的安全强度取决于卡片强制执行的密钥和算法、应用要求的最低安全级别（MSL）以及网络投递SIM数据下载消息的过滤能力。攻击主要利用了这三个环节的失效：卡片弱加密、应用配置无安全要求、以及信令网络（SMS/SS7）对恶意来源消息的放行。
+
+攻击详情：
+1. 弱加密攻击：针对仍使用单DES等老旧算法的SIM卡，攻击者通过向卡片发送错误签名的指令，利用卡片返回的受校验保护的错误响应（PoR），离线推导并恢复OTA密钥，随后伪造合法指令。
+2. 无安全级别（MSL）攻击：以Simjacker为例，攻击者向目标发送完全无加密、无校验的OTA短信。由于部分遗留应用（如S@T Browser）的MSL配置为“无安全要求”，卡片直接接受并执行指令，触发SIM Toolkit向手机发送主动命令（如获取位置、IMEI并发送短信回传），实现静默追踪。
+3. 投递路径攻击：SIM数据下载消息本质上是带有特定协议标识（SIM data download）和编码方案（class 2）的普通SMS。如果运营商网络未过滤来自互联合作伙伴、A2P聚合器或其他用户的此类短信，攻击者即可通过信令网络（如SS7）将恶意OTA包直接投递至目标SIM卡。
+
+攻击特征：
+- 隐蔽性强：恶意短信由手机直接透传至SIM卡，用户无任何感知。
+- 绕过终端防护：指令在SIM卡层面执行，不依赖手机操作系统漏洞。
+- 影响范围广：可实现静默位置追踪、获取设备标识（IMEI）、读取IMSI、修改漫游配置，甚至通过提取密钥或利用卡片管理权限持久化安装恶意applet。
+- 依赖信令通道：攻击载荷主要通过SMS和SS7信令网络进行投递。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-11-04T09:03:48</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>SIM OTA security: how over-the-air SIM management works and where it fails</p>
+    <div class="analysis" style="white-space:pre-wrap;">SIM over-the-air (OTA) management is the mechanism that lets a mobile operator change what sits on a subscriber&#39;s SIM after the card has left the factory: updating files such as preferred roaming lists, installing or removing applets, rotating keys, and triggering SIM Toolkit applications. It works by wrapping commands in secured packets defined by ETSI and 3GPP and delivering them, most often, as binary SMS that the handset passes straight to the card without the user seeing anything. SIM OTA security is therefore the question of who can get such a packet accepted by a card, and what that packet is then allowed to do.
+The short answer is that OTA is only as strong as three things: the keys and algorithms the card enforces for each application, the minimum security level each application demands, and the network&#39;s willingness to deliver SIM data download messages from sources that have no business sending them. Public disclosures over the last decade have shown failures in all three. This article explains how the OTA chain is built, where it breaks, and how operators can test and harden it without waiting for the next disclosure. It extends our earlier work on SIM man in the middle experimentation and on SIM types, attacks and penetration testing .
+What SIM OTA is and why operators depend on it
+SIM OTA is the remote administration channel between an operator&#39;s OTA platform and the UICC in a subscriber&#39;s device. Operators depend on it because the SIM is a long-lived, physically distributed asset: once millions of cards are in the field, the only practical way to change their contents is remotely.
+Typical OTA use cases are mundane but operationally important: updating preferred roaming partner lists and the forbidden PLMN list, changing operator menus, and managing SIM Toolkit applications. On Java Card and GlobalPlatform cards, OTA is also how applets are loaded, installed or deleted and how card content management keys are rotated.
+The same properties that make OTA useful make it sensitive. An OTA command is executed by the card, not by the handset operating system, so it sits below most of the protections a user or device vendor can apply. A command that the card accepts can read or modify files, and a SIM Toolkit application that the card triggers can issue proactive commands to the handset, for example to send an SMS, provide local information such as the serving cell, or open a browser session. That is why the integrity of the OTA chain matters to subscriber privacy as much as to service management, and why it belongs in any discussion of subscriber identity and its protection .
+How the OTA chain is built: from platform to card
+The OTA chain has four links: the OTA platform in the operator&#39;s network, the bearer that carries the command, the handset that forwards it, and the card application that executes it. Each link has its own specification and its own failure modes.
+The OTA platform builds the command, encrypts and authenticates it with k
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>
