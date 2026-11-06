@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAN共享安全：MOCN、MORAN与共享无线网络的信任问题 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">340</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">340</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">891</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>RAN共享安全：MOCN、MORAN与共享无线网络的信任问题</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：RAN sharing security: MOCN, MORAN and the trust problems of a shared radio network</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-11-05
+ · <a href="https://www.p1sec.com/blog/ran-sharing-security-mocn-moran-shared-radio-network-risks" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文深入分析了移动通信网络中无线接入网（RAN）共享带来的安全架构与信任问题，涵盖了5G和4G网络架构、核心网网元交互以及空口信令层面的攻击风险。
+
+- 攻击事件背景
+文章并非针对单一具体的攻击事件，而是针对随着5G网络密集化和覆盖义务要求而日益普及的RAN共享（如MOCN、MORAN模型）所带来的系统性安全风险。由于多个运营商共享基站硬件、基带甚至频谱，导致共享节点成为风险集中点。文章以2026年8月马来西亚监管机构将4G MOCN纳入监管框架为例，说明了RAN共享已成为主流部署选择，随之而来的跨运营商信任、密钥隔离和故障隔离问题变得尤为突出。
+
+- 时间线
+文章发布于2026年11月5日，并提及2026年8月马来西亚监管机构将4G多运营商核心网（MOCN）接入纳入其监管接入框架的行业背景。
+
+- 攻击原理
+共享RAN节点（如gNB/eNB）的安全模型基于严格的控制面、管理面和传输面隔离。攻击原理在于打破这种隔离或利用共享节点固有的特权位置：共享节点持有所有合作方用户的接入层（AS）密钥，终止用户面加密，并连接到多个独立的核心网。一旦该节点被攻破或发生配置错误，攻击者即可获取所有共享运营商用户的明文流量、密钥材料，或跨运营商路由流量，导致单点妥协演变为多运营商灾难。
+
+- 攻击详情
+文章详细剖析了多个层面的攻击面与风险详情：
+1. 管理面攻击：OAM接口通常为单运营商设计，在共享RAN中，管理面弱点可能被利用来获取其他合作伙伴的配置信息或获取整个节点的管理权限，造成跨运营商数据泄露。
+2. 传输与接口风险：如果多个运营商的N2/N3流量共用同一个IPsec隧道并在公共汇聚点解密，将破坏密码学隔离。配置错误可能导致一个合作伙伴的流量被路由到另一个合作伙伴的核心网网元（如AMF/UPF）。
+3. 空口与信令攻击：伪基站可以通过广播相同的PLMN列表来冒充共享小区。覆盖或降级攻击将一次性影响覆盖区内所有合作伙伴的订阅用户。此外，如果安全策略（如加密和完整性算法）静默向下兼容到最弱合作伙伴的要求，将降低整体空口安全防御能力。
+4. 网络切片与Open RAN风险：在5G共享RAN中，资源耗尽或切片映射配置错误可能跨运营商影响服务。在Open RAN架构下，RIC上的xApps可能看到非己方运营商的数据，带来软件供应链和跨租户访问控制风险。
+
+- 攻击特征
+此类安全威胁的核心特征是“爆炸半径大”和“信任边界模糊”。攻击者只需攻破单一共享基础设施节点，即可同时威胁多个运营商的网络。此外，由于宿主运营商和访客运营商之间的可见性不对称，访客运营商无法完全查看或控制节点，导致跨运营商的异常检测协调困难，配置错误和供应链风险被所有合作伙伴被动继承。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-11-06T09:03:04</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>RAN sharing security: MOCN, MORAN and the trust problems of a shared radio network</p>
+    <div class="analysis" style="white-space:pre-wrap;">RAN sharing lets two or more mobile operators serve their subscribers from the same radio access network: the same sites, the same baseband and radio units, and in some models the same spectrum. It is now a mainstream deployment choice, driven by the cost of 5G densification and rural coverage obligations, and in several markets regulators are actively encouraging or mandating it. In August 2026, for example, Malaysia&#39;s regulator brought 4G multi-operator core network (MOCN) access into its regulated access framework. RAN sharing security is the discipline of making sure that sharing hardware does not also mean sharing trust, keys, visibility or failure.
+The direct answer is that a shared RAN node becomes a common point of compromise for every operator that uses it. It holds access stratum keys for all partners&#39; subscribers, terminates user plane encryption for all of them, connects to several independent cores, and is managed by one party on behalf of others. The security model therefore rests on strict separation of control, management and transport per partner, on clear accountability between host and guest operators, and on testing that checks those separations actually hold. This article walks through the sharing models, the specific risks each introduces, and the controls and tests that address them.
+What RAN sharing is and how the main models differ
+RAN sharing is any arrangement where a single radio access network serves multiple PLMNs. The models differ in how much is shared, and each step towards deeper sharing moves more trust into common infrastructure.
+3GPP defines network sharing architectures in TS 23.251 for earlier generations and in TS 23.501 for the 5G System. Industry practice distinguishes several models:
+Passive sharing. Operators share sites, masts, power and shelters, but each runs its own active radio equipment. The security impact is mainly physical access to sites.
+Multi-operator RAN (MORAN). Operators share active radio and baseband hardware, but each uses its own spectrum and broadcasts its own cells. Logically the cells are separate, yet they run on common equipment and common software.
+Multi-operator core network (MOCN). Operators share the radio equipment and the spectrum. A shared cell broadcasts a list of PLMN identities in its system information, and the RAN routes each device&#39;s signalling to the core of the operator that the device selects. Each operator keeps its own core network.
+Gateway core network (GWCN). In addition to the RAN, some core elements are shared. GWCN is defined in TS 23.251 for earlier generations but is less common in current deployments.
+Neutral host. A third party, rather than one of the operators, owns and runs the shared RAN and offers it to several operators. This model is frequent in venues, transport and indoor coverage.
+The deeper the model, the more the shared node has to be trusted by parties that do not control it. That is the central security tension. Readers new to the radio sid
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>
