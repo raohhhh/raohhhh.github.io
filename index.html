@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">340</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">340</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">891</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">341</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">341</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">892</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -180,7 +180,7 @@
         <input type="text" id="searchBox" placeholder="搜索文章标题/摘要...">
         <select id="siteFilter">
             <option value="">全部来源</option>
-            <option value="enea">enea (105)</option>
+            <option value="enea">enea (106)</option>
             <option value="p1sec">p1sec (181)</option>
             <option value="citizenlab">citizenlab (11)</option>
             <option value="crowdstrike">crowdstrike (43)</option>
@@ -189,7 +189,7 @@
             <option value="">全部标签</option>
             <option value="5G安全">5G安全 (173)</option>
             <option value="核心网网元">核心网网元 (163)</option>
-            <option value="信令攻击">信令攻击 (161)</option>
+            <option value="信令攻击">信令攻击 (162)</option>
             <option value="4G安全">4G安全 (104)</option>
             <option value="3G安全">3G安全 (63)</option>
             <option value="AI攻击">AI攻击 (59)</option>
@@ -204,7 +204,7 @@
 <div class="tag-cloud">
     <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(173)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(163)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(161)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(162)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(104)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(63)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(59)</span></a>
@@ -232,6 +232,33 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="enea" data-matched="True"
+             data-date="2026-11-09"
+             data-tags="信令攻击"
+             data-search="sms of death: risks from legacy technologies never expire  攻击事件背景：文章探讨了1999年随诺基亚7110引入的wap push技术（通过sms推送wap内容）在现代移动通信中遗留的安全风险。独立安全研究员mark blaszczyk披露了一个被称为“sms of death”的漏洞，该漏洞利用这一陈旧技术对现代android设备发起攻击。
+时间线：wap push于1999年加入标准；2026年（文章发布时间）该漏洞被公开披露；google在此前已收到报告并发布了针对android 14.0及以上版本的安全更新；公开披露次日北美网络出现攻击活动高峰，媒体广泛报道后活动量再次上升，随后逐渐减少。
+攻击原理：攻击者构造一条特定的畸形wap push消息。android操作系统在处理该消息的头部时存在缺陷，导致负责处理正常语音通话的com.android.phone进程崩溃。进程崩溃会直接终止正在进行的通话，若反复发送此类消息，则可使手机完全无法使用。整个过程无需接收者进行任何交互操作。
+攻击详情：该漏洞主要影响运行android 14.0以下版本的用户（约占全球android用户的25%）。研究员提供了带有简单界面的poc应用程序来生成和发送攻击消息。enea威胁情报部门的监测数据显示，漏洞公开后出现了明显的攻击尝试。缓解措施包括用户更新系统，以及运营商遵循gsma fs.42指南过滤二进制sms和wap push消息。
+攻击特征：此类攻击属于“攻击消息”，通常不给攻击者带来直接利益，但会对受害者造成伤害或不便。其特征类似于2015年ios的阿拉伯文字崩溃漏洞，一旦poc公开且易于操作，极易引发大量非协调性的用户恶作剧攻击。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">enea</span>
+                    2026-11-09
+ · Stuart McBride                </div>
+                <div class="card-title">
+                    <a href="enea__sms-of-death-risks-from-legacy-technologies-never-expire__2026-11-09.html">死亡短信：旧技术带来的风险永不消亡</a>
+                </div>
+                <div class="card-summary">
+                        攻击事件背景：文章探讨了1999年随诺基亚7110引入的WAP Push技术（通过SMS推送WAP内容）在现代移动通信中遗留的安全风险。独立安全研究员Mark Blaszczyk披露了一个被称为“SMS of Death”的漏洞，该漏洞利用这一陈旧技术对现代Android设备发起攻击。
+时间线：WA...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">信令攻击</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="enea__sms-of-death-risks-from-legacy-technologies-never-expire__2026-11-09.html">阅读分析 →</a>
+<a class="read" href="https://www.enea.com/insights/sms-of-death-risks-from-legacy-technologies-never-expire/" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="p1sec" data-matched="True"
              data-date="2026-11-05"
              data-tags="5G安全,4G安全,核心网网元,信令攻击"
