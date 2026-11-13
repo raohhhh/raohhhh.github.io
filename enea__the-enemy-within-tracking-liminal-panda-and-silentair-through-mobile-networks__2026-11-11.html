@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内鬼：通过移动网络追踪 LIMINAL PANDA 和 SilentAir - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">342</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">342</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">896</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>内鬼：通过移动网络追踪 LIMINAL PANDA 和 SilentAir</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：The Enemy Within. Tracking LIMINAL PANDA and SilentAir through Mobile Networks</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">enea</span>
+        发布日期：2026-11-11
+ · 作者：Enea · <a href="https://www.enea.com/insights/the-enemy-within-tracking-liminal-panda-and-silentair-through-mobile-networks/" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Signaling Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Mobile Security</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Threat Intelligence</span>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Blog</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">本文详细分析了具有中国背景的威胁行为者 LIMINAL PANDA 和新发现的 SilentAir 对移动运营商网络及信令互联网络的攻击活动。
+
+- 攻击事件背景：文章揭示了高级威胁行为者正在破坏移动网络运营商（MNO）以窃取信息并攻击其他运营商及其用户。SilentAir 主要针对台湾等亚洲地区的政治和政府 VIP，通过拦截双因素认证码威胁通话、消息、隐私和账户安全。LIMINAL PANDA 则被检测到在多个运营商网络中活动，进行隐蔽通信和信息窃取，估计全球有数十个运营商受到感染。
+
+- 时间线：
+  - 2024年2月：GTPDoor 恶意软件首次被公开报告和分析。
+  - 2024年11月：CrowdStrike 评估 LIMINAL PANDA 活动与中国网络行动一致。
+  - 2025年之前：SilentAir 开始攻击运营商。
+  - 2026年第一季度：Enea 在多个客户移动运营商的 GTP-C 接口上检测到 GTPDoor 活动。
+  - 2026年7月：POST Luxembourg 首次公开报告检测到 GTP-C 协议上的 GTPDoor 活动。
+  - 2026年11月：本文发布并更新关键发现。
+
+- 攻击原理：攻击者利用基于 IPX 的全球移动互联网络的高度信任生态系统，滥用信令协议（包括 2G/3G 的 SS7、4G 的 Diameter 以及 GTP 协议）进行攻击。特别是利用 GTP 协议（GPRS Tunnelling Protocol），通过 GTPDoor 恶意软件建立隐蔽的命令与控制（C2）通信和数据外泄隧道，将数据从受感染运营商传输至另一受感染运营商的核心网网元（如 GGSN）。
+
+- 攻击详情：
+  - GTPDoor v1/v2 (GTP-C)：使用 GTP-C 协议进行 C2 通信，执行启动/停止通信隧道、横向移动、SSH 命令、恶意软件健康检查及隐藏活动等命令。结合 EchoBackdoor 等工具，通过 GTP-U 隧道将数据从受感染运营商外泄。
+  - GTPDoor v3 (GTP-U-Door)：新发现的版本，转而使用 GTP-U 协议。由于 GTP-U 流量巨大且协议层级复杂，使得检测和过滤更加困难，攻击者更容易隐藏恶意流量。该版本保留了相同的 XOR 密钥，但采用 libpcap 进行数据包捕获，主要作为其他方法被阻断时的备用手段。
+  - SilentAir 攻击：针对特定目标拦截双因素认证码，威胁账户安全。
+
+- 攻击特征：
+  - 隐蔽性强：利用移动网络内部信令协议（GTP-C/GTP-U）作为 C2 通道，难以被传统防御手段发现。
+  - 横向移动与持久化：结合多种恶意软件进行横向移动，使用 SSH 作为备用控制方法，并进行时间戳篡改和文件删除以隐藏痕迹。
+  - 针对性强：SilentAir 针对政治和政府 VIP；LIMINAL PANDA 针对亚洲、非洲和拉丁美洲的多个移动运营商。
+  - 适应性进化：从 GTP-C 进化到 GTP-U，以应对运营商可能部署的 GTP 防火墙，凸显了孤立防御的局限性。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-11-13T09:02:50</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>The Enemy Within. Tracking LIMINAL PANDA and SilentAir through Mobile Networks</p>
+    <div class="analysis" style="white-space:pre-wrap;">The Enemy Within. Tracking LIMINAL PANDA and SilentAir through Mobile Networks
+Update (12 November 2026): Added a Key Takeaways section summarising the main findings.
+In this blog, we outline the publicly reported, China-nexus LIMINAL PANDA threat actor’s evolution in its attacks on mobile operator networks, with a focus on its activity on the signalling interconnect network. We also outline malicious signalling activity that we have observed over the last 2 years to a new signalling threat actor, whom we term SilentAir , whose activity we also believe aligns to China-nexus cyber operations. Together they show the extent and the length to which sophisticated threat actors have advanced in this space. Finally, we outline possible connections between these two threat actors, as well as what the mobile industry needs to do next to properly deal with these roaming threats.
+Key Takeaways
+Sophisticated threat actors are compromising Mobile Network Operators to steal information and launch attacks on other operators and their subscribers. Enea detected ongoing activity in 2026 by LIMINAL PANDA, a threat actor previously identified. We also uncovered SilentAir, a newly identified actor compromising operators since before 2025. Links between the two are possible but unconfirmed.
+Taiwan is the primary target of SilentAir, but not the only one. We observed SilentAir-related sources in at least six Asian countries target a dozen additional countries and territories. Targets included political and government VIPs.
+The SilentAir attacks threaten calls, messages, privacy and account security. Enea observed intercepted two-factor authentication codes immediately after interception for some targets, suggesting attempts to access other accounts.
+LIMINAL PANDA was detected operating across multiple operators. Enea detected hundreds of attempted covert communications. Evidence points to 5–10 infected operators, with dozens more potentially affected. Attacker activity includes stealthy compromise and information retrieval.
+New malware and techniques highlight the limits of isolated defences. LIMINAL PANDA’s new GTPDoor version uses GTP-U, making malicious activity harder to detect. Operators need coordinated visibility across roaming protocols and internal systems, not isolated partial defences.
+The Origin of the Global Mobile Interconnection Network
+All mobile operators interconnect with each other using a number of interfaces in order to support roaming, messaging, voice and data services between each other. Across these interfaces, mobile networks exchange signalling traffic through a collection of interconnect protocols. Historically, much of this signalling relied on SS7 protocols (2G &amp; 3G), 4G introduced the use of the Diameter protocol for LTE roaming and, most recently, HTTP/2-based protocols are used for 5G. Data roaming from 2.5G onwards has used a specific protocol called GTP (GPRS Tunnelling Protocol), which has a specific version for control plane commun
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>
