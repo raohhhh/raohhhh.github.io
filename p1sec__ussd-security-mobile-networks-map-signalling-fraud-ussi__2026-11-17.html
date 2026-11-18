@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动网络中的USSD安全：MAP信令、欺诈风险及防护方法 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">347</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">347</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">904</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>移动网络中的USSD安全：MAP信令、欺诈风险及防护方法</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：USSD security in mobile networks: MAP signalling, fraud risks and how to protect it</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-11-17
+ · <a href="https://www.p1sec.com/blog/ussd-security-mobile-networks-map-signalling-fraud-ussi" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+    <div style="margin-bottom:16px;">
+        <strong>原始标签：</strong>
+        <span style="padding:2px 8px;background:#f5f5f5;border-radius:8px;font-size:.8em;margin:2px;">Research</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">攻击事件背景：
+USSD（非结构化补充业务数据）广泛用于余额查询、充值、呼叫转移和移动支付等服务。虽然看似手机终端功能，但其安全机制主要存在于移动核心网中。USSD通过SS7或SIGTRAN上的MAP协议在MSC/VLR、HLR和USSD网关之间传输。由于USSD承载着大量的金融交易和账户管理服务，且其底层的MAP信令网络存在固有的信任缺陷，使其成为一个被低估但极具价值的攻击面。
+
+攻击原理：
+USSD安全的核心弱点在于MAP协议的信任模型。MAP协议设计之初假设处于一个可信的运营商闭环中，消息本身不携带任何密码学证明来验证发送源的真实性。接收网元仅依赖SCCP主叫地址（Global Title）和IMSI/MSISDN等标识符来处理消息。因此，任何能够接入信令互连网络的攻击者（通过被攻破的运营商、配置错误的合作伙伴或租用的Global Title范围），都可以构造结构上合法的MAP对话进行攻击。
+
+攻击详情：
+1. 伪造服务网络攻击（移动侧发起）：攻击者伪造移动侧发起的processUnstructuredSS-Request发送给HLR。如果HLR接受来自任意Global Title的请求，攻击者即可利用已知IMSI冒充漫游用户发起USSD服务，从而查询账户信息、修改设置或发起仅依赖主叫身份认证的金融交易。
+2. 伪造归属网络攻击（网络侧发起/提示注入）：攻击者向用户所在的VLR发送网络侧发起的unstructuredSS-Request。由于手机会将此提示视为来自运营商的系统消息，攻击者可利用此机制进行社会工程学攻击，诱导用户确认操作或输入PIN码。
+3. 明文泄露风险：USSD内容仅在无线接口加密，进入核心网后在MAP协议中以明文传输。用户在USSD菜单中输入的PIN码在信令链路、HLR、USSD网关及日志中均以明文暴露，存在严重的数据泄露隐患。
+4. 多代网络演进风险：在4G/5G网络中，USSD可通过CSFB回退到2G/3G（继承原有MAP风险），或通过IMS中的USSI（SIP信令）传输。USSI将USSD引入SIP世界，面临SIP头部操纵、P-CSCF与应用服务器间身份断言不一致以及IMS漫游信令过滤缺陷等新攻击面。
+
+攻击特征：
+USSD滥用主要表现为欺诈和账户接管，而非传统的拒绝服务攻击。攻击者通常针对涉及资金流转的服务（如话费转移、移动支付）进行精准打击。此类攻击不需要终端或无线接口存在漏洞，完全利用核心网信令互连的信任模型缺陷。此外，攻击者还可能利用USSD修改呼叫转移等补充业务，结合SIM卡交换攻击截获语音OTP，从而接管用户金融账户。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-11-18T09:03:12</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>USSD security in mobile networks: MAP signalling, fraud risks and how to protect it</p>
+    <div class="analysis" style="white-space:pre-wrap;">USSD security is the protection of Unstructured Supplementary Service Data, the session-based text channel behind balance checks, top-ups, call forwarding codes and, in many markets, mobile money. USSD looks like a handset feature, but its security lives almost entirely in the mobile core: USSD dialogues are carried over MAP on SS7 or SIGTRAN between the visited MSC/VLR, the HLR and a USSD gateway, and they inherit every trust assumption of the SS7 signalling network . Radio encryption protects the first hop only; from the base station onwards a USSD string, including any PIN a subscriber types into a menu, crosses the core in clear text.
+That combination makes USSD an under-examined attack surface. It is old enough to be treated as legacy, yet it still carries financial transactions, account management and service provisioning for hundreds of millions of subscribers, and the MAP operations that transport it can be sent from the interconnect if an operator&#39;s signalling filtering is incomplete. This article explains how USSD works at the protocol level, where the real weaknesses sit, how USSD has been carried into LTE and IMS, and what operators can do to filter, monitor and test it properly.
+What USSD is and how it differs from SMS
+USSD is a real-time, session-oriented supplementary service defined by 3GPP for GSM and UMTS. Unlike SMS, which is store and forward, a USSD exchange is an open dialogue between the handset and an application in the network, and the dialogue stays alive until either side releases it or a timer expires. The service is specified in three stages: 3GPP TS 22.090 for the service description, TS 23.090 for the stage 2 procedures and TS 24.090 for the stage 3 signalling on the radio interface.
+Because the session is interactive, USSD is a natural fit for menus: the subscriber dials a star and hash code, the network returns a menu, and the exchange continues for several rounds. There is no storage on the handset and no delivery report, and it works on any handset without a data connection, which is why operators and service providers still rely on it.
+From a security point of view, the important difference with SMS is where the logic lives. An SMS is a payload delivered to a device. A USSD dialogue is a command channel into an application server that can query balances, move credit, change forwarding settings or confirm payments. The value of a forged or intercepted USSD exchange is therefore closer to that of a forged API call than to that of a spoofed text message. Operators who already treat SMS-based attacks as a fraud vector should look at USSD with at least the same level of attention.
+How USSD travels through the mobile core
+USSD is carried end to end by the Mobile Application Part, defined in 3GPP TS 29.002, running over TCAP and SCCP on classic SS7 or over M3UA on SIGTRAN . Three MAP operations do most of the work, and understanding their direction is the key to understanding the threat model.
+processUnstructuredSS-Re
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>
