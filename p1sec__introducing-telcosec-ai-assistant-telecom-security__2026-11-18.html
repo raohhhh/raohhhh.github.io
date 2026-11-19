@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推出 TelcoSec AI：电信安全 AI 助手 - 安全知识库</title>
+    <style>
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --accent: #00bcd4;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --tag-bg: #e3f2fd;
+            --tag-text: #1565c0;
+            --danger: #f44336;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        /* 顶部横幅 */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            padding: 60px 20px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        }
+        .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; opacity: .9; }
+        .hero .stats { margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .hero .stat { text-align: center; }
+        .hero .stat .num { font-size: 2em; font-weight: 700; }
+        .hero .stat .label { font-size: .85em; opacity: .85; }
+        /* 导航/筛选 */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .toolbar-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .toolbar input[type="text"] {
+            flex: 1; min-width: 200px;
+            padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: .95em; outline: none;
+        }
+        .toolbar input[type="text"]:focus { border-color: var(--primary); }
+        .toolbar select {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 20px; background: #fff; cursor: pointer; font-size: .9em;
+        }
+        /* 标签云 */
+        .tag-cloud {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .tag-cloud a {
+            padding: 5px 14px; background: var(--tag-bg); color: var(--tag-text);
+            border-radius: 15px; text-decoration: none; font-size: .85em;
+            transition: .2s;
+        }
+        .tag-cloud a:hover { background: var(--primary); color: #fff; }
+        .tag-cloud a .count { opacity: .6; font-size: .85em; }
+        /* 文章列表 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .article-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .25s;
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+        .card-banner { width: 100%; height: 170px; object-fit: cover; background: linear-gradient(135deg,#eceff1,#cfd8dc); }
+        .card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; }
+        .card-meta { font-size: .8em; color: var(--text-light); margin-bottom: 8px; }
+        .card-meta .site-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--tag-text); margin-right: 8px; font-weight: 600;
+        }
+        .card-title { font-size: 1.05em; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+        .card-title a { color: var(--text); text-decoration: none; }
+        .card-title a:hover { color: var(--primary); }
+        .card-summary { font-size: .88em; color: var(--text-light); flex: 1; }
+        .card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-tag {
+            padding: 2px 10px; border-radius: 12px; font-size: .75em;
+            background: var(--tag-bg); color: var(--tag-text);
+        }
+        .card-tag.unmatched { background: #fff3e0; color: #e65100; }
+        .card-footer { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer a.read { color: var(--primary); text-decoration: none; font-size: .85em; font-weight: 600; }
+        .card-footer a.read:hover { text-decoration: underline; }
+        /* 单文章详情 */
+        .detail { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+        .detail h1 { margin-bottom: 12px; line-height: 1.3; }
+        .detail .meta { color: var(--text-light); margin-bottom: 24px; font-size: .9em; }
+        .detail .analysis {
+            background: var(--card-bg); border-radius: 12px; padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); white-space: pre-wrap;
+            line-height: 1.8; font-size: .95em;
+        }
+        .detail .section-title { margin: 20px 0 10px; font-size: 1.1em; color: var(--primary-dark); }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        .empty { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        footer { text-align: center; padding: 30px; color: var(--text-light); font-size: .85em; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .article-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>📡 安全知识库</h1>
+        <p>技术博客文章 AI 分析与可视化收集</p>
+        <div class="stats">
+            <div class="stat"><div class="num">349</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">349</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">907</div><div class="label">已分析</div></div>
+        </div>
+    </div>
+<div class="detail">
+    <a class="back-link" href="index.html">← 返回列表</a>
+    <h1>推出 TelcoSec AI：电信安全 AI 助手</h1>
+    <p style="color:#999;font-size:.9em;font-style:italic;margin-bottom:16px;">原标题：Introducing TelcoSec AI, the AI assistant for telecom security</p>
+    <div class="meta">
+        <span class="site-badge" style="display:inline-block;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#1565c0;font-weight:600;">p1sec</span>
+        发布日期：2026-11-18
+ · <a href="https://www.p1sec.com/blog/introducing-telcosec-ai-assistant-telecom-security" target="_blank" rel="noopener" style="color:#2196f3;">查看原文 ↗</a>    </div>
+
+
+    <div style="margin-bottom:20px;">
+        <strong>AI 匹配标签：</strong>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">信令攻击</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">5G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">核心网网元</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">AI Agent安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">4G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">3G安全</span>
+        <span class="card-tag" style="padding:4px 12px;border-radius:12px;font-size:.8em;background:#e3f2fd;color:#1565c0;">2G安全</span>
+    </div>
+
+    <h2 class="section-title">📋 AI 分析报告</h2>
+    <div class="analysis">文章主要介绍了 P1 Security 推出的名为 TelcoSec AI 的电信安全 AI 助手，该助手融合了电信工程与安全工程的知识，旨在帮助安全团队解答复杂的电信安全问题。
+
+- 攻击事件背景：文章以电信安全团队面临的实际挑战为背景，例如外国网络持续查询用户位置（SS7位置追踪攻击）、5G独立组网漫游测试、SS7筛选漏洞等，引出对专业电信安全 AI 助手的需求。
+- 时间线：文章发布于 2026 年 11 月 18 日，宣布 TelcoSec AI 正式推出，并计划于 2026 年 12 月 2 日进行现场演示。
+- 攻击原理：文章举例说明了 SS7 位置追踪攻击的原理，即攻击者利用 SS7 信令协议中的 MAP 操作，通过互连网络向目标网络发送位置查询请求，从而追踪用户位置。
+- 攻击详情：TelcoSec AI 能够识别异常的 MAP 消息模式，判断其为位置追踪而非正常漫游流量，并提供阻断和监控建议。此外，文章还涉及 5G SA 漫游中 SEPP（安全边缘保护代理）的安全配置（如 N32-c 设置、 mutual TLS、PRINS）以及 SS7 SCCP 筛选中忽略子系统号码（SSN）的风险。
+- 攻击特征：跨网络信令异常查询、针对用户位置的持续追踪、5G 核心网边界（SEPP）配置不当导致的漫游风险、信令筛选规则不完善（如仅基于全局标题 GT 而忽略 SSN）。
+- AI Agent 安全：文章重点介绍了 TelcoSec AI 这一电信安全 AI Agent。它通过检索权威来源（3GPP规范、漏洞研究、机构指南等）提供结构化答案，区分通用知识与引用来源，并具备明确的安全边界：不扫描网络、承认未知、拒绝提供利用步骤和批量导出，体现了 AI Agent 在安全领域的防御性设计。</div>
+    <p style="margin-top:10px;color:#999;font-size:.8em;">分析时间：2026-11-19T09:03:16</p>
+
+    <h2 class="section-title">📄 文章正文</h2>
+    <p style="margin-bottom:10px;color:#666;font-size:.9em;"><strong>英文原标题：</strong>Introducing TelcoSec AI, the AI assistant for telecom security</p>
+    <div class="analysis" style="white-space:pre-wrap;">Telecom security questions rarely have a one-line answer. A foreign network keeps asking where your subscribers are. A 5G standalone roaming launch is three months away and someone has to decide what to test first on the SEPP. An auditor asks whether your SS7 screening covers subsystem numbers or stops at the global title. The knowledge to answer exists, but it is spread across 3GPP specifications, security guidelines, vulnerability research and years of field experience that rarely sit in one place.
+Today P1 Security launches TelcoSec AI , the AI assistant for telecom security. You ask a question about SS7, Diameter, GTP or 5G the way you would ask a colleague, and you get a structured answer with the sources behind it.
+See TelcoSec AI in two minutes
+The demo below follows real recorded answers, condensed and sped up: from the research TelcoSec AI draws on, to three questions a telecom security team actually asks.
+Prefer a bigger screen? Watch the demo on the TelcoSec AI page .
+Want it for your team? Request access to TelcoSec AI .
+Why telecom security needs its own assistant
+Mobile network security sits between two engineering cultures. Telecom engineers know the protocols, the network functions and the interconnect agreements. Security engineers know threat models, detection and remediation. Most questions that matter, such as whether a MAP message pattern is reconnaissance or normal roaming traffic, need both views at once.
+General-purpose AI models can talk fluently about SS7 or Diameter , but they answer from whatever they absorbed in training, without telecom security sources to check against. A confident answer that cannot show where it comes from is a risk in a field where one wrong filtering rule can open an interconnect to location tracking. TelcoSec AI was built to bridge telecom engineering and security engineering, and to show its sources while it does.
+What an answer looks like
+TelcoSec AI reads before it writes. For each question it retrieves the relevant material, ranks what matters for your case, then answers in a fixed structure:
+A diagnosis or a plan. What the behaviour you describe most likely means, or what a rollout should cover.
+Actions. What to test, what to block and what to monitor.
+Sources. Each cited point shows the source behind it, and its type: a P1 vulnerability entry, a guideline or a specification clause.
+General practice, marked apart. Advice that comes from general knowledge rather than a cited source is labelled as such, so you can tell the two apart at a glance.
+Conversations keep their context, so a follow-up such as &#34;is our own network exposed, and how would we check?&#34; builds on the previous answer instead of starting again.
+Where the answers come from
+The value of an assistant like this depends on what it reads. TelcoSec AI draws on sources that general AI models do not have, including:
+P1&#39;s published vulnerability research , built up by P1&#39;s telecom security researchers since 2011, with each entry coveri
+...(正文已截断，完整内容请查看原文)</div>
+</div>
+    <footer>
+        由知识收集程序自动生成 · 数据来源：enea · p1sec · citizenlab · crowdstrike    </footer>
+</body>
+</html>

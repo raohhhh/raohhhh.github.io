@@ -691,3 +691,19 @@
 [2026-11-18 09:30:02] 拉取远程更新 (git pull --rebase --autostash)...
 [2026-11-18 09:30:06] Already up to date.
 [2026-11-18 09:30:06] 暂存所有更改 (git add -A)...
+[2026-11-18 09:30:07] 提交更改: auto update: 2026-11-18 09:30:07
+[2026-11-18 09:30:07] [main e022263] auto update: 2026-11-18 09:30:07
+[2026-11-18 09:30:07]  349 files changed, 2146 insertions(+), 1049 deletions(-)
+[2026-11-18 09:30:07]  create mode 100644 citizenlab__jon-penney-delivers-testimony-to-the-house-of-commons-sub-committee-on-internati__2026-11-16.html
+[2026-11-18 09:30:07]  create mode 100644 crowdstrike__supply-chain-risk-from-backdoored-lora-models__2026-11-13.html
+[2026-11-18 09:30:07]  create mode 100644 enea__enea-aaa-server-at-csp-e-protecting-legacy-investments-in-a-5g-world__2026-11-17.html
+[2026-11-18 09:30:07]  create mode 100644 enea__making-ai-traffic-visible-a-new-priority-for-network-security__2026-11-13.html
+[2026-11-18 09:30:07]  create mode 100644 p1sec__ussd-security-mobile-networks-map-signalling-fraud-ussi__2026-11-17.html
+[2026-11-18 09:30:07] 推送到远程仓库 (git push origin main)...
+[2026-11-18 09:30:13] To github.com:raohhhh/raohhhh.github.io.git
+[2026-11-18 09:30:13]    0a31f60..e022263  main -> main
+[2026-11-18 09:30:13] ===== 提交并推送完成 =====
+[2026-11-19 09:30:02] ===== 开始自动提交 =====
+[2026-11-19 09:30:02] 拉取远程更新 (git pull --rebase --autostash)...
+[2026-11-19 09:30:06] Already up to date.
+[2026-11-19 09:30:06] 暂存所有更改 (git add -A)...
