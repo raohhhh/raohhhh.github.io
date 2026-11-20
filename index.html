@@ -170,9 +170,9 @@
         <h1>📡 安全知识库</h1>
         <p>技术博客文章 AI 分析与可视化收集</p>
         <div class="stats">
-            <div class="stat"><div class="num">349</div><div class="label">总文章</div></div>
-            <div class="stat"><div class="num">349</div><div class="label">已匹配</div></div>
-            <div class="stat"><div class="num">907</div><div class="label">已分析</div></div>
+            <div class="stat"><div class="num">350</div><div class="label">总文章</div></div>
+            <div class="stat"><div class="num">350</div><div class="label">已匹配</div></div>
+            <div class="stat"><div class="num">910</div><div class="label">已分析</div></div>
         </div>
     </div>
 <div class="toolbar">
@@ -181,16 +181,16 @@
         <select id="siteFilter">
             <option value="">全部来源</option>
             <option value="enea">enea (109)</option>
-            <option value="p1sec">p1sec (183)</option>
+            <option value="p1sec">p1sec (184)</option>
             <option value="citizenlab">citizenlab (12)</option>
             <option value="crowdstrike">crowdstrike (45)</option>
         </select>
         <select id="tagFilter">
             <option value="">全部标签</option>
-            <option value="5G安全">5G安全 (177)</option>
-            <option value="核心网网元">核心网网元 (167)</option>
+            <option value="5G安全">5G安全 (178)</option>
+            <option value="核心网网元">核心网网元 (168)</option>
             <option value="信令攻击">信令攻击 (165)</option>
-            <option value="4G安全">4G安全 (108)</option>
+            <option value="4G安全">4G安全 (109)</option>
             <option value="3G安全">3G安全 (66)</option>
             <option value="AI攻击">AI攻击 (61)</option>
             <option value="2G安全">2G安全 (60)</option>
@@ -202,10 +202,10 @@
 </div>
 
 <div class="tag-cloud">
-    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(177)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(167)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('5G安全')">5G安全 <span class="count">(178)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('核心网网元')">核心网网元 <span class="count">(168)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('信令攻击')">信令攻击 <span class="count">(165)</span></a>
-    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(108)</span></a>
+    <a href="javascript:void(0)" onclick="setTagFilter('4G安全')">4G安全 <span class="count">(109)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('3G安全')">3G安全 <span class="count">(66)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('AI攻击')">AI攻击 <span class="count">(61)</span></a>
     <a href="javascript:void(0)" onclick="setTagFilter('2G安全')">2G安全 <span class="count">(60)</span></a>
@@ -232,6 +232,47 @@
 
 <div class="container">
     <div class="article-grid" id="grid">
+        <div class="card" data-site="p1sec" data-matched="True"
+             data-date="2026-11-19"
+             data-tags="5G安全,4G安全,核心网网元"
+             data-search="udr security in 5g: protecting the unified data repository behind udm, pcf and nef what the 5g unified data repository stores, how nudr access is authorised, the provisioning and ldap paths that weaken it, and how to test and monitor the udr. 文章背景与概述：
+本文深入分析了5g核心网中统一数据存储库（udr）的安全问题。udr作为5g核心网的关键网元，负责存储订阅数据、策略数据、暴露数据和应用数据。由于其存储了决定用户身份和权限的核心数据，udr成为5g核心网中价值最高的攻击目标之一，但在架构讨论中常被忽视。
+
+攻击原理与安全风险分析：
+文章指出，针对udr的安全风险主要源于标准架构与实际部署之间的偏差，而非协议本身的根本性缺陷。攻击者通常利用以下原理和途径实施攻击：
+1. nudr接口授权粒度不足：标准要求udr针对每种数据集和每个消费者进行严格授权，但实际部署中常出现粗粒度授权，导致已认证的网络功能（如pcf或nef）越权访问或篡改不应触碰的数据集（如认证订阅数据）。
+2. 非标准接口暴露：攻击者常绕过受sba安全机制（如mtls和oauth 2.0）保护的nudr接口，转而攻击缺乏充分审查的外部接口。例如：利用配置网关（soap/rest/ldap）的过度特权账户进行大规模数据篡改；利用遗留的4g hlr/hss前端ldap访问（ud接口）绕过5g安全控制。
+3. 网络扁平化与隔离不足：如果udr可被不必要的网段访问，攻击者可通过攻破其他不相关的网络功能作为跳板，横向移动至udr获取订阅数据。
+4. nef暴露路径的数据完整性攻击：外部应用功能（af）可通过nef向udr写入应用数据（如流量影响请求）。如果nef对外部实体认证不严或数据校验不足，攻击者可注入恶意数据并持久化存储在udr中，进而被pcf和smf信任并执行，导致核心网流量处理行为被恶意篡改。
+5. 运维与复制平面风险：攻击者可针对未加密的异地容灾复制链路、缺乏严格控制的数据库管理控制台或未加密的备份文件进行攻击，直接获取完整数据集。
+
+攻击特征：
+- 攻击面主要集中在标准sbi架构之外的非标准化接口（如配置系统、遗留ldap、运维平面）。
+- 攻击门槛依赖于网络部署的配置缺陷，如弱隔离、粗粒度授权和遗留接口开放。
+- 攻击后果严重，可导致用户身份被冒充（窃取认证密钥）、大规模隐私泄露（订阅数据）或核心网流量被恶意重定向（篡改策略和应用数据）。">
+            <div class="card-body">
+                <div class="card-meta">
+                    <span class="site-badge">p1sec</span>
+                    2026-11-19
+                </div>
+                <div class="card-title">
+                    <a href="p1sec__udr-security-5g-unified-data-repository-nudr__2026-11-19.html">5G中的UDR安全：保护UDM、PCF和NEF背后的统一数据存储库</a>
+                </div>
+                <div class="card-summary">
+                        文章背景与概述：
+本文深入分析了5G核心网中统一数据存储库（UDR）的安全问题。UDR作为5G核心网的关键网元，负责存储订阅数据、策略数据、暴露数据和应用数据。由于其存储了决定用户身份和权限的核心数据，UDR成为5G核心网中价值最高的攻击目标之一，但在架构讨论中常被忽视。
+
+攻击原理与安全风险分析：...                </div>
+                <div class="card-tags">
+                        <span class="card-tag">5G安全</span>
+                        <span class="card-tag">4G安全</span>
+                        <span class="card-tag">核心网网元</span>
+                </div>
+                <div class="card-footer">
+                    <a class="read" href="p1sec__udr-security-5g-unified-data-repository-nudr__2026-11-19.html">阅读分析 →</a>
+<a class="read" href="https://www.p1sec.com/blog/udr-security-5g-unified-data-repository-nudr" target="_blank" rel="noopener">原文 ↗</a>                </div>
+            </div>
+        </div>
         <div class="card" data-site="p1sec" data-matched="True"
              data-date="2026-11-18"
              data-tags="信令攻击,5G安全,核心网网元,AI Agent安全,4G安全,3G安全,2G安全"
