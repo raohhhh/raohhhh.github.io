@@ -765,3 +765,19 @@
 [2026-11-24 09:30:02] 拉取远程更新 (git pull --rebase --autostash)...
 [2026-11-24 09:30:07] Already up to date.
 [2026-11-24 09:30:07] 暂存所有更改 (git add -A)...
+[2026-11-24 09:30:07] 提交更改: auto update: 2026-11-24 09:30:07
+[2026-11-24 09:30:07] [main cd56455] auto update: 2026-11-24 09:30:07
+[2026-11-24 09:30:07]  1 file changed, 11 insertions(+)
+[2026-11-24 09:30:07] 推送到远程仓库 (git push origin main)...
+[2026-11-24 09:30:11] To github.com:raohhhh/raohhhh.github.io.git
+[2026-11-24 09:30:11]    635eb81..cd56455  main -> main
+[2026-11-24 09:30:11] ===== 提交并推送完成 =====
+[2026-11-25 09:30:02] ===== 开始自动提交 =====
+[2026-11-25 09:30:02] 拉取远程更新 (git pull --rebase --autostash)...
+[2026-11-25 09:30:07] git@github.com: Permission denied (publickey).
+[2026-11-25 09:30:07] fatal: Could not read from remote repository.
+[2026-11-25 09:30:07] System.Management.Automation.RemoteException
+[2026-11-25 09:30:07] Please make sure you have the correct access rights
+[2026-11-25 09:30:07] and the repository exists.
+[2026-11-25 09:30:07] 警告: 拉取失败 (code=1)，继续处理本地更改。
+[2026-11-25 09:30:07] 暂存所有更改 (git add -A)...
